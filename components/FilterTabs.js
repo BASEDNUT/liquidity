@@ -9,15 +9,16 @@ import {
   Box,
 } from "@mui/material";
 
-const FilterTabs = ({ filter, setFilter }) => {
+const FilterTabs = ({ filter, setFilter, pools }) => {
   const filters = ["All", "NFTs", "TKNs", "NUT", "SNUT", "pNUT", "NUTcoins"];
-
-  // Detect if screen is "small" (below 'sm' breakpoint)
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
+  const filteredPools = pools.filter((pool) => {
+    return filter === "All" || pool.category.includes(filter);
+  });
+
   if (isMobile) {
-    // Render a simple Select on mobile
     return (
       <Box
         sx={{
@@ -54,7 +55,6 @@ const FilterTabs = ({ filter, setFilter }) => {
     );
   }
 
-  // Otherwise, render the ButtonGroup on larger screens
   return (
     <ButtonGroup
       variant="outlined"

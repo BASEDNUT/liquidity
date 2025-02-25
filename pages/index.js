@@ -3,15 +3,15 @@ import { useState, useEffect } from "react";
 import { Container, Grid, CircularProgress, Typography } from "@mui/material";
 import Head from "next/head";
 import Header from "../components/Header";
-import Footer from "../components/Footer"; // <-- Import Footer
+import Footer from "../components/Footer";
 import FilterTabs from "../components/FilterTabs";
 import PoolCard from "../components/PoolCard";
 import { fetchPools } from "../utils/fetchPools";
 
-export default function Home() {
+export default function Tree() {
   const [pools, setPools] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState("All"); // Updated to "All"
 
   const loadPools = async () => {
     setLoading(true);
@@ -32,7 +32,9 @@ export default function Home() {
   }, []);
 
   const filteredPools = pools.filter((pool) => {
+    // If the filter is set to "All", return all pools.
     if (filter === "All") return true;
+    // Assuming "Tree" is another filter you might have in addition to "All"
     return pool.category.includes(filter);
   });
 
@@ -50,7 +52,7 @@ export default function Home() {
         <Typography variant="h4" gutterBottom>
           Liquidity Pools 🌳
         </Typography>
-        <FilterTabs filter={filter} setFilter={setFilter} />
+        <FilterTabs filter={filter} setFilter={setFilter} pools={pools} />
         {loading ? (
           <Grid container justifyContent="center" sx={{ mt: 4 }}>
             <CircularProgress />
