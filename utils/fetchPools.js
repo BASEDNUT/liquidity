@@ -11,7 +11,7 @@ export function fetchPools() {
         "https://app.uniswap.org/explore/tokens/base/0xb8de15fb529d98c93c749de63c749d48d25a30df",
       dexscreenerUrl:
         "https://dexscreener.com/base/0xe3ce00e2ed742b142c15eedc208657dd22aa987e",
-      status: "Volatile",
+      status: "Concentrated",
     },
     {
       name: "NUT/wETH",
