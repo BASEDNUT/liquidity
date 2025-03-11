@@ -1,6 +1,6 @@
 // pages/index.js
 import { useState, useEffect } from "react";
-import { Container, Grid, CircularProgress, Typography } from "@mui/material";
+import { Container, Grid, CircularProgress, Typography, Box } from "@mui/material";
 import Head from "next/head";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -44,11 +44,32 @@ export default function Tree() {
       <Header />
       <Container
         sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
           mt: 4,
           px: { xs: 2, sm: 4 }, // Adds better padding on small screens
           maxWidth: "lg", // Prevents content from being too wide on larger screens
         }}
       >
+        <Box 
+          sx={{ 
+            width: '100%', 
+            textAlign: 'center', 
+            mb: 3 
+          }}
+        >
+          <img 
+            src="img/based-nuts-hero.png" 
+            alt="Based Nut's - The Orchard" 
+            style={{ 
+              maxWidth: '100%', 
+              height: 'auto',
+              marginBottom: '1rem',
+              display: 'inline-block' 
+            }} 
+          />
+        </Box>
         <Typography variant="h4" gutterBottom>
           Liquidity Pools 🌳
         </Typography>
