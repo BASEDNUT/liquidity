@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 import FilterTabs from "../components/FilterTabs";
 import PoolCard from "../components/PoolCard";
 import { fetchPools } from "../utils/fetchPools";
+import Link from 'next/link';
 
 export default function Tree() {
   const [pools, setPools] = useState([]);

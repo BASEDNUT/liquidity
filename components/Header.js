@@ -36,7 +36,7 @@ const gradientButtonStyle = {
   },
 };
 
-export default function Header() {
+const Header = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -83,6 +83,18 @@ export default function Header() {
           }}
         >
           Tree
+        </Button>
+      </Link>
+      <Link href="/chat" passHref>
+        <Button
+          variant="contained"
+          sx={{
+            ...gradientButtonStyle,
+            width: "100%",
+            my: 1,
+          }}
+        >
+          Chat
         </Button>
       </Link>
       {isMobile && (
@@ -153,4 +165,6 @@ export default function Header() {
       </Toolbar>
     </AppBar>
   );
-}
+};
+
+export default Header;

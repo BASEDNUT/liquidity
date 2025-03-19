@@ -1,4 +1,5 @@
 // next.config.mjs
-export default {
-  output: "export",
+module.exports = {
+    reactStrictMode: true,
+    // output: 'export', // Commented out to enable API routes
 };
