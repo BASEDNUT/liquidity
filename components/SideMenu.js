@@ -6,7 +6,9 @@ export default function SideMenu() {
     <nav>
       <ul>
         <li><Link href="/">Tree</Link></li>
-        <li><Link href="/home">Home</Link></li>
+        <li><Link href="/">
+          <a>Home</a>
+        </Link></li>
         <li><Link href="/chat">Chat</Link></li>
       </ul>
     </nav>
