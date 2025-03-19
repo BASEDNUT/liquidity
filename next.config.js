@@ -1,5 +1,8 @@
 // next.config.mjs
 module.exports = {
     reactStrictMode: true,
-    output: undefined, // Ensure this is not set to 'export' to allow dynamic routes
+    // Ensure dynamic routes are supported
+    output: undefined,
+    // Add fallback for potential static exports
+    trailingSlash: false
 };
