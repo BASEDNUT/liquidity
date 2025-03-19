@@ -9,6 +9,7 @@ yarn-error.log*
 # Build directories
 dist/
 build/
+.next
 
 # Coverage reports
 coverage/
