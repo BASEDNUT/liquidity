@@ -1,0 +1,10 @@
+{
+    "rewrites": [
+        { "source": "/chat", "destination": "/pages/chat.js" }
+    ],
+    "build": {
+        "env": {
+            "VENICE_API_KEY": "@venice_api_key"
+        }
+    }
+}

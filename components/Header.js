@@ -50,14 +50,12 @@ const Header = () => {
       role="presentation"
       onClick={toggleDrawer(false)}
       onKeyDown={toggleDrawer(false)}
-      // This Box will exactly fill the drawer width,
-      // and box-sizing ensures padding won't cause overflow
       sx={{
         display: "flex",
         flexDirection: "column",
         p: 2,
         boxSizing: "border-box",
-        height: "100%", // Optional if you want the box to fill vertical space
+        height: "100%",
         backgroundColor: "#F5E9DA",
       }}
     >
@@ -69,6 +67,7 @@ const Header = () => {
             width: "100%",
             my: 1,
           }}
+          aria-label="Navigate to Home"
         >
           Home
         </Button>
@@ -81,6 +80,7 @@ const Header = () => {
             width: "100%",
             my: 1,
           }}
+          aria-label="Navigate to Tree"
         >
           Tree
         </Button>
@@ -93,6 +93,7 @@ const Header = () => {
             width: "100%",
             my: 1,
           }}
+          aria-label="Navigate to Chat"
         >
           Chat
         </Button>
@@ -106,6 +107,7 @@ const Header = () => {
               width: "100%",
               my: 1,
             }}
+            aria-label="Learn more about Based Nut"
           >
             LEARN MORE
           </Button>

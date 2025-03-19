@@ -11,6 +11,7 @@ export default function Footer() {
         mt: { xs: 4, md: 6 }, // Extra margin on top for spacing
         py: 2, // Vertical padding inside the footer
       }}
+      role="contentinfo" // Accessibility improvement
     >
       <Container>
         <Box
@@ -31,7 +32,7 @@ export default function Footer() {
             <Link
               href="https://dune.com/basednut/basednut"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer" // Security improvement
               underline="none"
               sx={{
                 color: "#5B3A29",
@@ -44,7 +45,7 @@ export default function Footer() {
             <Link
               href="https://basednut.com"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer" // Security improvement
               underline="none"
               sx={{
                 color: "#5B3A29",
