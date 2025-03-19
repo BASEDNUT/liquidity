@@ -8,7 +8,7 @@ export default function ChatPage() {
       <Header />
       <main className="chat-content">
         <iframe
-          src="/chat.html" // Updated to point to the public directory
+          src="/chat.html"
           style={{ width: '100%', height: '800px', border: 'none' }}
         />
       </main>
