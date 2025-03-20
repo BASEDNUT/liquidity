@@ -22,5 +22,17 @@ export function validateEnv() {
         }
     }
 
+    const apiKey = process.env.VENICE_API_KEY;
+
+    if (!apiKey) {
+        throw new Error('VENICE_API_KEY is not set. Check your environment variables.');
+    }
+
+    if (apiKey.startsWith('<')) {
+        throw new Error('VENICE_API_KEY appears to be a placeholder. Replace it with a valid key.');
+    }
+
+    console.log('VENICE_API_KEY is valid.');
+
     return true;
 }
