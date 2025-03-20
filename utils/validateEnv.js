@@ -24,6 +24,8 @@ export function validateEnv() {
 
     const apiKey = process.env.VENICE_API_KEY;
 
+    console.log('Validating VENICE_API_KEY:', apiKey?.trim()); // Debugging: Log the trimmed API key
+
     if (!apiKey) {
         throw new Error('VENICE_API_KEY is not set. Check your environment variables.');
     }
