@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname, 'out')));
 
 // Venice API setup
 const openai = new OpenAI({
-  apiKey: process.env.VENICE_API_KEY,
+  apiKey: process.env.VENICE_API_KEY?.trim(), // Trim to avoid trailing spaces
   baseURL: 'https://api.venice.ai/api/v1',
 });
 

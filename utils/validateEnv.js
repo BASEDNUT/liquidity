@@ -28,8 +28,8 @@ export function validateEnv() {
         throw new Error('VENICE_API_KEY is not set. Check your environment variables.');
     }
 
-    if (apiKey.startsWith('<')) {
-        throw new Error('VENICE_API_KEY appears to be a placeholder. Replace it with a valid key.');
+    if (apiKey.startsWith('<') || apiKey.trim() === '') {
+        throw new Error('VENICE_API_KEY appears to be invalid or a placeholder. Replace it with a valid key.');
     }
 
     console.log('VENICE_API_KEY is valid.');

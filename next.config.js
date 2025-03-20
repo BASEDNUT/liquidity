@@ -21,6 +21,7 @@ module.exports = (phase) => {
         apiBaseUrl: process.env.NODE_ENV === 'production' 
             ? 'https://your-production-url.vercel.app' 
             : 'http://localhost:3000',
+        VENICE_API_KEY: process.env.VENICE_API_KEY, // Ensure availability in production
     },
     async headers() {
         return [
