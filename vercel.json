@@ -1,7 +1,7 @@
 {
     "build": {
         "env": {
-            "VENICE_API_KEY": "@venice_api_key"
+            "VENICE_API_KEY": "@VENICE_API_KEY" // Corrected case to match .env
         }
     },
     "version": 2,
