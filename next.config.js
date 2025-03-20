@@ -1,8 +1,16 @@
-// next.config.mjs
-module.exports = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
     reactStrictMode: true,
-    // Ensure dynamic routes are supported
-    output: undefined,
-    // Add fallback for potential static exports
-    trailingSlash: false
+    swcMinify: true,
+    images: {
+        domains: [] // Add allowed image domains here if needed
+    },
+    env: {
+        VENICE_API_KEY: process.env.VENICE_API_KEY
+    },
+    compress: true,
+    poweredByHeader: false,
+    generateEtags: true
 };
+
+module.exports = nextConfig;
