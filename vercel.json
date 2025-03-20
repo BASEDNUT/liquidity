@@ -1,7 +1,7 @@
 {
     "build": {
         "env": {
-            "VENICE_API_KEY": "@VENICE_API_KEY_SECRET" // Updated to reference an existing secret
+            "VENICE_API_KEY": "@VENICE_API_KEY_SECRET"
         }
     },
     "version": 2,
