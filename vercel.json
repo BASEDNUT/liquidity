@@ -1,24 +1,22 @@
 {
-    "build": {
-        "env": {
-            "VENICE_API_KEY": "@VENICE_API_KEY"
-        }
-    },
     "version": 2,
+    "env": {
+        "VENICE_API_KEY": "@venice_api_key"
+    },
     "builds": [
         {
             "src": "next.config.js",
             "use": "@vercel/next"
-        },
-        {
-            "src": "pages/**/*",
-            "use": "@vercel/node"
         }
     ],
     "routes": [
         {
-            "src": "/chat",
-            "dest": "/chat"
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/$1"
         }
     ]
 }

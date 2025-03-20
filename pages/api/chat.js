@@ -1,9 +1,20 @@
-export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+import { validateEnv } from '../../utils/validateEnv';
 
+export default async function handler(req, res) {
     try {
+        // Validate environment variables
+        validateEnv();
+
+        if (req.method !== 'POST') {
+            return res.status(405).json({ error: 'Method not allowed' });
+        }
+
+        // Verify API key is present
+        if (!process.env.VENICE_API_KEY) {
+            console.error('Missing VENICE_API_KEY');
+            return res.status(500).json({ error: 'Server configuration error' });
+        }
+
         const {
             model,
             messages,
@@ -76,6 +87,9 @@ export default async function handler(req, res) {
         res.status(200).json({ reply });
     } catch (error) {
         console.error('Error handling request:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ 
+            error: 'Internal server error',
+            message: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 }
