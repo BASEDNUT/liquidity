@@ -8,6 +8,7 @@ import FilterTabs from "../components/FilterTabs";
 import PoolCard from "../components/PoolCard";
 import { fetchPools } from "../utils/fetchPools";
 import Link from 'next/link';
+import Image from "next/image"; // <-- new import
 
 export default function Tree() {
   const [pools, setPools] = useState([]);
@@ -60,15 +61,14 @@ export default function Tree() {
             mb: 3 
           }}
         >
-          <img 
-            src="img/based-nuts-hero.png" 
+          {/* Replace plain <img> with Next.js Image component */}
+          <Image 
+            src="/img/based-nuts-hero.png" 
             alt="Based Nut's - The Orchard" 
-            style={{ 
-              maxWidth: '100%', 
-              height: 'auto',
-              marginBottom: '1rem',
-              display: 'inline-block' 
-            }} 
+            layout="responsive"
+            width={600}  // adjust according to your design
+            height={400} // adjust according to your design
+            priority={true} // load quickly on page load
           />
         </Box>
         <Typography variant="h4" gutterBottom>
