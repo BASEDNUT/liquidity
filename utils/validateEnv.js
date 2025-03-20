@@ -1,6 +1,6 @@
 export function validateEnv() {
     const requiredEnvVars = [
-        { key: 'VENICE_API_KEY', description: 'Venice AI API Key' }
+        { key: 'VENICE_API_KEY', description: 'Venice AI API Key' },
     ];
 
     const missingVars = requiredEnvVars.filter(({ key }) => {
