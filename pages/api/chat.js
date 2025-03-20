@@ -10,7 +10,7 @@ export default async function handler(req, res) {
         }
 
         const apiKey = process.env.VENICE_API_KEY;
-        if (!apiKey || apiKey === 'undefined' || apiKey.startsWith('@')) {
+        if (!apiKey || apiKey === 'undefined' || (process.env.NODE_ENV !== 'production' && apiKey.startsWith('@'))) {
             console.error('Invalid VENICE_API_KEY configuration');
             return res.status(500).json({ 
                 error: 'Server configuration error',

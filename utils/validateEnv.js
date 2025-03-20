@@ -6,7 +6,8 @@ export function validateEnv() {
     
     const missingVars = requiredEnvVars.filter(({ key }) => {
         const value = process.env[key];
-        return !value || value === 'undefined' || value.startsWith('@');
+        // Allow keys starting with '@' in production (Vercel secret syntax)
+        return !value || value === 'undefined' || (process.env.NODE_ENV !== 'production' && value.startsWith('@'));
     });
     
     if (missingVars.length > 0) {
