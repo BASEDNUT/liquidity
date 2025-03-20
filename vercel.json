@@ -1,22 +1,22 @@
 {
-    "version": 2,
-    "env": {
-        "VENICE_API_KEY": "@VENICE_API_KEY"
+  "version": 2,
+  "env": {
+    "VENICE_API_KEY": "@VENICE_API_KEY"
+  },
+  "builds": [
+    {
+      "src": "next.config.js",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
     },
-    "builds": [
-        {
-            "src": "next.config.js",
-            "use": "@vercel/next"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/api/(.*)",
-            "dest": "/api/$1"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "/$1"
-        }
-    ]
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
 }
