@@ -9,10 +9,13 @@ export default async function handler(req, res) {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
-        // Verify API key is present
-        if (!process.env.VENICE_API_KEY) {
-            console.error('Missing VENICE_API_KEY');
-            return res.status(500).json({ error: 'Server configuration error' });
+        const apiKey = process.env.VENICE_API_KEY;
+        if (!apiKey || apiKey === 'undefined' || apiKey.startsWith('@')) {
+            console.error('Invalid VENICE_API_KEY configuration');
+            return res.status(500).json({ 
+                error: 'Server configuration error',
+                message: 'API key not properly configured'
+            });
         }
 
         const {
@@ -67,7 +70,7 @@ export default async function handler(req, res) {
         const response = await fetch('https://api.venice.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${process.env.VENICE_API_KEY}`,
+                'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(payload)

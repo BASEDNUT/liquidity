@@ -3,10 +3,18 @@ const nextConfig = {
     reactStrictMode: true,
     swcMinify: true,
     images: {
-        domains: ['basescan.org', 'opensea.io'], // Add any image domains you're using
+        domains: ['basescan.org', 'opensea.io'],
     },
     env: {
         VENICE_API_KEY: process.env.VENICE_API_KEY
+    },
+    serverRuntimeConfig: {
+        VENICE_API_KEY: process.env.VENICE_API_KEY,
+    },
+    publicRuntimeConfig: {
+        apiBaseUrl: process.env.NODE_ENV === 'production' 
+            ? 'https://your-production-url.vercel.app' 
+            : 'http://localhost:3000',
     },
     async headers() {
         return [
@@ -20,10 +28,7 @@ const nextConfig = {
                 ]
             }
         ];
-    },
-    compress: true,
-    poweredByHeader: false,
-    generateEtags: true
+    }
 };
 
 module.exports = nextConfig;

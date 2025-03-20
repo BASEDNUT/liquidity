@@ -1,7 +1,7 @@
 {
     "version": 2,
     "env": {
-        "VENICE_API_KEY": "@venice_api_key"
+        "VENICE_API_KEY": "@VENICE_API_KEY"
     },
     "builds": [
         {

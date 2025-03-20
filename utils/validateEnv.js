@@ -1,13 +1,27 @@
 export function validateEnv() {
-    const requiredEnvVars = ['VENICE_API_KEY'];
+    const requiredEnvVars = [{
+        key: 'VENICE_API_KEY',
+        description: 'Venice AI API Key'
+    }];
     
-    const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+    const missingVars = requiredEnvVars.filter(({ key }) => {
+        const value = process.env[key];
+        return !value || value === 'undefined' || value.startsWith('@');
+    });
     
     if (missingVars.length > 0) {
-        throw new Error(
-            `Missing required environment variables: ${missingVars.join(', ')}\n` +
-            'Please check your .env file and Vercel environment variables configuration.'
-        );
+        const errorMessage = missingVars
+            .map(({ key, description }) => `${key} (${description})`)
+            .join(', ');
+            
+        console.error(`Missing required environment variables: ${errorMessage}`);
+        
+        if (process.env.NODE_ENV === 'production') {
+            throw new Error(
+                'Critical environment variables are missing. ' +
+                'Please check Vercel environment configuration.'
+            );
+        }
     }
     
     return true;
