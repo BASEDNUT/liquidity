@@ -98,32 +98,7 @@ const Header = () => {
           Chat
         </Button>
       </Link>
-      <Link href="/about" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...gradientButtonStyle,
-            width: "100%",
-            my: 1,
-          }}
-          aria-label="About Based Nut"
-        >
-          About
-        </Button>
-      </Link>
-      <Link href="/faq" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...gradientButtonStyle,
-            width: "100%",
-            my: 1,
-          }}
-          aria-label="FAQ"
-        >
-          FAQ
-        </Button>
-      </Link>
+      {/* Removed About and FAQ links */}
       {isMobile && (
         <Link href="https://docs.basednut.com/" passHref>
           <Button

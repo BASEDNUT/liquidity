@@ -61,13 +61,14 @@ export default function Tree() {
             mb: 3 
           }}
         >
-          {/* Replace plain <img> with Next.js Image component */}
+          {/* Updated hero image to use responsive layout for natural rendering */}
           <Image 
             src="/img/based-nuts-hero.png" 
             alt="Based Nut's - The Orchard" 
-            width={600}  // adjust according to your design
-            height={400} // adjust according to your design
-            priority={true} // load quickly on page load
+            layout="responsive" 
+            width={800}  
+            height={600} 
+            priority={true} 
           />
         </Box>
         <Typography variant="h4" gutterBottom>
