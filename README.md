@@ -1,13 +1,34 @@
-# liquidity
+# Liquidity Pool Explorer
 
 A minimal liquidity pool explorer with a chat interface powered by the Venice AI API.
 
 ## Features
-- Explore liquidity pools.
-- Chat with Peanutoshi using Venice AI.
 
-## Run Commands
-To run the project, use the following commands:
+- **Liquidity Pool Exploration**: Browse and explore various liquidity pools.
+- **Chat Interface**: Interact with Peanutoshi via the Venice AI API.
+
+## Setup and Installation
+
+1. **Clone the Repository**
+    ```bash
+    git clone <repository_url>
+    cd liquidity
+    ```
+
+2. **Install Dependencies**
+    ```bash
+    npm install
+    ```
+
+3. **Configure Environment Variables**
+
+    - Obtain your API key from [Venice AI](https://venice.ai).
+    - Create a `.env` file in the root directory and add:
+      ```env
+      VENICE_API_KEY=your_api_key_here
+      ```
+
+## Running the Project
 
 ### Development
 ```bash
@@ -19,46 +40,55 @@ npm run dev
 npm run build
 ```
 
-### Start
+### Start (Production)
 ```bash
 npm run start
 ```
 
-### Test
+### Testing
 ```bash
 npm test
 ```
 
-## Venice API Integration
-This project uses the Venice AI API for chat functionality. Ensure the following steps are completed to configure the API:
+## Venice AI API Integration
 
-1. **Set up API Key**:
-   - Obtain your API key from [Venice AI](https://venice.ai).
-   - Add it to your environment variables as `VENICE_API_KEY`.
+This project uses the Venice AI API to enable the chat functionality.
 
-2. **API Configuration**:
-   - The API uses the `POST` method to communicate with the Venice endpoint.
-   - Example payload:
-     ```json
-     {
-       "model": "llama-3.3-70b",
-       "messages": [{"role": "user", "content": "Hello"}],
-       "venice_parameters": {
-         "enable_web_search": "auto",
-         "include_venice_system_prompt": true,
-         "character_slug": "venice"
-       },
-       "temperature": 0.7,
-       "top_p": 0.9
-     }
-     ```
+### Request Structure
 
-3. **Advanced Settings**:
-   - Use the settings modal in the chat interface to configure advanced Venice API parameters such as `temperature`, `top_p`, `frequency_penalty`, and more.
-   - These settings allow you to customize the behavior of the Venice AI model.
+The API uses the `POST` method to communicate with the Venice endpoint. An example payload:
 
-4. **Error Handling**:
-   - Ensure proper error handling for API responses.
-   - Check for valid `Authorization` headers and payload structure.
+```json
+{
+  "model": "llama-3.3-70b",
+  "messages": [{"role": "user", "content": "Hello"}],
+  "venice_parameters": {
+    "enable_web_search": "auto",
+    "include_venice_system_prompt": true,
+    "character_slug": "venice"
+  },
+  "temperature": 0.7,
+  "top_p": 0.9
+}
+```
+
+### Error Handling
+
+Ensure:
+- Proper validation of the `Authorization` headers.
+- Correct payload structure.
+- Graceful handling of API response errors.
+
+## Advanced Configuration
+
+Customize the chat experience by adjusting:
+- `temperature`
+- `top_p`
+- `frequency_penalty`
+- Other settings via the chat interface settings modal.
 
 For more details, refer to the [Venice API Documentation](https://docs.venice.ai).
+
+## License
+
+[Insert license details if applicable]
