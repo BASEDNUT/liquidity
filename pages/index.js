@@ -65,7 +65,6 @@ export default function Tree() {
           <Image 
             src="/img/based-nuts-hero.png" 
             alt="Based Nut's - The Orchard" 
-            layout="responsive"
             width={600}  // adjust according to your design
             height={400} // adjust according to your design
             priority={true} // load quickly on page load

@@ -58,14 +58,8 @@ export default function Footer() {
           </Box>
           {/* New social links */}
           <Box sx={{ display: "flex", gap: 2, mt: { xs: 1, sm: 0 } }}>
-            <a href="https://twitter.com/yourhandle" target="_blank" rel="noopener noreferrer" style={{ color: "#5B3A29", fontWeight: "bold", textDecoration: "none" }}>
+            <a href="https://twitter.com/BASEDNUT_" target="_blank" rel="noopener noreferrer" style={{ color: "#5B3A29", fontWeight: "bold", textDecoration: "none" }}>
               Twitter
-            </a>
-            <a href="https://facebook.com/yourpage" target="_blank" rel="noopener noreferrer" style={{ color: "#5B3A29", fontWeight: "bold", textDecoration: "none" }}>
-              Facebook
-            </a>
-            <a href="https://linkedin.com/company/yourcompany" target="_blank" rel="noopener noreferrer" style={{ color: "#5B3A29", fontWeight: "bold", textDecoration: "none" }}>
-              LinkedIn
             </a>
           </Box>
         </Box>
