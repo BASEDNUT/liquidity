@@ -121,7 +121,17 @@ const Chat = () => {
     <>
       <Header />
       <main>
-        <h1>Chat with our Peanutoshi</h1>
+        <div className="brand-box">
+          <h1>Chat with our Peanutoshi</h1>
+          <div className="brand-buttons">
+            <a href="https://venice.ai/c/peanutoshi-nutkamoto" target="_blank" rel="noopener noreferrer" className="brand-button">
+              Visit Peanutoshi on Venice
+            </a>
+            <a href="https://chatgpt.com/g/g-6738c69da52081919865912b625a2448-peanutoshi-nutkamoto" target="_blank" rel="noopener noreferrer" className="brand-button">
+              Explore Peanutoshi on ChatGPT
+            </a>
+          </div>
+        </div>
         <div className="chat-container">
           <div className="chat-header">
             <img src="/img/peanutoshi.png" alt="Peanutoshi" className="avatar" />
@@ -171,6 +181,7 @@ const Chat = () => {
             />
             <button onClick={handleSendMessage} disabled={isProcessing}>Send</button>
           </div>
+          <p className="powered-by">Chat powered by Venice AI</p>
         </div>
 
         <style jsx global>{`
@@ -278,6 +289,43 @@ const Chat = () => {
             margin-top: 10px;
             font-style: italic;
             color: #a97142;
+          }
+          .powered-by {
+            text-align: center;
+            font-size: 12px;
+            color: #a97142;
+            margin-top: 10px;
+            font-style: italic;
+          }
+          .brand-box {
+            text-align: center;
+            background-color: #f0e6d9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(139, 89, 43, 0.1);
+          }
+          .brand-box h1 {
+            margin: 0 0 10px;
+            font-size: 24px;
+            color: #4a2f1d;
+          }
+          .brand-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+          }
+          .brand-button {
+            padding: 10px 20px;
+            background-color: #8b572a;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+          }
+          .brand-button:hover {
+            background-color: #6d4321;
           }
         `}</style>
       </main>
