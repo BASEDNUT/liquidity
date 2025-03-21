@@ -77,6 +77,11 @@ const Chat = () => {
           stream: false,
         }),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       const { cleanedReply, chainOfThought } = parseResponse(data.reply || 'No reply available.');
       setMessages((prev) =>
@@ -87,17 +92,29 @@ const Chat = () => {
         )
       );
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error sending message:', error);
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === tempId
-            ? { ...msg, text: "Unable to process your request. Please try again." }
+            ? { ...msg, text: "Failed to send message. Please try again later." }
             : msg
         )
       );
     } finally {
-      setIsProcessing(false); // Re-enable sending after processing
+      setIsProcessing(false); // Ensure processing is reset after completion
     }
+
+    // Timeout to handle cases where the bot takes too long to respond
+    setTimeout(() => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === tempId
+            ? { ...msg, text: "The bot is taking too long to respond. Please try again later." }
+            : msg
+        )
+      );
+      setIsProcessing(false); // Reset processing state
+    }, 120000); // 2 minutes
   };
 
   return (
