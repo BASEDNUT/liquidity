@@ -1,4 +1,4 @@
-export function validateEnv() {
+function validateEnv() {
     const requiredEnvVars = [
         { key: 'VENICE_API_KEY', description: 'Venice AI API Key' },
     ];
@@ -24,8 +24,6 @@ export function validateEnv() {
 
     const apiKey = process.env.VENICE_API_KEY;
 
-    console.log('Validating VENICE_API_KEY:', apiKey?.trim()); // Debugging: Log the trimmed API key
-
     if (!apiKey) {
         throw new Error('VENICE_API_KEY is not set. Check your environment variables.');
     }
@@ -34,7 +32,9 @@ export function validateEnv() {
         throw new Error('VENICE_API_KEY appears to be invalid or a placeholder. Replace it with a valid key.');
     }
 
-    console.log('VENICE_API_KEY is valid.');
-
     return true;
 }
+
+module.exports = {
+    validateEnv
+};

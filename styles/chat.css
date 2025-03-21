@@ -1,0 +1,14 @@
+.thinking {
+    font-style: italic;
+    color: #888;
+    animation: fadeIn 1s infinite alternate;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0.5;
+    }
+    to {
+        opacity: 1;
+    }
+}

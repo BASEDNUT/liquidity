@@ -1,4 +1,7 @@
 const { PHASE_DEVELOPMENT_SERVER } = require('next/constants');
+const { validateEnv } = require('./utils/validateEnv');
+
+validateEnv(); // Validate environment variables once at startup
 
 module.exports = (phase) => {
   const isDev = phase === PHASE_DEVELOPMENT_SERVER;

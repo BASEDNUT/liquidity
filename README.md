@@ -72,6 +72,15 @@ The API uses the `POST` method to communicate with the Venice endpoint. An examp
 }
 ```
 
+### Venice Parameters
+
+The `venice_parameters` are configured as follows:
+- `enable_web_search`: `false`
+- `include_venice_system_prompt`: `false`
+- `character_slug`: `"peanutoshi-nutkamoto"`
+
+Settings have been removed as the character handles all configurations automatically.
+
 ### Error Handling
 
 Ensure:
