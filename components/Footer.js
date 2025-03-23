@@ -63,6 +63,14 @@ export default function Footer() {
             </a>
           </Box>
         </Box>
+        <Typography
+          variant="body2"
+          sx={{ color: "#5B3A29", fontWeight: "bold", mt: 2 }}
+        >
+          <em style={{ color: "#7D5A50" }}>
+            BASED NUT TOKENS are whimsical meme coins devoid of any intrinsic value or anticipation of financial gains. Coins are for entertainment purposes only. No formal team or roadmap. Please nut responsibly!
+          </em>
+        </Typography>
       </Container>
     </Box>
   );

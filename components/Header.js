@@ -98,7 +98,19 @@ const Header = () => {
           Chat
         </Button>
       </Link>
-      {/* Removed About and FAQ links */}
+      <Link href="/great-nut-war" passHref>
+        <Button
+          variant="contained"
+          sx={{
+            ...gradientButtonStyle,
+            width: "100%",
+            my: 1,
+          }}
+          aria-label="Navigate to Great Nut War"
+        >
+          Great Nut War
+        </Button>
+      </Link>
       {isMobile && (
         <Link href="https://docs.basednut.com/" passHref>
           <Button
