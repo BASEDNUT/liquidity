@@ -26,6 +26,26 @@ const Chat = () => {
   const [customSettings, setCustomSettings] = useState(defaultSettings);
   const [isProcessing, setIsProcessing] = useState(false); // Track if the bot is processing
 
+  const prepackagedPrompts = [
+    {
+      label: "🌰 Based Nut Ecosystem",
+      prompt: "Tell me about the Based Nut ecosystem and its unique value proposition. What is a NUT (Network Utility Token) and how does it differ from other tokens?",
+    },
+    {
+      label: "🔍 Peanutoshi Nutkamoto Engine",
+      prompt: "What is the Peanutoshi Nutkamoto Engine, and how does it predict liquidity shifts using the Fear & Greed index from CoinMarketCap and data DeFiLlamas TVL tides? How can Peanutoshi help me navigate the DeFi seas?",
+    },
+    {
+      label: "📊Crack the Market",
+      prompt: "What is the current state of the market according to all sources? What does the current NSI say and does the Nutrbitrage Detector sniff BASE-chain alpha? Include references when applicable",
+    },
+  ];
+
+  const handlePrepackagedPrompt = (prompt) => {
+    setInput(prompt);
+    handleSendMessage();
+  };
+
   useEffect(() => {
     fetch('/api/chat')
       .then((res) => {
@@ -181,6 +201,21 @@ const Chat = () => {
             />
             <button onClick={handleSendMessage} disabled={isProcessing}>Send</button>
           </div>
+          <div className="brand-buttons">
+            {prepackagedPrompts.map((prompt, index) => (
+              <button
+                key={index}
+                className="brand-button"
+                onClick={() => handlePrepackagedPrompt(prompt.prompt)}
+                disabled={isProcessing}
+              >
+                {prompt.label}
+              </button>
+            ))}
+          </div>
+          <p className="ai-warning">
+            ⚠️ Reminder: AI-generated responses may contain inaccuracies or fabricated links. Always verify the information provided.
+          </p>
           <p className="powered-by">Chat powered by Venice AI</p>
         </div>
 
@@ -314,18 +349,31 @@ const Chat = () => {
             display: flex;
             justify-content: center;
             gap: 10px;
+            margin-top: 10px;
           }
           .brand-button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             background-color: #8b572a;
             color: white;
-            text-decoration: none;
+            border: none;
             border-radius: 6px;
+            cursor: pointer;
             font-size: 14px;
             transition: background-color 0.3s ease;
           }
-          .brand-button:hover {
+          .brand-button:disabled {
+            background-color: #d4a676;
+            cursor: not-allowed;
+          }
+          .brand-button:hover:not(:disabled) {
             background-color: #6d4321;
+          }
+          .ai-warning {
+            text-align: center;
+            font-size: 14px;
+            color: #a97142;
+            margin-top: 20px;
+            font-style: italic;
           }
         `}</style>
       </main>

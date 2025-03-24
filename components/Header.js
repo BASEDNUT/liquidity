@@ -98,6 +98,19 @@ const Header = () => {
           Chat
         </Button>
       </Link>
+      <Link href="/nutinoMemes" passHref>
+        <Button
+          variant="contained"
+          sx={{
+            ...gradientButtonStyle,
+            width: "100%",
+            my: 1,
+          }}
+          aria-label="Navigate to Nutino Memes"
+        >
+          Nutify Images
+        </Button>
+      </Link>
       <Link href="/great-nut-war" passHref>
         <Button
           variant="contained"
