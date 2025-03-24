@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     // Append the style prompt to the user's input.
     const chatMessage = `${stylePrompts[selectedStyle]} ${input}`;
     const chatPayload = {
-      model: "deepseek-r1-671b",
+      model: "qwen-2.5-qwq-32b",
       messages: [
         {
           role: "system",

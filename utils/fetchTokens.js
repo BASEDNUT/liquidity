@@ -78,3 +78,8 @@ const nutTreeData = {
 };
 
 export default nutTreeData;
+
+export const fetchTokens = async () => {
+  // Return the mock data for now
+  return nutTreeData;
+};

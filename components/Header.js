@@ -72,6 +72,19 @@ const Header = () => {
           Home
         </Button>
       </Link>
+      <Link href="/tokens" passHref>
+        <Button
+          variant="contained"
+          sx={{
+            ...gradientButtonStyle,
+            width: "100%",
+            my: 1,
+          }}
+          aria-label="Navigate to Tokens"
+        >
+          Tokens
+        </Button>
+      </Link>
       <Link href="/tree" passHref>
         <Button
           variant="contained"
