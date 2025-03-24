@@ -60,6 +60,9 @@ const NutinoMemes = () => {
       <main style={{ padding: "20px", textAlign: "center", backgroundColor: "#F9F3E6", fontFamily: "Arial, sans-serif" }}>
         <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "#5D4037", marginBottom: "1rem" }}>Nutty Images</h1>
         <p style={{ fontSize: "1rem", color: "#5D4037", marginBottom: "2rem" }}>Enter your image meme idea and generate nutty images!</p>
+        <p style={{ fontSize: "0.9rem", color: "#8B572A", fontStyle: "italic", marginBottom: "1.5rem" }}>
+          AI powered by Venice AI
+        </p>
         <div style={{ margin: "20px 0", display: "flex", justifyContent: "center", gap: "1rem", flexWrap: "wrap" }}>
           <input
             type="text"
