@@ -25,20 +25,17 @@ import Footer from '../components/Footer';
 
 const COOLDOWN_PERIOD_MS = 60 * 60 * 1000; // 1 hour in milliseconds
 const LOCAL_STORAGE_KEY_LAST_ACTION = 'warmachineLastActionTime';
-const LOCAL_STORAGE_KEY_OUTCOMES = 'warmachineOutcomes';
-const LOCAL_STORAGE_KEY_FACTION_STATS = 'warmachineFactionStats'; // New key
 const MAX_OUTCOMES_HISTORY = 15;
 
-const factions = ["Peanuts", "Almonds", "Cashews", "Pistachios", "Hazelnuts"];
+const factions = ["Peanuts", "Almonds", "Walnuts", "Cashews"];
 const actions = ["Attack", "Defend", "Rally", "Scheme", "Trade"];
 
-// Initial Faction Stats
+// Initial Faction Stats (client-side fallback or initial structure before API load)
 const initialFactionStats = factions.reduce((acc, faction) => {
   acc[faction] = {
-    morale: 10,
-    territoriesControlled: 0,
-    specialAbilities: [],
-    lastActionEffect: "" // To store the direct string effect from the last action
+    morale: 0, // Will be overwritten by API
+    territories: 0, // Renamed from territoriesControlled, will be overwritten by API
+    specialAbility: "Loading...", // Will be overwritten by API
   };
   return acc;
 }, {});
@@ -51,17 +48,17 @@ const getFactionColor = (faction) => {
   switch (faction) {
     case 'Peanuts': return '#FDE8B1'; // Light peanut color
     case 'Almonds': return '#D4A373'; // Almond color
+    case 'Walnuts': return '#A47C6F'; // Added color for Walnuts
     case 'Cashews': return '#E7C8A0'; // Cashew color
-    case 'Pistachios': return '#AEC3B0'; // Pistachio green
-    case 'Hazelnuts': return '#B08968'; // Hazelnut brown
     default: return '#E2D5C3'; // Neutral territory
   }
 };
 
 export default function WarMachinePage() {
   const [outcomes, setOutcomes] = useState([]);
-  const [factionStats, setFactionStats] = useState(initialFactionStats); // New state
-  const [isLoading, setIsLoading] = useState(false);
+  const [factionStats, setFactionStats] = useState(initialFactionStats);
+  const [isLoading, setIsLoading] = useState(false); // For general loading like submit
+  const [isStateLoading, setIsStateLoading] = useState(true); // For initial state load
   const [timeLeft, setTimeLeft] = useState(0);
   const [selectedFaction, setSelectedFaction] = useState('');
   const [selectedAction, setSelectedAction] = useState('');
@@ -83,93 +80,59 @@ export default function WarMachinePage() {
 
   const localStorageAvailable = React.useMemo(() => isLocalStorageAvailable(), []);
 
-  // Load outcomes from localStorage on mount
+  // Load initial game state from API on mount
   useEffect(() => {
-    if (localStorageAvailable) {
+    const fetchInitialState = async () => {
+      setIsStateLoading(true);
       try {
-        const storedOutcomes = localStorage.getItem(LOCAL_STORAGE_KEY_OUTCOMES);
-        if (storedOutcomes) {
-          setOutcomes(JSON.parse(storedOutcomes));
+        const response = await fetch('/api/getWarmachineState');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch game state');
         }
-        const storedFactionStats = localStorage.getItem(LOCAL_STORAGE_KEY_FACTION_STATS); // Load faction stats
-        if (storedFactionStats) {
-          setFactionStats(JSON.parse(storedFactionStats));
-        } else {
-          setFactionStats(initialFactionStats); // Initialize if not found
-        }
+        const data = await response.json();
+        setOutcomes(data.outcomes || []);
+        // Ensure factionStats on the client matches the factions array
+        const receivedStats = data.factionStats || {};
+        const updatedClientStats = factions.reduce((acc, factionName) => {
+            acc[factionName] = receivedStats[factionName] || {
+                morale: 0, 
+                territories: 0, 
+                specialAbility: "N/A"
+            };
+            return acc;
+        }, {});
+        setFactionStats(updatedClientStats);
+
       } catch (e) {
-        console.error("Failed to load data from localStorage", e);
-        // Silently fail - we'll start with empty/initial states
-        setOutcomes([]);
+        console.error("Failed to load initial game state from API:", e);
+        setError(`Failed to load game state: ${e.message}. Some features might be unavailable.`);
+        // Keep client-side initialFactionStats as a fallback
         setFactionStats(initialFactionStats);
+        setOutcomes([]);
+      } finally {
+        setIsStateLoading(false);
       }
-    }
-  }, [localStorageAvailable]);
+    };
+    fetchInitialState();
+  }, []); // Runs once on mount
 
-  // Save outcomes to localStorage when they change
+  // Simulate map updates based on outcomes
   useEffect(() => {
-    if (localStorageAvailable && outcomes.length > 0) {
-      try {
-        localStorage.setItem(LOCAL_STORAGE_KEY_OUTCOMES, JSON.stringify(outcomes));
-      } catch (e) {
-        console.error("Failed to save outcomes to localStorage", e);
-      }
-    }
-  }, [outcomes, localStorageAvailable]);
-
-  // Save factionStats to localStorage when they change
-  useEffect(() => {
-    if (localStorageAvailable) {
-      try {
-        localStorage.setItem(LOCAL_STORAGE_KEY_FACTION_STATS, JSON.stringify(factionStats));
-      } catch (e) {
-        console.error("Failed to save faction stats to localStorage", e);
-      }
-    }
-  }, [factionStats, localStorageAvailable]);
-
-
-  // Simulate map updates based on outcomes AND update territoriesControlled in factionStats
-  useEffect(() => {
-    const newMap = initialMap.map(row => [...row]); // Start with a fresh copy of initialMap
-    const territoryCounts = factions.reduce((acc, f) => ({ ...acc, [f]: 0 }), {});
-
-    // Simplified: last 5 outcomes influence the map
-    // More sophisticated logic would be needed for persistent territory control
+    const newMap = initialMap.map(row => [...row]);
+    // Simplified: last 5 outcomes influence the map for visual flair
     outcomes.slice(0, 5).forEach((outcome) => {
       if (outcome.faction && factions.includes(outcome.faction)) {
         const r = Math.abs(outcome.faction.charCodeAt(0) + (outcome.action?.charCodeAt(0) || 0)) % 9;
         const c = Math.abs(outcome.faction.charCodeAt(0) - (outcome.action?.charCodeAt(0) || 0)) % 9;
-        if (newMap[r]) {
+        if (newMap[r] && newMap[r][c] !== undefined) { // Check if r and c are valid indices
           newMap[r][c] = outcome.faction;
         }
       }
     });
     setMap(newMap);
-
-    // Recalculate territory counts from the newMap
-    for (let r = 0; r < newMap.length; r++) {
-      for (let c = 0; c < newMap[r].length; c++) {
-        const controllingFaction = newMap[r][c];
-        if (factions.includes(controllingFaction)) {
-          territoryCounts[controllingFaction]++;
-        }
-      }
-    }
-
-    setFactionStats(prevStats => {
-      let statsChanged = false;
-      const updatedStats = { ...prevStats };
-      factions.forEach(f => {
-        if (updatedStats[f] && updatedStats[f].territoriesControlled !== territoryCounts[f]) {
-          updatedStats[f] = { ...updatedStats[f], territoriesControlled: territoryCounts[f] };
-          statsChanged = true;
-        }
-      });
-      return statsChanged ? updatedStats : prevStats;
-    });
-
-  }, [outcomes, factions]); // Assuming 'factions' is stable, otherwise add as dependency.
+    // Territory counts in factionStats table are now directly from server, no client-side recalculation needed here.
+  }, [outcomes]); // Removed 'factions' dependency as it's stable
 
   const updateCooldown = useCallback(() => {
     if (localStorageAvailable) {
@@ -198,63 +161,6 @@ export default function WarMachinePage() {
     return () => clearInterval(intervalId);
   }, [updateCooldown]);
 
-  const parseAndUpdateFactionStats = (currentStats, effectsString, actingFaction) => {
-    let newStats = JSON.parse(JSON.stringify(currentStats)); // Deep copy
-
-    // Reset lastActionEffect for all factions
-    factions.forEach(f => {
-        if(newStats[f]) newStats[f].lastActionEffect = "";
-    });
-    
-    // Store the raw effect string for the acting faction (or all involved if parsed)
-    if (newStats[actingFaction]) {
-        newStats[actingFaction].lastActionEffect = effectsString;
-    }
-
-
-    // Morale changes: "FactionName Morale +/-Value"
-    const moraleRegex = new RegExp(`(${factions.join('|')})\\s*Morale\\s*([+-]\\d+)`, 'gi');
-    let match;
-    while ((match = moraleRegex.exec(effectsString)) !== null) {
-      const factionName = match[1];
-      const change = parseInt(match[2], 10);
-      if (newStats[factionName]) {
-        newStats[factionName].morale = (newStats[factionName].morale || 0) + change;
-      }
-    }
-
-    // Unlock upgrades: "Unlocks 'Upgrade Name'" (applies to acting faction for simplicity)
-    const unlockRegex = /Unlocks\s*'([^']+)'/i;
-    const unlockMatch = effectsString.match(unlockRegex);
-    if (unlockMatch && unlockMatch[1] && newStats[actingFaction]) {
-      if (!newStats[actingFaction].specialAbilities.includes(unlockMatch[1])) {
-        newStats[actingFaction].specialAbilities.push(unlockMatch[1]);
-      }
-    }
-    
-    // Generic effect capture for other factions mentioned
-    // Example: "Almond Pantry -2 strategic crumbs!"
-    // This is tricky. For now, if another faction is mentioned, we'll just assign the whole effect string to them too.
-    factions.forEach(f => {
-        if (f !== actingFaction && effectsString.toLowerCase().includes(f.toLowerCase())) {
-            if (newStats[f]) {
-                 // Append if there's already an effect from morale/unlock for this faction from the same action
-                newStats[f].lastActionEffect = newStats[f].lastActionEffect 
-                    ? newStats[f].lastActionEffect + "; " + effectsString 
-                    : effectsString;
-            }
-        }
-    });
-
-
-    // Add more parsing rules here for other effects like resources, territory changes etc.
-    // For "Almond Pantry -2 strategic crumbs!", we could look for "Faction loses X item" or "Faction gains Y item"
-    // This requires more complex regex and understanding of game-specific terms.
-
-    return newStats;
-  };
-
-
   const handleSubmit = async () => {
     if (timeLeft > 0 || !selectedFaction || !selectedAction) {
       if (timeLeft > 0) setError(`Action on cooldown. Please wait ${Math.ceil(timeLeft / 1000 / 60)} minutes.`);
@@ -271,14 +177,13 @@ export default function WarMachinePage() {
         body: JSON.stringify({
           faction: selectedFaction,
           action: selectedAction,
-          history: outcomes.slice(0, 5).map(o => `Faction: ${o.faction}, Action: ${o.action}, Narrative: ${o.narrative}, Effects: ${o.effects}`) // Send last 5 outcomes as history strings
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to perform action due to a server error.');
+        throw new Error(data.error || data.message || 'Failed to perform action due to a server error.');
       }
 
       const newOutcome = {
@@ -287,11 +192,29 @@ export default function WarMachinePage() {
         action: selectedAction,
         narrative: data.narrative || "Peanutoshi has gone silent...",
         effects: data.effects || "No visible effects",
-        imageUrl: data.imageUrl, // Optional: image from AI
+        imageUrl: data.imageUrl, // Image URL from API response
       };
 
+      // Update outcomes: add new one to the beginning, limit history
       setOutcomes(prev => [newOutcome, ...prev.slice(0, MAX_OUTCOMES_HISTORY - 1)]);
-      setFactionStats(prevStats => parseAndUpdateFactionStats(prevStats, newOutcome.effects, newOutcome.faction)); // Update faction stats
+      
+      // Update faction stats with the data from the API response
+      if (data.updatedFactionStats) {
+        // Ensure client-side factionStats structure is maintained for all factions
+        const receivedStats = data.updatedFactionStats;
+        const updatedClientStats = factions.reduce((acc, factionName) => {
+            acc[factionName] = receivedStats[factionName] || (factionStats[factionName] || {
+                morale: 0, 
+                territories: 0, 
+                specialAbility: "N/A"
+            });
+            return acc;
+        }, {});
+        setFactionStats(updatedClientStats);
+      } else {
+        // Fallback or error if updatedFactionStats is not in response
+        console.warn("updatedFactionStats not received from API. Stats may be stale.");
+      }
 
       if (localStorageAvailable) {
         try {
@@ -331,150 +254,154 @@ export default function WarMachinePage() {
             The fate of the Nutverse is in your hands! Choose wisely, or don&apos;t... Peanutoshi loves chaos.
           </Typography>
 
-          {/* Faction Stats Display */}
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
-              Faction Standings
-            </Typography>
-            <TableContainer component={Paper} elevation={2}>
-              <Table size="small" aria-label="faction stats table">
-                <TableHead sx={{ backgroundColor: 'primary.light' }}>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Faction</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>Morale</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>Territories</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Special Abilities</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Last Action Effect</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {factions.map((factionName) => (
-                    <TableRow key={factionName} sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}>
-                      <TableCell component="th" scope="row" sx={{ fontWeight: 'medium' }}>
-                        {factionName}
-                      </TableCell>
-                      <TableCell align="right">{factionStats[factionName]?.morale || 0}</TableCell>
-                      <TableCell align="right">{factionStats[factionName]?.territoriesControlled || 0}</TableCell>
-                      <TableCell>{factionStats[factionName]?.specialAbilities?.join(', ') || 'None'}</TableCell>
-                      <TableCell sx={{fontSize: '0.75rem', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}} title={factionStats[factionName]?.lastActionEffect || ''}>
-                        {factionStats[factionName]?.lastActionEffect || '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
+          {isStateLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 3}}><CircularProgress /><Typography sx={{ml:2}}>Loading Game State...</Typography></Box>
+          ) : (
+            <>
+              {/* Faction Stats Display */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'secondary.main' }}>
+                  Faction Standings
+                </Typography>
+                <TableContainer component={Paper} elevation={2}>
+                  <Table size="small" aria-label="faction stats table">
+                    <TableHead sx={{ backgroundColor: 'primary.light' }}>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Faction</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>Morale</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>Territories</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Special Ability</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {factions.map((factionName) => (
+                        <TableRow key={factionName} sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}>
+                          <TableCell component="th" scope="row" sx={{ fontWeight: 'medium' }}>
+                            {factionName}
+                          </TableCell>
+                          <TableCell align="right">{factionStats[factionName]?.morale || 0}</TableCell>
+                          <TableCell align="right">{factionStats[factionName]?.territories || 0}</TableCell>
+                          <TableCell>{factionStats[factionName]?.specialAbility || 'None'}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Box>
 
-          {/* Map Visualization */}
-          <Box 
-            sx={{ 
-              width: '100%', 
-              maxWidth: '400px', 
-              height: '200px', 
-              margin: '0 auto 24px auto',
-              border: '3px solid #7D5A50', 
-              borderRadius: 2,
-              backgroundColor: '#F4E3CF',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(9, 1fr)',
-              gridTemplateRows: 'repeat(9, 1fr)',
-              gap: '2px',
-              p: 1,
-              boxShadow: 2
-            }}
-            aria-label="Nut War Battlefield Map"
-          >
-            {map.map((row, rowIndex) => (
-              row.map((cell, colIndex) => (
-                <Box 
-                  key={`${rowIndex}-${colIndex}`} 
-                  sx={{
-                    backgroundColor: getFactionColor(cell),
-                    borderRadius: '2px',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      transform: 'scale(1.1)',
-                      boxShadow: 1
-                    }
-                  }}
-                  title={`Tile ${String.fromCharCode(65 + rowIndex)}${colIndex + 1}: ${cell !== 'neutral' ? `Controlled by ${cell}` : 'Neutral Territory'}`}
-                />
-              ))
-            ))}
-          </Box>
+              {/* Map Visualization */}
+              <Box 
+                sx={{ 
+                  width: '100%', 
+                  maxWidth: '400px', 
+                  height: '200px', 
+                  margin: '0 auto 24px auto',
+                  border: '3px solid #7D5A50', 
+                  borderRadius: 2,
+                  backgroundColor: '#F4E3CF',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(9, 1fr)',
+                  gridTemplateRows: 'repeat(9, 1fr)',
+                  gap: '2px',
+                  p: 1,
+                  boxShadow: 2
+                }}
+                aria-label="Nut War Battlefield Map"
+              >
+                {map.map((row, rowIndex) => (
+                  row.map((cell, colIndex) => (
+                    <Box 
+                      key={`${rowIndex}-${colIndex}`} 
+                      sx={{
+                        backgroundColor: getFactionColor(cell),
+                        borderRadius: '2px',
+                        transition: 'all 0.3s ease',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          transform: 'scale(1.1)',
+                          boxShadow: 1
+                        }
+                      }}
+                      title={`Tile ${String.fromCharCode(65 + rowIndex)}${colIndex + 1}: ${cell !== 'neutral' ? `Controlled by ${cell}` : 'Neutral Territory'}`}
+                    />
+                  ))
+                ))}
+              </Box>
 
-          {error && <Alert severity="error" sx={{ mb: 2, textAlign: 'left' }}>{error}</Alert>}
+              {error && <Alert severity="error" sx={{ mb: 2, textAlign: 'left' }}>{error}</Alert>}
 
-          <Grid container spacing={2} justifyContent="center" alignItems="center" sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth variant="outlined">
-                <InputLabel id="faction-select-label">Select Faction</InputLabel>
-                <Select
-                  labelId="faction-select-label"
-                  id="faction-select"
-                  value={selectedFaction}
-                  label="Select Faction"
-                  onChange={(e) => setSelectedFaction(e.target.value)}
-                >
-                  <MenuItem value=""><em>-- Select Faction --</em></MenuItem>
-                  {factions.map(faction => (
-                    <MenuItem key={faction} value={faction}>{faction}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth variant="outlined">
-                <InputLabel id="action-select-label">Select Action</InputLabel>
-                <Select
-                  labelId="action-select-label"
-                  id="action-select"
-                  value={selectedAction}
-                  label="Select Action"
-                  onChange={(e) => setSelectedAction(e.target.value)}
-                >
-                  <MenuItem value=""><em>-- Select Action --</em></MenuItem>
-                  {actions.map(action => (
-                    <MenuItem key={action} value={action}>{action}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
+              <Grid container spacing={2} justifyContent="center" alignItems="center" sx={{ mb: 3 }}>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth variant="outlined">
+                    <InputLabel id="faction-select-label">Select Faction</InputLabel>
+                    <Select
+                      labelId="faction-select-label"
+                      id="faction-select"
+                      value={selectedFaction}
+                      label="Select Faction"
+                      onChange={(e) => setSelectedFaction(e.target.value)}
+                    >
+                      <MenuItem value=""><em>-- Select Faction --</em></MenuItem>
+                      {factions.map(faction => (
+                        <MenuItem key={faction} value={faction}>{faction}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth variant="outlined">
+                    <InputLabel id="action-select-label">Select Action</InputLabel>
+                    <Select
+                      labelId="action-select-label"
+                      id="action-select"
+                      value={selectedAction}
+                      label="Select Action"
+                      onChange={(e) => setSelectedAction(e.target.value)}
+                    >
+                      <MenuItem value=""><em>-- Select Action --</em></MenuItem>
+                      {actions.map(action => (
+                        <MenuItem key={action} value={action}>{action}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
 
-          <Button
-            variant="contained"
-            color="primary"
-            size="large"
-            onClick={handleSubmit}
-            disabled={isLoading || timeLeft > 0 || !selectedFaction || !selectedAction}
-            sx={{ 
-              minWidth: { xs: '100%', sm: '200px' }, 
-              height: '56px', 
-              mb: 2,
-              transition: 'background-color 0.3s ease',
-              '&:hover': {
-                backgroundColor: 'primary.dark',
-              },
-              background: "linear-gradient(45deg, #7D5A50, #A67C52)",
-            }}
-          >
-            {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Engage in Battle!'}
-          </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                size="large"
+                onClick={handleSubmit}
+                disabled={isLoading || timeLeft > 0 || !selectedFaction || !selectedAction}
+                sx={{ 
+                  minWidth: { xs: '100%', sm: '200px' }, 
+                  height: '56px', 
+                  mb: 2,
+                  transition: 'background-color 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                  background: "linear-gradient(45deg, #7D5A50, #A67C52)",
+                }}
+              >
+                {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Engage in Battle!'}
+              </Button>
 
-          {timeLeft > 0 && (
-            <Typography variant="h6" sx={{ color: 'secondary.main', mb: 2, fontWeight: 'medium' }}>
-              Next action in: {Math.floor(timeLeft / 1000 / 60)}m {Math.ceil((timeLeft / 1000) % 60)}s
-            </Typography>
+              {timeLeft > 0 && (
+                <Typography variant="h6" sx={{ color: 'secondary.main', mb: 2, fontWeight: 'medium' }}>
+                  Next action in: {Math.floor(timeLeft / 1000 / 60)}m {Math.ceil((timeLeft / 1000) % 60)}s
+                </Typography>
+              )}
+            </>
           )}
         </Paper>
 
         <Typography variant="h5" component="h2" sx={{ mt: 5, mb: 3, textAlign: 'center', fontWeight: 'bold', color: 'text.primary' }}>
           📜 War Chronicle 📜
         </Typography>
-        {outcomes.length === 0 && !isLoading ? (
+        {isStateLoading && outcomes.length === 0 ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 3}}><CircularProgress /><Typography sx={{ml:2}}>Loading Chronicle...</Typography></Box>
+        ) : outcomes.length === 0 && !isLoading ? (
           <Typography sx={{textAlign: 'center', fontStyle: 'italic', color: 'text.secondary'}}>No actions recorded yet. Be the first to shape history!</Typography>
         ) : (
         <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2}}>
@@ -499,7 +426,7 @@ export default function WarMachinePage() {
                   <TableCell sx={{ display: { xs: 'none', md: 'table-cell'} }}>{outcome.effects}</TableCell>
                   {outcomes.some(o => o.imageUrl) && (
                     <TableCell sx={{ display: { xs: 'none', md: 'table-cell'} }}>
-                      {outcome.imageUrl ? <img src={outcome.imageUrl} alt="War scene" style={{maxWidth: '80px', maxHeight: '80px', borderRadius: '4px', objectFit: 'cover'}} /> : '-'}
+                      {outcome.imageUrl ? <img src={outcome.imageUrl} alt={`Scene of ${outcome.narrative.substring(0, 50)}...`} style={{maxWidth: '80px', maxHeight: '80px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer'}} onClick={() => window.open(outcome.imageUrl, '_blank')} /> : '-'}
                     </TableCell>
                   )}
                 </TableRow>

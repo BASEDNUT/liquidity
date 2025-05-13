@@ -1,4 +1,10 @@
 import { validateEnv } from '../../utils/validateEnv';
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 // Helper function to parse Peanutoshi's structured response
 function parsePeanutoshiResponse(responseText) {
@@ -43,26 +49,55 @@ export default async function handler(req, res) {
                 imageUrl: '/img/peanutoshi.png'
             });
         }
+        // Check for Redis env variables
+        if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+            console.error('Upstash Redis environment variables are missing.');
+            return res.status(500).json({
+                error: 'Server configuration error',
+                message: 'Redis not configured properly',
+                narrative: "The ancient scrolls of data storage are missing!",
+                effects: "Server Configuration Error: Redis connection failed",
+                imageUrl: '/img/peanutoshi.png'
+            });
+        }
 
         if (req.method !== 'POST') {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
-        const { faction, action, history } = req.body;
+        const { faction, action } = req.body; // History will be fetched from Redis
 
         if (!faction || !action) {
             return res.status(400).json({ error: 'Faction and action are required' });
         }
 
+        // Fetch current game state from Redis
+        let gameState = await redis.get('warmachine_gameState');
+        if (!gameState) {
+            // Initialize game state if it doesn't exist
+            gameState = {
+                outcomes: [],
+                factionStats: {
+                    Peanuts: { morale: 10, territories: 1, specialAbility: "Nutty Resilience" },
+                    Almonds: { morale: 10, territories: 1, specialAbility: "Crunchy Counter" },
+                    Walnuts: { morale: 10, territories: 1, specialAbility: "Strategic Shell" },
+                    Cashews: { morale: 10, territories: 1, specialAbility: "Smooth Sabotage" },
+                }
+            };
+        }
+
         let historyString = "No previous actions logged.";
-        if (history && history.length > 0) {
-            historyString = history.map((h, i) => `${i+1}. ${h}`).join('\n');
+        if (gameState.outcomes && gameState.outcomes.length > 0) {
+            historyString = gameState.outcomes.slice(-10).map((h, i) => `${i+1}. ${h.narrative} (Effects: ${h.effects})`).join('\n');
         }
 
         const systemPrompt = `You are Peanutoshi Nutkamoto, the chaotic and witty dungeon master for NUT WAR: PEANUTOSHI FRONT.
 
---- PREVIOUS HISTORY (LAST ${history ? history.length : 0} ACTIONS) ---
+--- PREVIOUS HISTORY (LAST ${gameState.outcomes ? gameState.outcomes.slice(-10).length : 0} ACTIONS) ---
 ${historyString}
+
+--- CURRENT FACTION STATS ---
+${Object.entries(gameState.factionStats).map(([name, stats]) => `${name}: Morale ${stats.morale}, Territories ${stats.territories}`).join('\n')}
 
 --- CURRENT ACTION ---
 Faction: ${faction}
@@ -70,7 +105,7 @@ Action: ${action}
 
 Generate the following, ensuring each section is clearly delineated:
 NARRATIVE: [1-4 sentences of memey, nut-related war narration. Be creative, humorous, and slightly unhinged. The fate of the Nutverse hangs in the balance!]
-EFFECTS: [Clearly state 1-2 simple game effects. e.g., Peanut Morale +2, Almonds lose 1 strategic crumb!, or A new flavor of chaos is unlocked! Keep it concise and impactful.]
+EFFECTS: [Clearly state 1-2 simple game effects on factions. e.g., Peanut Morale +2, Almonds lose 1 strategic crumb!, or A new flavor of chaos is unlocked! Keep it concise and impactful. IMPORTANT: Only output effects that directly change faction stats like morale or territories. Do not invent new stats. Use the format: FactionName StatChange Value (e.g., Peanuts Morale +1, Almonds Territories -1). If multiple effects, separate by comma.]
 IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image generator that captures the essence of your NARRATIVE. e.g., A giant peanut warrior surfing a tidal wave of butter, brandishing a pretzel sword against a waffle fortress.]`;
 
         const chatPayload = {
@@ -121,6 +156,35 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
         const { narrative, effects, imagePrompt } = parsePeanutoshiResponse(peanutoshiRawResponse);
         console.log("Parsed Peanutoshi response - Narrative:", narrative, "Effects:", effects, "Image Prompt:", imagePrompt); // Added log
 
+        // Update faction stats based on effects
+        const updatedFactionStats = JSON.parse(JSON.stringify(gameState.factionStats)); // Deep copy
+        const effectParts = effects.split(',').map(e => e.trim());
+        effectParts.forEach(part => {
+            const match = part.match(/(\w+)\s+(morale|territories)\s*([+-])\s*(\d+)/i);
+            if (match) {
+                const [, factionName, stat, operator, valueStr] = match;
+                const value = parseInt(valueStr, 10);
+                if (updatedFactionStats[factionName] && updatedFactionStats[factionName][stat.toLowerCase()] !== undefined) {
+                    if (operator === '+') {
+                        updatedFactionStats[factionName][stat.toLowerCase()] += value;
+                    } else {
+                        updatedFactionStats[factionName][stat.toLowerCase()] -= value;
+                    }
+                    // Ensure stats don't go below 0
+                    if (updatedFactionStats[factionName][stat.toLowerCase()] < 0) {
+                        updatedFactionStats[factionName][stat.toLowerCase()] = 0;
+                    }
+                }
+            }
+        });
+        
+        // Add new outcome to history (limited to last 15)
+        const newOutcome = { faction, action, narrative, effects, imageUrl: 'pending', timestamp: new Date().toISOString() };
+        let updatedOutcomes = [newOutcome, ...gameState.outcomes];
+        if (updatedOutcomes.length > 15) {
+            updatedOutcomes = updatedOutcomes.slice(0, 15);
+        }
+
         // 2. Generate Image using Venice Image API (Optional - can be skipped or have a fallback)
         let imageUrl = '/img/peanutoshi.png'; // Default fallback image
         try {
@@ -162,6 +226,8 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
                     const base64Image = Buffer.from(imageArrayBuffer).toString('base64');
                     imageUrl = `data:image/webp;base64,${base64Image}`;
                     console.log('Image generated successfully.'); // Added log
+                    // Update the imageUrl in the newOutcome AFTER it's generated
+                    newOutcome.imageUrl = imageUrl;
                 } else {
                     let imageErrorText = 'Failed to read error response from Venice Image API.';
                     try {
@@ -171,21 +237,33 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
                     }
                     console.warn(`Image generation failed: ${imageGenResponse.status}`, imageErrorText);
                     // Proceed with fallback image
+                    newOutcome.imageUrl = '/img/peanutoshi.png'; // Ensure fallback is set in outcome
                 }
             } catch (abortError) {
                 console.warn("Image generation timed out:", abortError);
                 // Proceed with fallback image
+                newOutcome.imageUrl = '/img/peanutoshi.png'; // Ensure fallback is set in outcome
             }
             
         } catch (imgError) {
             console.warn("Error during image generation process:", imgError);
             // Proceed with fallback image
+            newOutcome.imageUrl = '/img/peanutoshi.png'; // Ensure fallback is set in outcome
         }
+
+        // Update game state in Redis
+        const newGameState = {
+            outcomes: updatedOutcomes.map(o => o.imageUrl === 'pending' && o.timestamp === newOutcome.timestamp ? { ...o, imageUrl: newOutcome.imageUrl } : o), // ensure the latest outcome has the final imageUrl
+            factionStats: updatedFactionStats
+        };
+        await redis.set('warmachine_gameState', newGameState);
+        
 
         res.status(200).json({
             narrative,
             effects,
-            imageUrl,
+            imageUrl: newOutcome.imageUrl, // Send the potentially updated image URL
+            updatedFactionStats, // Send back the latest stats
             // For debugging:
             // rawPeanutoshiResponse: peanutoshiRawResponse,
             // finalImagePrompt: imagePrompt
