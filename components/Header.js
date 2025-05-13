@@ -137,6 +137,19 @@ const Header = () => {
           Great Nut War
         </Button>
       </Link>
+      <Link href="/warmachine" passHref>
+        <Button
+          variant="contained"
+          sx={{
+            ...gradientButtonStyle,
+            width: "100%",
+            my: 1,
+          }}
+          aria-label="Navigate to Nut War Battlefield"
+        >
+          Nut War Battlefield
+        </Button>
+      </Link>
       {isMobile && (
         <Link href="https://docs.basednut.com/" passHref>
           <Button
