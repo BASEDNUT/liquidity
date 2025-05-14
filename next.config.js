@@ -16,17 +16,27 @@ module.exports = (phase) => {
     },
     env: {
         VENICE_API_KEY: process.env.VENICE_API_KEY,
+        UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+        UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     },
     serverRuntimeConfig: {
         VENICE_API_KEY: process.env.VENICE_API_KEY,
+        UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+        UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     },
     publicRuntimeConfig: isDev
-      ? { VENICE_API_KEY: process.env.VENICE_API_KEY }
+      ? { 
+          VENICE_API_KEY: process.env.VENICE_API_KEY,
+          UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL, // Also add here for dev consistency if needed
+          UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+        }
       : {
         apiBaseUrl: process.env.NODE_ENV === 'production' 
             ? 'https://your-production-url.vercel.app' 
             : 'http://localhost:3000',
         VENICE_API_KEY: process.env.VENICE_API_KEY, // Ensure availability in production
+        UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+        UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     },
     async headers() {
         return [

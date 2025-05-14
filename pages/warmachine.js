@@ -23,19 +23,21 @@ import {
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
-const COOLDOWN_PERIOD_MS = 60 * 60 * 1000; // 1 hour in milliseconds
-const LOCAL_STORAGE_KEY_LAST_ACTION = 'warmachineLastActionTime';
 const MAX_OUTCOMES_HISTORY = 15;
 
-const factions = ["Peanuts", "Almonds", "Walnuts", "Cashews"];
+// MODIFIED: Expanded factions list
+const factions = [
+  "Peanuts", "Almonds", "Walnuts", "Cashews", "Pistachios", 
+  "Hazelnuts", "Coconuts", "Macadamias", "Pecans", "Chestnuts"
+];
 const actions = ["Attack", "Defend", "Rally", "Scheme", "Trade"];
 
-// Initial Faction Stats (client-side fallback or initial structure before API load)
+// MODIFIED: Initial Faction Stats to include all 10 factions
 const initialFactionStats = factions.reduce((acc, faction) => {
   acc[faction] = {
-    morale: 0, // Will be overwritten by API
-    territories: 0, // Renamed from territoriesControlled, will be overwritten by API
-    specialAbility: "Loading...", // Will be overwritten by API
+    morale: 0, 
+    territories: 0, 
+    specialAbility: "Loading...",
   };
   return acc;
 }, {});
@@ -43,13 +45,19 @@ const initialFactionStats = factions.reduce((acc, faction) => {
 // Initial map setup - Simple map representation of the 9x9 grid
 const initialMap = Array(9).fill().map(() => Array(9).fill('neutral'));
 
-// Utility function to get color for a faction
+// MODIFIED: Utility function to get color for a faction - added new factions
 const getFactionColor = (faction) => {
   switch (faction) {
     case 'Peanuts': return '#FDE8B1'; // Light peanut color
     case 'Almonds': return '#D4A373'; // Almond color
     case 'Walnuts': return '#A47C6F'; // Added color for Walnuts
     case 'Cashews': return '#E7C8A0'; // Cashew color
+    case 'Pistachios': return '#AEC3B0'; // Pistachio green
+    case 'Hazelnuts': return '#B08968'; // Hazelnut brown
+    case 'Coconuts': return '#D2B48C'; // Tan / Coconut Husk
+    case 'Macadamias': return '#F5F5DC'; // Beige / Cream
+    case 'Pecans': return '#8B4513';   // Saddle Brown
+    case 'Chestnuts': return '#964B00'; // Brown
     default: return '#E2D5C3'; // Neutral territory
   }
 };
@@ -59,63 +67,59 @@ export default function WarMachinePage() {
   const [factionStats, setFactionStats] = useState(initialFactionStats);
   const [isLoading, setIsLoading] = useState(false); // For general loading like submit
   const [isStateLoading, setIsStateLoading] = useState(true); // For initial state load
-  const [timeLeft, setTimeLeft] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0); // This will now be driven by server data
+  const [cooldownPeriod, setCooldownPeriod] = useState(3600); // Default to 1 hour, will be updated from server
   const [selectedFaction, setSelectedFaction] = useState('');
   const [selectedAction, setSelectedAction] = useState('');
   const [error, setError] = useState('');
   const [map, setMap] = useState(initialMap);
 
-  // Check if localStorage is available
-  const isLocalStorageAvailable = () => {
+  const fetchInitialState = useCallback(async (isAfterAction = false) => {
+    if (!isAfterAction) setIsStateLoading(true); // Only show full page loader on initial load
+    setError('');
     try {
-      const testKey = '__test__';
-      localStorage.setItem(testKey, testKey);
-      localStorage.removeItem(testKey);
-      return true;
-    } catch (e) {
-      console.warn("localStorage is not available:", e);
-      return false;
-    }
-  };
-
-  const localStorageAvailable = React.useMemo(() => isLocalStorageAvailable(), []);
-
-  // Load initial game state from API on mount
-  useEffect(() => {
-    const fetchInitialState = async () => {
-      setIsStateLoading(true);
-      try {
-        const response = await fetch('/api/getWarmachineState');
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch game state');
-        }
-        const data = await response.json();
-        setOutcomes(data.outcomes || []);
-        // Ensure factionStats on the client matches the factions array
-        const receivedStats = data.factionStats || {};
-        const updatedClientStats = factions.reduce((acc, factionName) => {
-            acc[factionName] = receivedStats[factionName] || {
-                morale: 0, 
-                territories: 0, 
-                specialAbility: "N/A"
-            };
-            return acc;
-        }, {});
-        setFactionStats(updatedClientStats);
-
-      } catch (e) {
-        console.error("Failed to load initial game state from API:", e);
-        setError(`Failed to load game state: ${e.message}. Some features might be unavailable.`);
-        // Keep client-side initialFactionStats as a fallback
-        setFactionStats(initialFactionStats);
-        setOutcomes([]);
-      } finally {
-        setIsStateLoading(false);
+      const response = await fetch('/api/getWarmachineState');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch game state from server');
       }
-    };
+      const data = await response.json();
+      setOutcomes(data.outcomes || []);
+      
+      const receivedStats = data.factionStats || {};
+      const updatedClientStats = factions.reduce((acc, factionName) => {
+          acc[factionName] = receivedStats[factionName] || {
+              morale: 0, 
+              territories: 0, 
+              specialAbility: "N/A"
+          };
+          return acc;
+      }, {});
+      setFactionStats(updatedClientStats);
+
+      // Set cooldown information from server
+      setTimeLeft(data.timeLeft || 0);
+      setCooldownPeriod(data.cooldownPeriod || 3600);
+
+    } catch (e) {
+      console.error("Failed to load game state from API:", e);
+      setError(`Error: ${e.message}. Displaying default state.`);
+      const fallbackStats = factions.reduce((acc, factionName) => {
+          acc[factionName] = initialFactionStats[factionName] || { morale: 0, territories: 0, specialAbility: "Error Loading"};
+          return acc;
+      }, {});
+      setFactionStats(fallbackStats);
+      setOutcomes([]);
+      setTimeLeft(0); // Reset cooldown on error
+    } finally {
+      if (!isAfterAction) setIsStateLoading(false);
+    }
+  }, []); // No dependencies, fetchInitialState itself is stable
+
+  // Load initial game state on mount
+  useEffect(() => {
     fetchInitialState();
-  }, []); // Runs once on mount
+  }, [fetchInitialState]);
 
   // Simulate map updates based on outcomes
   useEffect(() => {
@@ -134,40 +138,34 @@ export default function WarMachinePage() {
     // Territory counts in factionStats table are now directly from server, no client-side recalculation needed here.
   }, [outcomes]); // Removed 'factions' dependency as it's stable
 
-  const updateCooldown = useCallback(() => {
-    if (localStorageAvailable) {
-      try {
-        const lastActionTime = localStorage.getItem(LOCAL_STORAGE_KEY_LAST_ACTION);
-        if (lastActionTime) {
-          const timePassed = Date.now() - parseInt(lastActionTime, 10);
-          const newTimeLeft = Math.max(0, COOLDOWN_PERIOD_MS - timePassed);
-          setTimeLeft(newTimeLeft);
-        } else {
-          setTimeLeft(0);
-        }
-      } catch (e) {
-        console.warn("Error accessing localStorage in updateCooldown:", e);
-        setTimeLeft(0);  // Ensure button is enabled if localStorage fails
-      }
-    } else {
-      // If localStorage isn't available, don't enforce cooldown
-      setTimeLeft(0);
-    }
-  }, [localStorageAvailable]);
-
+  // Countdown timer effect
   useEffect(() => {
-    updateCooldown();
-    const intervalId = setInterval(updateCooldown, 1000); // Update every second
-    return () => clearInterval(intervalId);
-  }, [updateCooldown]);
+    if (timeLeft > 0) {
+      const timerId = setInterval(() => {
+        setTimeLeft(prevTimeLeft => Math.max(0, prevTimeLeft - 1));
+      }, 1000);
+      return () => clearInterval(timerId);
+    }
+  }, [timeLeft]);
 
   const handleSubmit = async () => {
-    if (timeLeft > 0 || !selectedFaction || !selectedAction) {
-      if (timeLeft > 0) setError(`Action on cooldown. Please wait ${Math.ceil(timeLeft / 1000 / 60)} minutes.`);
-      if (!selectedFaction) setError("Please select a faction.");
-      if (!selectedAction) setError("Please select an action.");
+    // Check for selections first
+    if (!selectedFaction) {
+        setError("Please select a faction.");
+        return;
+    }
+    if (!selectedAction) {
+        setError("Please select an action.");
+        return;
+    }
+    // Cooldown check is now primarily handled by the button's disabled state,
+    // but we can keep a client-side check as a fallback/UX improvement.
+    // The server will be the ultimate authority.
+    if (timeLeft > 0) {
+      setError(`Action on cooldown. Please wait ${Math.floor(timeLeft / 60)}m ${timeLeft % 60}s.`);
       return;
     }
+
     setIsLoading(true);
     setError('');
     try {
@@ -183,48 +181,21 @@ export default function WarMachinePage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to perform action due to a server error.');
-      }
-
-      const newOutcome = {
-        timestamp: new Date().toLocaleString(),
-        faction: selectedFaction,
-        action: selectedAction,
-        narrative: data.narrative || "Peanutoshi has gone silent...",
-        effects: data.effects || "No visible effects",
-        imageUrl: data.imageUrl, // Image URL from API response
-      };
-
-      // Update outcomes: add new one to the beginning, limit history
-      setOutcomes(prev => [newOutcome, ...prev.slice(0, MAX_OUTCOMES_HISTORY - 1)]);
-      
-      // Update faction stats with the data from the API response
-      if (data.updatedFactionStats) {
-        // Ensure client-side factionStats structure is maintained for all factions
-        const receivedStats = data.updatedFactionStats;
-        const updatedClientStats = factions.reduce((acc, factionName) => {
-            acc[factionName] = receivedStats[factionName] || (factionStats[factionName] || {
-                morale: 0, 
-                territories: 0, 
-                specialAbility: "N/A"
-            });
-            return acc;
-        }, {});
-        setFactionStats(updatedClientStats);
-      } else {
-        // Fallback or error if updatedFactionStats is not in response
-        console.warn("updatedFactionStats not received from API. Stats may be stale.");
-      }
-
-      if (localStorageAvailable) {
-        try {
-          localStorage.setItem(LOCAL_STORAGE_KEY_LAST_ACTION, Date.now().toString());
-        } catch (e) {
-          console.warn("Failed to save action timestamp to localStorage:", e);
+        // If 429, it's a cooldown error from the server
+        if (response.status === 429 && data.timeLeft) {
+            setTimeLeft(data.timeLeft);
+            setCooldownPeriod(data.cooldownPeriod || 3600);
+            setError(data.message || 'Action on cooldown. Please wait.');
+        } else {
+            throw new Error(data.error || data.message || 'Failed to perform action due to a server error.');
         }
+        return; // Stop processing if there was an error (cooldown or other)
       }
-      
-      setTimeLeft(COOLDOWN_PERIOD_MS); // Reset cooldown even if localStorage fails
+
+      // On successful action, fetch the entire game state again to ensure client is synced,
+      // including new outcomes, faction stats, and the new cooldown timestamp.
+      await fetchInitialState(true); // Pass true to indicate it's an update after action
+
       // Optionally clear selections after successful submission
       // setSelectedFaction('');
       // setSelectedAction('');
@@ -232,6 +203,10 @@ export default function WarMachinePage() {
     } catch (err) {
       console.error('Action failed:', err);
       setError(err.message || 'An unexpected error occurred. Please try again.');
+      // If the error was due to an unexpected server issue, it might be good to refresh state
+      // to ensure the cooldown timer (if it was reset by optimistic update) is correct.
+      // However, fetchInitialState(true) above should handle most cases.
+      // If a specific error indicates desync, consider another fetchInitialState(true) here.
     } finally {
       setIsLoading(false);
     }
@@ -271,19 +246,29 @@ export default function WarMachinePage() {
                         <TableCell align="right" sx={{ fontWeight: 'bold' }}>Morale</TableCell>
                         <TableCell align="right" sx={{ fontWeight: 'bold' }}>Territories</TableCell>
                         <TableCell sx={{ fontWeight: 'bold' }}>Special Ability</TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }}>Last Action Effect</TableCell>{/* MODIFIED: Re-added Last Action Effect */}
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {factions.map((factionName) => (
-                        <TableRow key={factionName} sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}>
-                          <TableCell component="th" scope="row" sx={{ fontWeight: 'medium' }}>
-                            {factionName}
-                          </TableCell>
-                          <TableCell align="right">{factionStats[factionName]?.morale || 0}</TableCell>
-                          <TableCell align="right">{factionStats[factionName]?.territories || 0}</TableCell>
-                          <TableCell>{factionStats[factionName]?.specialAbility || 'None'}</TableCell>
-                        </TableRow>
-                      ))}
+                      {factions.map((factionName) => {
+                        // Find the last outcome where this faction was the actor
+                        const lastActionByFaction = outcomes.find(o => o.faction === factionName);
+                        const lastEffect = lastActionByFaction ? lastActionByFaction.effects : '-';
+
+                        return (
+                          <TableRow key={factionName} sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}>
+                            <TableCell component="th" scope="row" sx={{ fontWeight: 'medium' }}>
+                              {factionName}
+                            </TableCell>
+                            <TableCell align="right">{factionStats[factionName]?.morale || 0}</TableCell>
+                            <TableCell align="right">{factionStats[factionName]?.territories || 0}</TableCell>
+                            <TableCell>{factionStats[factionName]?.specialAbility || 'None'}</TableCell>
+                            <TableCell sx={{fontSize: '0.75rem', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}} title={lastEffect}>
+                              {lastEffect}
+                            </TableCell>{/* MODIFIED: Added cell for Last Action Effect */}
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -372,7 +357,7 @@ export default function WarMachinePage() {
                 color="primary"
                 size="large"
                 onClick={handleSubmit}
-                disabled={isLoading || timeLeft > 0 || !selectedFaction || !selectedAction}
+                disabled={isLoading || isStateLoading || timeLeft > 0 || !selectedFaction || !selectedAction} // Added isStateLoading to disabled
                 sx={{ 
                   minWidth: { xs: '100%', sm: '200px' }, 
                   height: '56px', 
@@ -387,9 +372,9 @@ export default function WarMachinePage() {
                 {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Engage in Battle!'}
               </Button>
 
-              {timeLeft > 0 && (
+              {timeLeft > 0 && !isStateLoading && ( // Added !isStateLoading to prevent showing timer during load
                 <Typography variant="h6" sx={{ color: 'secondary.main', mb: 2, fontWeight: 'medium' }}>
-                  Next action in: {Math.floor(timeLeft / 1000 / 60)}m {Math.ceil((timeLeft / 1000) % 60)}s
+                  Next action in: {Math.floor(timeLeft / 60)}m {timeLeft % 60}s
                 </Typography>
               )}
             </>
@@ -426,7 +411,17 @@ export default function WarMachinePage() {
                   <TableCell sx={{ display: { xs: 'none', md: 'table-cell'} }}>{outcome.effects}</TableCell>
                   {outcomes.some(o => o.imageUrl) && (
                     <TableCell sx={{ display: { xs: 'none', md: 'table-cell'} }}>
-                      {outcome.imageUrl ? <img src={outcome.imageUrl} alt={`Scene of ${outcome.narrative.substring(0, 50)}...`} style={{maxWidth: '80px', maxHeight: '80px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer'}} onClick={() => window.open(outcome.imageUrl, '_blank')} /> : '-'}
+                      {outcome.imageUrl ? (
+                        <Box
+                          component="img"
+                          src={outcome.imageUrl}
+                          alt={`Scene of ${outcome.narrative?.substring(0,50) || 'war action'}...`} // Added null check for narrative
+                          sx={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 1, cursor: 'pointer' }}
+                          onClick={() => outcome.imageUrl && window.open(outcome.imageUrl, '_blank')} // Added null check for imageUrl
+                        />
+                      ) : (
+                        '-'
+                      )}
                     </TableCell>
                   )}
                 </TableRow>

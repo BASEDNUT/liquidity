@@ -1,10 +1,22 @@
 import { validateEnv } from '../../utils/validateEnv';
 import { Redis } from '@upstash/redis';
 
+console.log('[warmachineAction] Initializing Redis client...');
+console.log('[warmachineAction] UPSTASH_REDIS_REST_URL available:', !!process.env.UPSTASH_REDIS_REST_URL);
+console.log('[warmachineAction] UPSTASH_REDIS_REST_TOKEN available (first 5 chars):', process.env.UPSTASH_REDIS_REST_TOKEN ? process.env.UPSTASH_REDIS_REST_TOKEN.substring(0, 5) : 'undefined');
+
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
+
+const COOLDOWN_PERIOD_SECONDS = 3600; // 1 hour
+
+// MODIFIED: Expanded factions list for initial state consistency
+const initialFactions = [
+  "Peanuts", "Almonds", "Walnuts", "Cashews", "Pistachios", 
+  "Hazelnuts", "Coconuts", "Macadamias", "Pecans", "Chestnuts"
+];
 
 // Helper function to parse Peanutoshi's structured response
 function parsePeanutoshiResponse(responseText) {
@@ -37,10 +49,16 @@ function parsePeanutoshiResponse(responseText) {
 }
 
 export default async function handler(req, res) {
+    console.log('[warmachineAction] Handler invoked.');
     try {
+        // Enhanced logging for env vars inside handler
+        console.log('[warmachineAction] Inside handler - VENICE_API_KEY (exists):', !!process.env.VENICE_API_KEY);
+        console.log('[warmachineAction] Inside handler - UPSTASH_REDIS_REST_URL:', process.env.UPSTASH_REDIS_REST_URL);
+        console.log('[warmachineAction] Inside handler - UPSTASH_REDIS_REST_TOKEN (exists):', !!process.env.UPSTASH_REDIS_REST_TOKEN);
+
         // Check if VENICE_API_KEY exists without throwing an error
         if (!process.env.VENICE_API_KEY || process.env.VENICE_API_KEY === 'undefined') {
-            console.error('VENICE_API_KEY is missing or invalid');
+            console.error('[warmachineAction] VENICE_API_KEY is confirmed missing or invalid inside handler');
             return res.status(500).json({
                 error: 'Server configuration error',
                 message: 'API key not configured properly',
@@ -51,10 +69,10 @@ export default async function handler(req, res) {
         }
         // Check for Redis env variables
         if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-            console.error('Upstash Redis environment variables are missing.');
+            console.error('[warmachineAction] Upstash Redis environment variables are confirmed missing inside handler.');
             return res.status(500).json({
                 error: 'Server configuration error',
-                message: 'Redis not configured properly',
+                message: 'Redis not configured properly (checked in handler)',
                 narrative: "The ancient scrolls of data storage are missing!",
                 effects: "Server Configuration Error: Redis connection failed",
                 imageUrl: '/img/peanutoshi.png'
@@ -65,25 +83,63 @@ export default async function handler(req, res) {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
+        console.log('[warmachineAction] Attempting Redis GET for warmachine_lastActionTimestamp...');
+        const lastActionTimestamp = await redis.get('warmachine_lastActionTimestamp');
+        console.log('[warmachineAction] Successfully fetched lastActionTimestamp.');
+        if (lastActionTimestamp) {
+            const now = Math.floor(Date.now() / 1000);
+            const timeSinceLastAction = now - Number(lastActionTimestamp);
+            if (timeSinceLastAction < COOLDOWN_PERIOD_SECONDS) {
+                const timeLeft = COOLDOWN_PERIOD_SECONDS - timeSinceLastAction;
+                return res.status(429).json({
+                    error: 'Cooldown active',
+                    message: `Please wait ${Math.ceil(timeLeft / 60)} minutes before the next action.`,
+                    timeLeft: timeLeft,
+                    cooldownPeriod: COOLDOWN_PERIOD_SECONDS
+                });
+            }
+        }
+
         const { faction, action } = req.body; // History will be fetched from Redis
 
         if (!faction || !action) {
             return res.status(400).json({ error: 'Faction and action are required' });
         }
 
-        // Fetch current game state from Redis
+        console.log('[warmachineAction] Attempting Redis GET for warmachine_gameState...');
         let gameState = await redis.get('warmachine_gameState');
-        if (!gameState) {
-            // Initialize game state if it doesn't exist
-            gameState = {
-                outcomes: [],
-                factionStats: {
-                    Peanuts: { morale: 10, territories: 1, specialAbility: "Nutty Resilience" },
-                    Almonds: { morale: 10, territories: 1, specialAbility: "Crunchy Counter" },
-                    Walnuts: { morale: 10, territories: 1, specialAbility: "Strategic Shell" },
-                    Cashews: { morale: 10, territories: 1, specialAbility: "Smooth Sabotage" },
+        console.log('[warmachineAction] Successfully fetched gameState (or null if not found).');
+        
+        // MODIFIED: Initialize game state with all 10 factions if it doesn't exist or is incomplete
+        if (!gameState || !gameState.factionStats || Object.keys(gameState.factionStats).length < initialFactions.length) {
+            const baseStats = initialFactions.reduce((acc, factionName) => {
+              acc[factionName] = {
+                morale: 10,
+                territories: 1,
+                specialAbility: "New Contender!"
+              };
+              return acc;
+            }, {});
+
+            // If gameState exists but factionStats is incomplete, merge existing stats
+            const mergedFactionStats = gameState?.factionStats 
+                ? { ...baseStats, ...gameState.factionStats } 
+                : baseStats;
+            
+            // Ensure all initialFactions are present in the merged stats, adding defaults if necessary
+            initialFactions.forEach(fName => {
+                if (!mergedFactionStats[fName]) {
+                    mergedFactionStats[fName] = { morale: 10, territories: 1, specialAbility: "Late Entry!" };
                 }
+            });
+
+            gameState = {
+                outcomes: gameState?.outcomes || [], // Preserve existing outcomes
+                factionStats: mergedFactionStats
             };
+            // No need to save here, as getWarmachineState would have/should handle primary initialization.
+            // This is more of a fallback for this specific action handler if state is unexpectedly missing/incomplete.
+            console.log('[warmachineAction] Initialized/merged gameState as it was missing or incomplete.');
         }
 
         let historyString = "No previous actions logged.";
@@ -160,21 +216,28 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
         const updatedFactionStats = JSON.parse(JSON.stringify(gameState.factionStats)); // Deep copy
         const effectParts = effects.split(',').map(e => e.trim());
         effectParts.forEach(part => {
-            const match = part.match(/(\w+)\s+(morale|territories)\s*([+-])\s*(\d+)/i);
+            // Regex to capture: FactionName Stat +/-Value (e.g., Peanuts Morale +1, Almonds Territories -1)
+            // Allows for multi-word faction names if AI uses them exactly as in gameState.factionStats keys
+            const factionNamesRegexPart = Object.keys(updatedFactionStats).join('|');
+            const match = part.match(new RegExp(`(${factionNamesRegexPart})\\s+(morale|territories)\\s*([+-])\\s*(\\d+)`, 'i'));
             if (match) {
                 const [, factionName, stat, operator, valueStr] = match;
                 const value = parseInt(valueStr, 10);
+                // Ensure factionName from regex match exists in our stats object to prevent errors
                 if (updatedFactionStats[factionName] && updatedFactionStats[factionName][stat.toLowerCase()] !== undefined) {
                     if (operator === '+') {
                         updatedFactionStats[factionName][stat.toLowerCase()] += value;
                     } else {
                         updatedFactionStats[factionName][stat.toLowerCase()] -= value;
                     }
-                    // Ensure stats don't go below 0
                     if (updatedFactionStats[factionName][stat.toLowerCase()] < 0) {
                         updatedFactionStats[factionName][stat.toLowerCase()] = 0;
                     }
+                } else {
+                    console.warn(`Effect parser: Faction \"${factionName}\" or stat \"${stat}\" not found in current stats. Effect: \"${part}\".`);
                 }
+            } else {
+                 console.log(`Effect parser: No match for effect part \"${part}\".`);
             }
         });
         
@@ -256,7 +319,12 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
             outcomes: updatedOutcomes.map(o => o.imageUrl === 'pending' && o.timestamp === newOutcome.timestamp ? { ...o, imageUrl: newOutcome.imageUrl } : o), // ensure the latest outcome has the final imageUrl
             factionStats: updatedFactionStats
         };
+        console.log('[warmachineAction] Attempting Redis SET for warmachine_gameState...');
         await redis.set('warmachine_gameState', newGameState);
+        console.log('[warmachineAction] Successfully SET warmachine_gameState.');
+        console.log('[warmachineAction] Attempting Redis SET for warmachine_lastActionTimestamp...');
+        await redis.set('warmachine_lastActionTimestamp', Math.floor(Date.now() / 1000));
+        console.log('[warmachineAction] Successfully SET warmachine_lastActionTimestamp.');
         
 
         res.status(200).json({
@@ -270,10 +338,13 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
         });
 
     } catch (error) {
-        console.error('Error in warmachineAction handler:', error);
+        console.error('[warmachineAction] Error in handler:', error);
+        console.error('[warmachineAction] Error message:', error.message);
+        console.error('[warmachineAction] Error stack:', error.stack);
         res.status(500).json({
             error: 'Internal server error',
             details: error.message,
+            errorMessage: error.message, 
         });
     }
 }

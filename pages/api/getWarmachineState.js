@@ -1,48 +1,93 @@
 import { Redis } from '@upstash/redis';
 
+console.log('[getWarmachineState] Initializing Redis client...');
+console.log('[getWarmachineState] UPSTASH_REDIS_REST_URL available:', !!process.env.UPSTASH_REDIS_REST_URL);
+console.log('[getWarmachineState] UPSTASH_REDIS_REST_TOKEN available (first 5 chars):', process.env.UPSTASH_REDIS_REST_TOKEN ? process.env.UPSTASH_REDIS_REST_TOKEN.substring(0, 5) : 'undefined');
+
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
+const COOLDOWN_PERIOD_SECONDS = 3600; // 1 hour, consistent with warmachineAction.js
+
+// MODIFIED: Expanded factions list for initial state
+const initialFactions = [
+  "Peanuts", "Almonds", "Walnuts", "Cashews", "Pistachios", 
+  "Hazelnuts", "Coconuts", "Macadamias", "Pecans", "Chestnuts"
+];
+
 export default async function handler(req, res) {
+  console.log('[getWarmachineState] Handler invoked.');
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
+    // Enhanced logging for env vars inside handler
+    console.log('[getWarmachineState] Inside handler - UPSTASH_REDIS_REST_URL:', process.env.UPSTASH_REDIS_REST_URL);
+    console.log('[getWarmachineState] Inside handler - UPSTASH_REDIS_REST_TOKEN (exists):', !!process.env.UPSTASH_REDIS_REST_TOKEN);
+
     if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-      console.error('Upstash Redis environment variables are missing.');
+      console.error('[getWarmachineState] Upstash Redis environment variables are confirmed missing inside handler.');
       return res.status(500).json({
           error: 'Server configuration error',
-          message: 'Redis not configured properly',
+          message: 'Redis not configured properly (checked in handler)',
       });
     }
 
+    console.log('[getWarmachineState] Attempting to connect to Redis...');
     let gameState = await redis.get('warmachine_gameState');
+    console.log('[getWarmachineState] Successfully fetched gameState (or null if not found).');
 
-    if (!gameState) {
-      // Initialize game state if it doesn't exist
+    if (!gameState || !gameState.factionStats || Object.keys(gameState.factionStats).length < initialFactions.length) {
+      // Initialize or update game state if it doesn't exist or has fewer factions than current list
+      const initialFactionStats = initialFactions.reduce((acc, factionName) => {
+        acc[factionName] = {
+          morale: 10,
+          territories: 1, // Start with 1 territory for some initial presence
+          specialAbility: "New Contender!"
+        };
+        return acc;
+      }, {});
+
       gameState = {
-        outcomes: [],
-        factionStats: {
-          Peanuts: { morale: 10, territories: 1, specialAbility: "Nutty Resilience" },
-          Almonds: { morale: 10, territories: 1, specialAbility: "Crunchy Counter" },
-          Walnuts: { morale: 10, territories: 1, specialAbility: "Strategic Shell" },
-          Cashews: { morale: 10, territories: 1, specialAbility: "Smooth Sabotage" },
-        }
+        outcomes: gameState?.outcomes || [], // Preserve existing outcomes if any
+        factionStats: initialFactionStats
       };
-      // Save the initial state back to Redis if it was just created
-      await redis.set('warmachine_gameState', gameState); 
+      // Save the initial/updated state back to Redis
+      await redis.set('warmachine_gameState', gameState);
+      console.log('[getWarmachineState] Successfully set initial gameState to Redis.');
     }
 
-    res.status(200).json(gameState);
+    const lastActionTimestamp = await redis.get('warmachine_lastActionTimestamp');
+    console.log('[getWarmachineState] Successfully fetched lastActionTimestamp.');
+    const now = Math.floor(Date.now() / 1000);
+    let timeLeft = 0;
+    if (lastActionTimestamp) {
+        const timeSinceLastAction = now - Number(lastActionTimestamp);
+        if (timeSinceLastAction < COOLDOWN_PERIOD_SECONDS) {
+            timeLeft = COOLDOWN_PERIOD_SECONDS - timeSinceLastAction;
+        }
+    }
+
+    res.status(200).json({
+        ...gameState,
+        lastActionTimestamp: lastActionTimestamp ? Number(lastActionTimestamp) : null,
+        cooldownPeriod: COOLDOWN_PERIOD_SECONDS,
+        currentTime: now, // Send current server time for client-side calculation if needed
+        timeLeft: timeLeft // Send calculated time left
+    });
 
   } catch (error) {
-    console.error('Error fetching warmachine state:', error);
+    console.error('[getWarmachineState] Error in handler:', error);
+    console.error('[getWarmachineState] Error message:', error.message);
+    console.error('[getWarmachineState] Error stack:', error.stack);
     res.status(500).json({
       error: 'Internal server error',
       details: error.message,
+      // Add more detailed error info if possible, but be careful with sensitive data
+      errorMessage: error.message, 
     });
   }
 }
