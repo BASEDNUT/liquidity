@@ -72,7 +72,7 @@ const Header = () => {
           Home
         </Button>
       </Link>
-      <Link href="/tokens" passHref>
+    <Link href="/great-nut-war" passHref>
         <Button
           variant="contained"
           sx={{
@@ -80,12 +80,12 @@ const Header = () => {
             width: "100%",
             my: 1,
           }}
-          aria-label="Navigate to Tokens"
+      aria-label="Navigate to Great Nut War"
         >
-          Tokens
+      Great Nut War
         </Button>
       </Link>
-      <Link href="/tree" passHref>
+    <Link href="/chat" passHref>
         <Button
           variant="contained"
           sx={{
@@ -93,12 +93,12 @@ const Header = () => {
             width: "100%",
             my: 1,
           }}
-          aria-label="Navigate to Tree"
+      aria-label="Navigate to Chat"
         >
-          Tree
+      Chat
         </Button>
       </Link>
-      <Link href="/chat" passHref>
+    <Link href="/images" passHref>
         <Button
           variant="contained"
           sx={{
@@ -106,12 +106,12 @@ const Header = () => {
             width: "100%",
             my: 1,
           }}
-          aria-label="Navigate to Chat"
+      aria-label="Navigate to Images"
         >
-          Chat
+      Images
         </Button>
       </Link>
-      <Link href="/nutinoMemes" passHref>
+    <Link href="/warmachine" passHref>
         <Button
           variant="contained"
           sx={{
@@ -119,12 +119,12 @@ const Header = () => {
             width: "100%",
             my: 1,
           }}
-          aria-label="Navigate to Nutino Memes"
+      aria-label="Navigate to Nut War Battlefield"
         >
-          Nutify Images
+      Nut War Battlefield
         </Button>
       </Link>
-      <Link href="/great-nut-war" passHref>
+    <Link href="/tree" passHref>
         <Button
           variant="contained"
           sx={{
@@ -132,12 +132,12 @@ const Header = () => {
             width: "100%",
             my: 1,
           }}
-          aria-label="Navigate to Great Nut War"
+      aria-label="Navigate to Tree"
         >
-          Great Nut War
+      Tree
         </Button>
       </Link>
-      <Link href="/warmachine" passHref>
+      <Link href="/faq" passHref>
         <Button
           variant="contained"
           sx={{
@@ -145,9 +145,9 @@ const Header = () => {
             width: "100%",
             my: 1,
           }}
-          aria-label="Navigate to Nut War Battlefield"
+          aria-label="Navigate to FAQ"
         >
-          Nut War Battlefield
+          FAQ
         </Button>
       </Link>
       {isMobile && (

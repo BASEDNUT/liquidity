@@ -1,9 +1,10 @@
-import validateEnv from '../../utils/validateEnv';
+import { validateEnv } from '../../utils/validateEnv';
 
 export default function handler(req, res) {
   validateEnv();
 
-  console.log('VENICE_API_KEY:', process.env.VENICE_API_KEY); // Debug log
+  // Avoid logging secrets
+  console.log('Venice key configured:', Boolean(process.env.VENICE_API_KEY));
 
   // ...existing code...
   res.status(200).json({ message: 'API is working' });

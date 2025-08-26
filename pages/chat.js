@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Layout from "../components/Layout";
 import ReactMarkdown from 'react-markdown'; // Install this library using `npm install react-markdown`
 
 const defaultSettings = {
@@ -87,7 +86,7 @@ const Chat = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: "deepseek-r1-671b",
+          // Let server select/sanitize model
           messages: [{ role: 'user', content: userMessage.text }],
           venice_parameters: {
             enable_web_search: "auto",
@@ -138,8 +137,7 @@ const Chat = () => {
   };
 
   return (
-    <>
-      <Header />
+    <Layout>
       <main>
         <div className="brand-box">
           <h1>Chat with our Peanutoshi</h1>
@@ -377,8 +375,7 @@ const Chat = () => {
           }
         `}</style>
       </main>
-      <Footer />
-    </>
+    </Layout>
   );
 };
 

@@ -1,14 +1,23 @@
 import { validateEnv } from '../../utils/validateEnv';
 import { Redis } from '@upstash/redis';
+import modelCatalog from '../../utils/modelCatalog';
 
 console.log('[warmachineAction] Initializing Redis client...');
-console.log('[warmachineAction] UPSTASH_REDIS_REST_URL available:', !!process.env.UPSTASH_REDIS_REST_URL);
-console.log('[warmachineAction] UPSTASH_REDIS_REST_TOKEN available (first 5 chars):', process.env.UPSTASH_REDIS_REST_TOKEN ? process.env.UPSTASH_REDIS_REST_TOKEN.substring(0, 5) : 'undefined');
+console.log('[warmachineAction] UPSTASH_REDIS_REST_URL configured:', Boolean(process.env.UPSTASH_REDIS_REST_URL));
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
+
+// In-memory fallback when Upstash is unreachable
+const mem = new Map();
+async function safeGet(key) {
+    try { return await redis.get(key); } catch { return mem.get(key) || null; }
+}
+async function safeSet(key, value) {
+    try { await redis.set(key, value); } catch { mem.set(key, value); }
+}
 
 const COOLDOWN_PERIOD_SECONDS = 3600; // 1 hour
 
@@ -18,25 +27,36 @@ const initialFactions = [
   "Hazelnuts", "Coconuts", "Macadamias", "Pecans", "Chestnuts"
 ];
 
+// Helper to strip internal reasoning or XML-like tags to reduce parser noise
+function stripMeta(text) {
+    if (!text) return '';
+    // Remove <think>...</think> or similar XML-ish blocks
+    let cleaned = text.replace(/<([a-zA-Z]+)[^>]*>[\s\S]*?<\/\1>/g, ' ');
+    // Remove markdown code fences
+    cleaned = cleaned.replace(/```[\s\S]*?```/g, ' ');
+    return cleaned;
+}
+
 // Helper function to parse Peanutoshi's structured response
 function parsePeanutoshiResponse(responseText) {
+    const safeText = stripMeta(responseText);
     const response = {
         narrative: "Peanutoshi is unusually quiet... perhaps plotting?",
         effects: "No noticeable effects... yet.",
         imagePrompt: "A contemplative peanut overlooking a field of static."
     };
 
-    const narrativeMatch = responseText.match(/NARRATIVE:([\s\S]*?)EFFECTS:/i);
+    const narrativeMatch = safeText.match(/NARRATIVE:([\s\S]*?)EFFECTS:/i);
     if (narrativeMatch && narrativeMatch[1]) {
         response.narrative = narrativeMatch[1].trim();
     }
 
-    const effectsMatch = responseText.match(/EFFECTS:([\s\S]*?)IMAGE_PROMPT:/i);
+    const effectsMatch = safeText.match(/EFFECTS:([\s\S]*?)IMAGE_PROMPT:/i);
     if (effectsMatch && effectsMatch[1]) {
         response.effects = effectsMatch[1].trim();
     }
 
-    const imagePromptMatch = responseText.match(/IMAGE_PROMPT:([\s\S]*)/i);
+    const imagePromptMatch = safeText.match(/IMAGE_PROMPT:([\s\S]*)/i);
     if (imagePromptMatch && imagePromptMatch[1]) {
         response.imagePrompt = imagePromptMatch[1].trim().slice(0, 256); // Max 256 chars for image prompt
     } else {
@@ -51,13 +71,22 @@ function parsePeanutoshiResponse(responseText) {
 export default async function handler(req, res) {
     console.log('[warmachineAction] Handler invoked.');
     try {
-        // Enhanced logging for env vars inside handler
-        console.log('[warmachineAction] Inside handler - VENICE_API_KEY (exists):', !!process.env.VENICE_API_KEY);
-        console.log('[warmachineAction] Inside handler - UPSTASH_REDIS_REST_URL:', process.env.UPSTASH_REDIS_REST_URL);
-        console.log('[warmachineAction] Inside handler - UPSTASH_REDIS_REST_TOKEN (exists):', !!process.env.UPSTASH_REDIS_REST_TOKEN);
+        const aiEnabled = process.env.FEATURE_AI_ENABLED !== 'false';
+        const imageEnabled = process.env.FEATURE_IMAGE_GEN_ENABLED !== 'false';
+        const warmachineEnabled = process.env.FEATURE_WARMACHINE_ENABLED !== 'false';
 
-        // Check if VENICE_API_KEY exists without throwing an error
-        if (!process.env.VENICE_API_KEY || process.env.VENICE_API_KEY === 'undefined') {
+        if (!warmachineEnabled) {
+            return res.status(503).json({
+                error: 'Feature disabled',
+                message: 'Warmachine feature is disabled via FEATURE_WARMACHINE_ENABLED',
+            });
+        }
+        // Enhanced logging for env vars inside handler
+        console.log('[warmachineAction] Inside handler - VENICE_API_KEY set:', Boolean(process.env.VENICE_API_KEY));
+        console.log('[warmachineAction] Inside handler - UPSTASH_REDIS_REST_URL set:', Boolean(process.env.UPSTASH_REDIS_REST_URL));
+
+        // Check if VENICE_API_KEY exists when AI is enabled
+        if (aiEnabled && (!process.env.VENICE_API_KEY || process.env.VENICE_API_KEY === 'undefined')) {
             console.error('[warmachineAction] VENICE_API_KEY is confirmed missing or invalid inside handler');
             return res.status(500).json({
                 error: 'Server configuration error',
@@ -84,7 +113,7 @@ export default async function handler(req, res) {
         }
 
         console.log('[warmachineAction] Attempting Redis GET for warmachine_lastActionTimestamp...');
-        const lastActionTimestamp = await redis.get('warmachine_lastActionTimestamp');
+    const lastActionTimestamp = await safeGet('warmachine_lastActionTimestamp');
         console.log('[warmachineAction] Successfully fetched lastActionTimestamp.');
         if (lastActionTimestamp) {
             const now = Math.floor(Date.now() / 1000);
@@ -107,7 +136,7 @@ export default async function handler(req, res) {
         }
 
         console.log('[warmachineAction] Attempting Redis GET for warmachine_gameState...');
-        let gameState = await redis.get('warmachine_gameState');
+    let gameState = await safeGet('warmachine_gameState');
         console.log('[warmachineAction] Successfully fetched gameState (or null if not found).');
         
         // MODIFIED: Initialize game state with all 10 factions if it doesn't exist or is incomplete
@@ -164,47 +193,58 @@ NARRATIVE: [1-4 sentences of memey, nut-related war narration. Be creative, humo
 EFFECTS: [Clearly state 1-2 simple game effects on factions. e.g., Peanut Morale +2, Almonds lose 1 strategic crumb!, or A new flavor of chaos is unlocked! Keep it concise and impactful. IMPORTANT: Only output effects that directly change faction stats like morale or territories. Do not invent new stats. Use the format: FactionName StatChange Value (e.g., Peanuts Morale +1, Almonds Territories -1). If multiple effects, separate by comma.]
 IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image generator that captures the essence of your NARRATIVE. e.g., A giant peanut warrior surfing a tidal wave of butter, brandishing a pretzel sword against a waffle fortress.]`;
 
-        const chatPayload = {
-            model: "dolphin-2.9.2-qwen2-72b", // Updated model
-            messages: [{ role: "user", content: systemPrompt }],
-            venice_parameters: {
-                character_slug: "peanutoshi-nutkamoto", // Ensured character slug
-                enable_web_search: "auto",
-                include_venice_system_prompt: false,
-            },
-            temperature: 0.85, // Slightly higher for more creative/chaotic responses
-            top_p: 0.9,
-        };
+        let peanutoshiRawResponse = null;
+        if (aiEnabled) {
+            const chatPayload = {
+                model: modelCatalog.getValidChatModel(modelCatalog.chatModel),
+                messages: [{ role: "user", content: systemPrompt }],
+                venice_parameters: {
+                    character_slug: "peanutoshi-nutkamoto",
+                    enable_web_search: "auto",
+                    include_venice_system_prompt: false,
+                },
+                temperature: 0.85,
+                top_p: 0.9,
+            };
 
-        console.log("Attempting to fetch from Venice Chat API..."); // Added log
-        const chatResponse = await fetch('https://api.venice.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${process.env.VENICE_API_KEY}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(chatPayload),
-        });
+            console.log("Attempting to fetch from Venice Chat API...");
+            const controller = new AbortController();
+            const timeoutMs = parseInt(process.env.REQUEST_TIMEOUT_MS || '120000', 10);
+            const timeout = setTimeout(() => controller.abort(), timeoutMs);
+            const chatResponse = await fetch('https://api.venice.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.VENICE_API_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(chatPayload),
+                signal: controller.signal,
+            });
+            clearTimeout(timeout);
 
-        let chatData;
-        if (chatResponse.ok) {
-            chatData = await chatResponse.json();
-            console.log("Successfully fetched and parsed response from Venice Chat API."); // Added log
-        } else {
-            let errorText = 'Failed to read error response from Venice Chat API.';
-            try {
-                errorText = await chatResponse.text();
-            } catch (e) {
-                console.error("Could not read text from Venice Chat API error response:", e);
+            let chatData;
+            if (chatResponse.ok) {
+                chatData = await chatResponse.json();
+                console.log("Successfully fetched and parsed response from Venice Chat API.");
+            } else {
+                let errorText = 'Failed to read error response from Venice Chat API.';
+                try {
+                    errorText = await chatResponse.text();
+                } catch (e) {
+                    console.error("Could not read text from Venice Chat API error response:", e);
+                }
+                console.error('Error from Venice Chat API:', chatResponse.status, errorText);
+                throw new Error(`Venice Chat API request failed with status ${chatResponse.status}: ${errorText}`);
             }
-            console.error('Error from Venice Chat API:', chatResponse.status, errorText);
-            throw new Error(`Venice Chat API request failed with status ${chatResponse.status}: ${errorText}`);
+
+            peanutoshiRawResponse = chatData.reply || (chatData.choices && chatData.choices[0]?.message?.content);
+        } else {
+            peanutoshiRawResponse = `NARRATIVE: The war drums fall silent as the council debates.\nEFFECTS: Peanuts Morale +0\nIMAGE_PROMPT: A quiet battlefield at dusk with banners fluttering, the armies standing by.`;
         }
 
-        const peanutoshiRawResponse = chatData.reply || (chatData.choices && chatData.choices[0]?.message?.content);
-
         if (!peanutoshiRawResponse) {
-            console.error("No valid response content (reply or choices) from Peanutoshi (Chat API). Full response:", chatData);
+            // Avoid referencing possibly out-of-scope chatData in error log
+            console.error("No valid response content (reply or choices) from Peanutoshi (Chat API)." );
             throw new Error('No valid response content from Peanutoshi (Chat API).');
         }
         console.log("Raw Peanutoshi response:", peanutoshiRawResponse); // Added log
@@ -251,8 +291,12 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
         // 2. Generate Image using Venice Image API (Optional - can be skipped or have a fallback)
         let imageUrl = '/img/peanutoshi.png'; // Default fallback image
         try {
+            if (!imageEnabled) {
+                newOutcome.imageUrl = imageUrl;
+                throw new Error('Image generation disabled by FEATURE_IMAGE_GEN_ENABLED');
+            }
             const imagePayload = {
-                model: "flux-dev", // Or your preferred image model
+                model: modelCatalog.image.defaultModel,
                 prompt: imagePrompt, // Use the prompt from Peanutoshi
                 safe_mode: true,
                 width: 512,
@@ -268,7 +312,8 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
             console.log('Attempting to generate image with prompt:', imagePrompt); // Log before image generation
             
             const imageController = new AbortController();
-            const imageTimeout = setTimeout(() => imageController.abort(), 30000); // 30 seconds timeout
+            const imageTimeoutMs = parseInt(process.env.REQUEST_TIMEOUT_MS || '120000', 10);
+            const imageTimeout = setTimeout(() => imageController.abort(), imageTimeoutMs);
             
             try {
                 const imageGenResponse = await fetch('https://api.venice.ai/api/v1/image/generate', {
@@ -320,10 +365,10 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
             factionStats: updatedFactionStats
         };
         console.log('[warmachineAction] Attempting Redis SET for warmachine_gameState...');
-        await redis.set('warmachine_gameState', newGameState);
+    await safeSet('warmachine_gameState', newGameState);
         console.log('[warmachineAction] Successfully SET warmachine_gameState.');
         console.log('[warmachineAction] Attempting Redis SET for warmachine_lastActionTimestamp...');
-        await redis.set('warmachine_lastActionTimestamp', Math.floor(Date.now() / 1000));
+    await safeSet('warmachine_lastActionTimestamp', Math.floor(Date.now() / 1000));
         console.log('[warmachineAction] Successfully SET warmachine_lastActionTimestamp.');
         
 

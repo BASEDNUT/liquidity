@@ -1,4 +1,5 @@
 import { validateEnv } from '../../utils/validateEnv';
+import modelCatalog from '../../utils/modelCatalog';
 
 export default async function handler(req, res) {
     try {
@@ -8,14 +9,14 @@ export default async function handler(req, res) {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
-        const { model, messages, venice_parameters, ...otherParams } = req.body;
+    const { model, messages, venice_parameters, ...otherParams } = req.body;
 
         if (!model || !messages) {
             return res.status(400).json({ error: 'Missing required fields: model or messages' });
         }
 
         const payload = {
-            model,
+            model: modelCatalog.getValidChatModel(model),
             messages,
             venice_parameters: {
                 enable_web_search: "auto", // Disable web search
@@ -27,8 +28,9 @@ export default async function handler(req, res) {
 
         console.log('Payload being sent to Venice API:', payload);
 
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 120000); // 2 minutes
+    const controller = new AbortController();
+    const timeoutMs = parseInt(process.env.REQUEST_TIMEOUT_MS || '120000', 10);
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
         try {
             const response = await fetch('https://api.venice.ai/api/v1/chat/completions', {

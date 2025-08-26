@@ -80,10 +80,31 @@ export default function WarMachinePage() {
     try {
       const response = await fetch('/api/getWarmachineState');
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch game state from server');
+        // Robustly parse error body which may be empty or non-JSON
+        let message = 'Failed to fetch game state from server';
+        try {
+          const text = await response.text();
+          if (text) {
+            try {
+              const json = JSON.parse(text);
+              message = json.message || json.error || message;
+            } catch (_) {
+              message = text;
+            }
+          }
+        } catch (_) {
+          // ignore body parse errors
+        }
+        throw new Error(message);
       }
-      const data = await response.json();
+      // Safely parse JSON for successful responses (guard against empty body)
+      let data;
+      try {
+        const text = await response.text();
+        data = text ? JSON.parse(text) : {};
+      } catch (_) {
+        data = {};
+      }
       setOutcomes(data.outcomes || []);
       
       const receivedStats = data.factionStats || {};
@@ -178,16 +199,23 @@ export default function WarMachinePage() {
         }),
       });
 
-      const data = await response.json();
+      // Parse response body safely regardless of status
+      let data = null;
+      try {
+        const text = await response.text();
+        data = text ? JSON.parse(text) : null;
+      } catch (_) {
+        data = null;
+      }
 
       if (!response.ok) {
         // If 429, it's a cooldown error from the server
-        if (response.status === 429 && data.timeLeft) {
+        if (response.status === 429 && data && data.timeLeft) {
             setTimeLeft(data.timeLeft);
-            setCooldownPeriod(data.cooldownPeriod || 3600);
-            setError(data.message || 'Action on cooldown. Please wait.');
+            setCooldownPeriod((data && data.cooldownPeriod) || 3600);
+            setError((data && data.message) || 'Action on cooldown. Please wait.');
         } else {
-            throw new Error(data.error || data.message || 'Failed to perform action due to a server error.');
+            throw new Error((data && (data.error || data.message)) || 'Failed to perform action due to a server error.');
         }
         return; // Stop processing if there was an error (cooldown or other)
       }

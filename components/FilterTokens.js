@@ -70,7 +70,7 @@ const FilterTokens = ({ activeFilter, onFilterChange }) => {
                         onClick={() => onFilterChange(f)}
                         variant={isActive ? "contained" : "outlined"}
                         sx={{
-                            color: isActive ? "#FFF" : "#7D5A50",
+                            color: isActive ? "#FFFFFF" : "#5B3A29",
                             borderColor: "#7D5A50",
                             textTransform: "none",
                             backgroundColor: isActive ? "#7D5A50" : "transparent",

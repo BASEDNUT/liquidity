@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -67,6 +68,7 @@ const ShowerHeadCursor = styled("div")(({ top, left }) => ({
 }));
 
 export default function PoolCard({
+  id,
   name,
   flavor,
   tvl,
@@ -185,18 +187,21 @@ export default function PoolCard({
       }}
     >
       <CardContent sx={{ padding: "24px" }}>
-        {/* Render the pool icon as a title */}
-        {icon && (
-          <Box sx={{ fontSize: "48px", mb: 1 }}>
-            {icon}
-          </Box>
-        )}
-        <Typography
-          variant="h5"
-          sx={{ fontWeight: "bold", color: "#7D5A50", mb: 1 }}
-        >
-          {name}
-        </Typography>
+        <Link href={`/pool/${id}`} passHref legacyBehavior>
+          <a aria-label={`View details for pool ${name}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+            {icon && (
+              <Box sx={{ fontSize: "48px", mb: 1 }} aria-hidden="true">
+                {icon}
+              </Box>
+            )}
+            <Typography
+              variant="h5"
+              sx={{ fontWeight: "bold", color: "#7D5A50", mb: 1 }}
+            >
+              {name}
+            </Typography>
+          </a>
+        </Link>
 
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, my: 1 }}>
           {Array.isArray(category)

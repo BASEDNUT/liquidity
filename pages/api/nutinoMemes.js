@@ -1,4 +1,5 @@
 import { validateEnv } from '../../utils/validateEnv';
+import modelCatalog from '../../utils/modelCatalog';
 
 export default async function handler(req, res) {
   try {
@@ -19,15 +20,8 @@ export default async function handler(req, res) {
     const selectedStyle = validStyles.includes(style) ? style : 'kawaii';
 
     // Validate model
-    const validModels = [
-      "flux-dev",
-      "stable-diffusion-3.5",
-      "fluently-xl",
-    ];
-
-    // Ensure the model is valid by trimming the input and checking against the list.
-    const trimmedModel = typeof model === 'string' ? model.trim() : '';
-    const selectedModel = validModels.includes(trimmedModel) ? trimmedModel : "flux-dev";
+  // Validate/normalize requested image model against catalog
+  const selectedModel = modelCatalog.image.getValidImageModel(model);
 
     // Define prompts for each style
     const stylePrompts = {
@@ -39,7 +33,7 @@ export default async function handler(req, res) {
     // Append the style prompt to the user's input.
     const chatMessage = `${stylePrompts[selectedStyle]} ${input}`;
     const chatPayload = {
-      model: "qwen-2.5-qwq-32b",
+      model: modelCatalog.getValidChatModel(modelCatalog.chatModel),
       messages: [
         {
           role: "system",
@@ -127,8 +121,9 @@ export default async function handler(req, res) {
     // Add logging to verify payload
     console.log("Sending payload to Venice Image API:", JSON.stringify(imagePayload, null, 2));
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 120000); // 2 minutes
+  const controller = new AbortController();
+  const timeoutMs = parseInt(process.env.REQUEST_TIMEOUT_MS || '120000', 10);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
       const imageResponse = await fetch("https://api.venice.ai/api/v1/image/generate", {

@@ -1,11 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 const NutinoMemes = () => {
   const [input, setInput] = useState('');
   const [style, setStyle] = useState('kawaii'); // Default style
-  const [model, setModel] = useState('flux-dev'); // Default model
+  const [model, setModel] = useState('flux-dev'); // Default model (will be overwritten by server config)
+  const [models, setModels] = useState(['flux-dev']);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/config');
+        if (!res.ok) return;
+        const cfg = await res.json();
+        if (!cancelled) {
+          if (Array.isArray(cfg.imageModels) && cfg.imageModels.length) setModels(cfg.imageModels);
+          if (cfg.imageDefault) setModel(cfg.imageDefault);
+        }
+      } catch {}
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [imageUrl, setImageUrl] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [peanutoshiComment, setPeanutoshiComment] = useState(null);
@@ -109,9 +127,9 @@ const NutinoMemes = () => {
             }}
             disabled={isProcessing}
           >
-            <option value="flux-dev">Flux Dev</option>
-            <option value="stable-diffusion-3.5">Stable Diffusion 3.5</option>
-            <option value="fluently-xl">Fluently XL</option>
+            {models.map((m) => (
+              <option key={m} value={m}>{m.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase())}</option>
+            ))}
           </select>
           <button
             onClick={handleGenerateMemes}

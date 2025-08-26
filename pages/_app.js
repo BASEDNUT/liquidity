@@ -1,7 +1,6 @@
 import React from 'react';
 import Head from 'next/head';
 import ErrorBoundary from '../components/ErrorBoundary';
-import '../pages/chat.css';
 
 function MyApp({ Component, pageProps }) {
     return (

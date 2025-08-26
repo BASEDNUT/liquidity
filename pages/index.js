@@ -1,95 +1,122 @@
-// pages/index.js
-import { useState, useEffect } from "react";
+// Unified Home with Pools/Tokens toggle and shared fetch
+import { useState, useEffect, useMemo } from "react";
 import { Container, Grid, CircularProgress, Typography, Box } from "@mui/material";
 import Head from "next/head";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Layout from "../components/Layout";
+import FallingNutsOverlay from "../components/FallingNutsOverlay";
 import FilterTabs from "../components/FilterTabs";
+import FilterTokens from "../components/FilterTokens";
 import PoolCard from "../components/PoolCard";
+import TokenCard from "../components/TokenCard";
+import DataToggle from "../components/DataToggle";
 import { fetchPools } from "../utils/fetchPools";
-import Link from 'next/link';
-import Image from "next/image"; // <-- new import
+import { fetchTokens } from "../utils/fetchTokens";
+import Image from "next/image";
 
-export default function Tree() {
+export default function Home() {
   const [pools, setPools] = useState([]);
+  const [tokens, setTokens] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("All"); // Updated to "All"
-
-  const loadPools = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchPools();
-      setPools(data);
-    } catch (error) {
-      console.error("Error fetching pools:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [view, setView] = useState("pools");
+  const [poolFilter, setPoolFilter] = useState("All");
+  const [tokenFilter, setTokenFilter] = useState("All");
 
   useEffect(() => {
-    loadPools();
-    const interval = setInterval(loadPools, 15000); // refresh every 15s
-    return () => clearInterval(interval);
+    let active = true;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [p, t] = await Promise.all([
+          Promise.resolve(fetchPools()),
+          Promise.resolve(fetchTokens()),
+        ]);
+
+        if (!active) return;
+        setPools(p);
+        // Flatten tokens similar to tokens page
+        const flatTokens = [
+          { ...t.trunk, id: (t.trunk?.name || "trunk").toLowerCase(), category: "Trunk" },
+          ...(t.branches || []).map((item, i) => ({ ...item, id: (item.name || `branch-${i}`).toLowerCase(), category: "Branch" })),
+          ...(t.nestedTokens || []).map((item, i) => ({ ...item, id: (item.name || `nested-${i}`).toLowerCase(), category: "Nested" })),
+          ...(t.soil || []).map((item, i) => ({ ...item, id: (item.name || `soil-${i}`).toLowerCase(), category: "Soil" })),
+        ];
+        setTokens(flatTokens);
+      } catch (e) {
+        console.error("Error loading data", e);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    load();
+    return () => { active = false; };
   }, []);
 
-  const filteredPools = pools.filter((pool) => {
-    // If the filter is set to "All", return all pools.
-    if (filter === "All") return true;
-    // Assuming "Tree" is another filter you might have in addition to "All"
-    return pool.category.includes(filter);
-  });
+  const filteredPools = useMemo(() => {
+    if (poolFilter === "All") return pools;
+    return pools.filter((pool) => Array.isArray(pool.category) ? pool.category.includes(poolFilter) : pool.category === poolFilter);
+  }, [pools, poolFilter]);
+
+  const filteredTokens = useMemo(() => {
+    if (tokenFilter === "All") return tokens;
+    return tokens.filter((t) => t.category === tokenFilter);
+  }, [tokens, tokenFilter]);
 
   return (
-    <div>
-      <Head>{/* any head content here */}</Head>
-      <Header />
-      <Container
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          mt: 4,
-          px: { xs: 2, sm: 4 }, // Adds better padding on small screens
-          maxWidth: "lg", // Prevents content from being too wide on larger screens
-        }}
-      >
-        <Box 
-          sx={{ 
-            width: '100%', 
-            textAlign: 'center', 
-            mb: 3 
+    <Layout>
+      <FallingNutsOverlay active density="low" />
+      <Head>
+        <title>Explore Nutty Assets | BASED NUT</title>
+        <meta name="description" content="Browse nutty assets across the BASED NUT orchard — liquidity pools and tokens in one place." />
+      </Head>
+      <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4, px: { xs: 2, sm: 4 }, maxWidth: 'lg' }}>
+        <Box sx={{ width: '100%', textAlign: 'center', mb: 3 }}>
+          <Image src="/img/based-nuts-hero.png" alt="Based Nut's - The Orchard" layout="responsive" width={800} height={600} priority />
+        </Box>
+        <Typography variant="h4" gutterBottom sx={{ color: '#5B3A29', textAlign: 'center' }}>
+          Explore Nutty Assets
+        </Typography>
+
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+            rowGap: 1,
+            mb: 3,
           }}
         >
-          {/* Updated hero image to use responsive layout for natural rendering */}
-          <Image 
-            src="/img/based-nuts-hero.png" 
-            alt="Based Nut's - The Orchard" 
-            layout="responsive" 
-            width={800}  
-            height={600} 
-            priority={true} 
-          />
+          <DataToggle value={view} onChange={setView} />
+          {view === 'pools' ? (
+            <FilterTabs filter={poolFilter} setFilter={setPoolFilter} pools={pools} />
+          ) : (
+            <FilterTokens activeFilter={tokenFilter} onFilterChange={setTokenFilter} />
+          )}
         </Box>
-        <Typography variant="h4" gutterBottom>
-          Liquidity Pools 🌳
-        </Typography>
-        <FilterTabs filter={filter} setFilter={setFilter} pools={pools} />
+
         {loading ? (
           <Grid container justifyContent="center" sx={{ mt: 4 }}>
             <CircularProgress />
           </Grid>
+        ) : view === 'pools' ? (
+          <Grid container spacing={3} sx={{ mt: 2 }}>
+            {filteredPools.map((pool) => (
+              <Grid item xs={12} sm={6} md={4} key={pool.id}>
+                <PoolCard {...pool} />
+              </Grid>
+            ))}
+          </Grid>
         ) : (
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            {filteredPools.map((pool, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <PoolCard {...pool} />
+            {filteredTokens.map((token) => (
+              <Grid item xs={12} sm={6} md={4} key={token.id}>
+                <TokenCard token={token} />
               </Grid>
             ))}
           </Grid>
         )}
       </Container>
-      <Footer /> {/* <-- Place Footer at the very bottom */}
-    </div>
+    </Layout>
   );
 }

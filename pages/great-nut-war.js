@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Head from 'next/head';
+import Layout from '../components/Layout';
+import GlossaryTooltip from '../components/GlossaryTooltip';
 
 const placeholderImage = '/img/peanutoshi.png'; // Corrected placeholder image path
 
@@ -65,15 +66,18 @@ const almondColor = '#D4A373'; // Dark brown (almost red) for almonds
 
 const GreatNutWar = () => {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F7F3ED', fontFamily: 'Arial, sans-serif' }}>
-      {/* Header */}
-      <Header />
+    <Layout>
+      <div style={{ minHeight: '100vh', backgroundColor: '#F7F3ED', fontFamily: 'Arial, sans-serif' }}>
+        <Head>
+          <title>Great Nut War | BASED NUT</title>
+          <meta name="description" content="Peanut Legion vs Almond Order — explore the lore and join the factions." />
+        </Head>
 
-      {/* Hero Carousel */}
-      <HeroCarousel />
+        {/* Hero Carousel */}
+        <HeroCarousel />
 
       {/* Main Content */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '8rem 1.5rem 2rem' }}>
+  <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '8rem 1.5rem 2rem' }}>
         <div
           style={{
             backgroundColor: 'rgba(255,255,255,0.8)',
@@ -99,7 +103,7 @@ const GreatNutWar = () => {
                   border: '2px solid rgba(205,127,50,0.3)',
                   boxShadow: '0 5px 10px rgba(0,0,0,0.1)',
                   padding: '2rem',
-                  boxSizing: 'border-box', // Include padding in width calculations
+                  boxSizing: 'border-box',
                 }}
               >
                 <InlineImage
@@ -123,26 +127,24 @@ const GreatNutWar = () => {
                   >
                     <span style={{ fontSize: '2rem' }}>🥜</span>
                   </div>
-                  <div>
-                    <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037', marginBottom: '0.5rem' }}>
-                      Peanut Legion
-                      <span
-                        style={{
-                          marginLeft: '0.75rem',
-                          fontSize: '1rem',
-                          backgroundColor: '#CD7F32',
-                          color: '#fff',
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '9999px',
-                        }}
-                      >
-                        5,263 Recruits
-                      </span>
-                    </h3>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)' }}>🥇 Leading Salt Production</span>
-                    </div>
-                  </div>
+                </div>
+                <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037', marginBottom: '0.5rem' }}>
+                  Peanut Legion
+                  <span
+                    style={{
+                      marginLeft: '0.75rem',
+                      fontSize: '1rem',
+                      backgroundColor: '#CD7F32',
+                      color: '#fff',
+                      padding: '0.25rem 0.75rem',
+                      borderRadius: '9999px',
+                    }}
+                  >
+                    5,263 Recruits
+                  </span>
+                </h3>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                  <span style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)' }}>🥇 Leading Salt Production</span>
                 </div>
                 <div style={{ marginBottom: '1rem' }}>
                   <span style={{ fontSize: '1rem', fontWeight: 'bold', color: '#5D4037' }}>Army Composition</span>
@@ -153,7 +155,7 @@ const GreatNutWar = () => {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <a
-                    href="#peanut-soldiers" // Link to Peanut Soldiers NFT section
+                    href="#peanut-soldiers"
                     className="button-effect"
                     style={{
                       display: 'inline-flex',
@@ -169,7 +171,7 @@ const GreatNutWar = () => {
                     <span style={{ fontSize: '1.125rem' }}>Enlist as Soldier</span>
                   </a>
                   <a
-                    href="#peanut-generals" // Link to Peanut Generals NFT section
+                    href="#peanut-generals"
                     className="button-effect"
                     style={{
                       display: 'inline-flex',
@@ -197,7 +199,7 @@ const GreatNutWar = () => {
                   border: '2px solid rgba(205,127,50,0.3)',
                   boxShadow: '0 5px 10px rgba(0,0,0,0.1)',
                   padding: '2rem',
-                  boxSizing: 'border-box', // Include padding in width calculations
+                  boxSizing: 'border-box',
                 }}
               >
                 <InlineImage
@@ -221,26 +223,24 @@ const GreatNutWar = () => {
                   >
                     <span style={{ fontSize: '2rem' }}>🌰</span>
                   </div>
-                  <div>
-                    <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037', marginBottom: '0.5rem' }}>
-                      Almond Order
-                      <span
-                        style={{
-                          marginLeft: '0.75rem',
-                          fontSize: '1rem',
-                          backgroundColor: '#B47E5B',
-                          color: '#fff',
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '9999px',
-                        }}
-                      >
-                        6,661 Recruits
-                      </span>
-                    </h3>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)' }}>🏆 Most Honey Reserves</span>
-                    </div>
-                  </div>
+                </div>
+                <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037', marginBottom: '0.5rem' }}>
+                  Almond Order
+                  <span
+                    style={{
+                      marginLeft: '0.75rem',
+                      fontSize: '1rem',
+                      backgroundColor: '#B47E5B',
+                      color: '#fff',
+                      padding: '0.25rem 0.75rem',
+                      borderRadius: '9999px',
+                    }}
+                  >
+                    6,661 Recruits
+                  </span>
+                </h3>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                  <span style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)' }}>🏆 Most Honey Reserves</span>
                 </div>
                 <div style={{ marginBottom: '1rem' }}>
                   <span style={{ fontSize: '1rem', fontWeight: 'bold', color: '#5D4037' }}>Army Composition</span>
@@ -251,7 +251,7 @@ const GreatNutWar = () => {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <a
-                    href="#almond-soldiers" // Link to Almond Soldiers NFT section
+                    href="#almond-soldiers"
                     className="button-effect"
                     style={{
                       display: 'inline-flex',
@@ -267,7 +267,7 @@ const GreatNutWar = () => {
                     <span style={{ fontSize: '1.125rem' }}>Join as Soldier</span>
                   </a>
                   <a
-                    href="#almond-generals" // Link to Almond Generals NFT section
+                    href="#almond-generals"
                     className="button-effect"
                     style={{
                       display: 'inline-flex',
@@ -363,7 +363,12 @@ const GreatNutWar = () => {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037' }}>NUT Nested NFTs</h3>
+                <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  NUT Nested NFTs
+                  <span style={{ display: 'inline-flex' }}>
+                    <GlossaryTooltip term="Liquidity" title="Nested collections under NUT; ranks influence spoils distribution." />
+                  </span>
+                </h3>
                 <div
                   style={{
                     width: '3rem',
@@ -796,8 +801,7 @@ const GreatNutWar = () => {
         </div>
       </div>
 
-      {/* Footer */}
-      <Footer />
+  {/* Footer via Layout */}
 
       <style jsx>{`
         .button-effect {
@@ -864,6 +868,7 @@ const GreatNutWar = () => {
         }
       `}</style>
     </div>
+  </Layout>
   );
 };
 

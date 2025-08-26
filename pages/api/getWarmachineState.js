@@ -1,13 +1,21 @@
 import { Redis } from '@upstash/redis';
 
 console.log('[getWarmachineState] Initializing Redis client...');
-console.log('[getWarmachineState] UPSTASH_REDIS_REST_URL available:', !!process.env.UPSTASH_REDIS_REST_URL);
-console.log('[getWarmachineState] UPSTASH_REDIS_REST_TOKEN available (first 5 chars):', process.env.UPSTASH_REDIS_REST_TOKEN ? process.env.UPSTASH_REDIS_REST_TOKEN.substring(0, 5) : 'undefined');
+console.log('[getWarmachineState] UPSTASH_REDIS_REST_URL configured:', Boolean(process.env.UPSTASH_REDIS_REST_URL));
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
+
+// Simple in-memory fallback if Upstash is unreachable
+const mem = new Map();
+async function safeGet(key) {
+  try { return await redis.get(key); } catch { return mem.get(key) || null; }
+}
+async function safeSet(key, value) {
+  try { await redis.set(key, value); } catch { mem.set(key, value); }
+}
 
 const COOLDOWN_PERIOD_SECONDS = 3600; // 1 hour, consistent with warmachineAction.js
 
@@ -24,9 +32,12 @@ export default async function handler(req, res) {
   }
 
   try {
+    const warmachineEnabled = process.env.FEATURE_WARMACHINE_ENABLED !== 'false';
+    if (!warmachineEnabled) {
+      return res.status(503).json({ error: 'Feature disabled', message: 'Warmachine feature is disabled via FEATURE_WARMACHINE_ENABLED' });
+    }
     // Enhanced logging for env vars inside handler
-    console.log('[getWarmachineState] Inside handler - UPSTASH_REDIS_REST_URL:', process.env.UPSTASH_REDIS_REST_URL);
-    console.log('[getWarmachineState] Inside handler - UPSTASH_REDIS_REST_TOKEN (exists):', !!process.env.UPSTASH_REDIS_REST_TOKEN);
+    console.log('[getWarmachineState] Inside handler - UPSTASH_REDIS_REST_URL set:', Boolean(process.env.UPSTASH_REDIS_REST_URL));
 
     if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
       console.error('[getWarmachineState] Upstash Redis environment variables are confirmed missing inside handler.');
@@ -37,7 +48,7 @@ export default async function handler(req, res) {
     }
 
     console.log('[getWarmachineState] Attempting to connect to Redis...');
-    let gameState = await redis.get('warmachine_gameState');
+  let gameState = await safeGet('warmachine_gameState');
     console.log('[getWarmachineState] Successfully fetched gameState (or null if not found).');
 
     if (!gameState || !gameState.factionStats || Object.keys(gameState.factionStats).length < initialFactions.length) {
@@ -56,11 +67,11 @@ export default async function handler(req, res) {
         factionStats: initialFactionStats
       };
       // Save the initial/updated state back to Redis
-      await redis.set('warmachine_gameState', gameState);
+  await safeSet('warmachine_gameState', gameState);
       console.log('[getWarmachineState] Successfully set initial gameState to Redis.');
     }
 
-    const lastActionTimestamp = await redis.get('warmachine_lastActionTimestamp');
+  const lastActionTimestamp = await safeGet('warmachine_lastActionTimestamp');
     console.log('[getWarmachineState] Successfully fetched lastActionTimestamp.');
     const now = Math.floor(Date.now() / 1000);
     let timeLeft = 0;

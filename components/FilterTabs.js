@@ -60,10 +60,10 @@ const FilterTabs = ({ filter, setFilter, pools }) => {
       variant="outlined"
       aria-label="outlined button group"
       sx={{
-        backgroundColor: "#F6E8C3",
-        borderRadius: 2,
-        p: 0.5,
-        border: "2px solid #D2B48C",
+  backgroundColor: "#F6E8C3",
+  borderRadius: 2,
+  p: 0.5,
+  border: "2px solid #D2B48C",
       }}
     >
       {filters.map((f) => {
@@ -74,7 +74,7 @@ const FilterTabs = ({ filter, setFilter, pools }) => {
             onClick={() => setFilter(f)}
             variant={isActive ? "contained" : "outlined"}
             sx={{
-              color: isActive ? "#FFF" : "#7D5A50",
+              color: isActive ? "#FFFFFF" : "#5B3A29",
               borderColor: "#7D5A50",
               textTransform: "none",
               backgroundColor: isActive ? "#7D5A50" : "transparent",

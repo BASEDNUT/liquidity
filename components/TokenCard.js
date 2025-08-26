@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, Typography, Button, Box } from '@mui/material';
 import { styled, keyframes } from '@mui/system';
 
@@ -136,15 +137,19 @@ const TokenCard = ({ token }) => {
       }}
     >
       <CardContent sx={{ padding: '24px' }}>
-        <Box sx={{ fontSize: '48px', mb: 1 }}>
-          {token.icon}
-        </Box>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#7D5A50', mb: 1 }}>
-          {token.name}
-        </Typography>
-        <Typography variant="body1" sx={{ color: '#7D5A50', mb: 1 }}>
-          {token.role}
-        </Typography>
+        <Link href={`/token/${token.id}`} passHref legacyBehavior>
+          <a aria-label={`View details for token ${token.name}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Box sx={{ fontSize: '48px', mb: 1 }} aria-hidden="true">
+              {token.icon}
+            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#7D5A50', mb: 1 }}>
+              {token.name}
+            </Typography>
+            <Typography variant="body1" sx={{ color: '#7D5A50', mb: 1 }}>
+              {token.role}
+            </Typography>
+          </a>
+        </Link>
       </CardContent>
       <Box
         component="nav"
@@ -156,7 +161,7 @@ const TokenCard = ({ token }) => {
           gap: 2,
         }}
       >
-        <Button
+  <Button
           variant="contained"
           size="small"
           href={token.link}
@@ -176,7 +181,7 @@ const TokenCard = ({ token }) => {
             },
           }}
         >
-          VIEW DETAILS
+          VIEW CONTRACT
         </Button>
       </Box>
       {/* Render all active splashes */}
