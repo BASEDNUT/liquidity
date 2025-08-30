@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -65,6 +65,49 @@ const ShowerHeadCursor = styled("div")(({ top, left }) => ({
   top,
   left,
   transform: "translate(-50%, -50%)",
+}));
+
+// Gentle float + pulse for the main icon and background floaters
+const float = keyframes`
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+`;
+
+const pulse = keyframes`
+  0% { opacity: 0.36; }
+  50% { opacity: 0.85; }
+  100% { opacity: 0.36; }
+`;
+
+const FloatyIcon = styled(Box)({
+  position: "relative",
+  fontSize: "48px",
+  lineHeight: 1,
+  animation: `${float} 3s ease-in-out infinite`,
+});
+
+const Aura = styled("div")(({ color = "#FFB86B" }) => ({
+  position: "absolute",
+  top: "-8px",
+  left: "-8px",
+  right: "-8px",
+  bottom: "-8px",
+  borderRadius: "999px",
+  background: `radial-gradient(50% 50% at 50% 50%, ${color}55 0%, transparent 70%)`,
+  filter: "blur(8px)",
+  animation: `${pulse} 2.6s ease-in-out infinite`,
+  zIndex: 0,
+}));
+
+const FloatingEmoji = styled("div")(({ left, top, delay }) => ({
+  position: "absolute",
+  left,
+  top,
+  opacity: 0.14,
+  fontSize: "28px",
+  pointerEvents: "none",
+  animation: `${float} 4.5s ease-in-out ${delay} infinite`,
 }));
 
 export default function PoolCard({
@@ -167,6 +210,16 @@ export default function PoolCard({
     cursorRef.current = { x, y };
   };
 
+  // Create a couple of soft floating background emojis using the existing icon
+  const floaters = useMemo(() => {
+    const items = [
+      { left: "8%", top: "14%", delay: "0.2s" },
+      { left: "78%", top: "22%", delay: "0.8s" },
+      { left: "64%", top: "68%", delay: "0.4s" },
+    ];
+    return items;
+  }, [id]);
+
   return (
     <Card
       ref={cardRef}
@@ -175,24 +228,37 @@ export default function PoolCard({
       onMouseMove={handleCardMouseMove}
       sx={{
         position: "relative",
-        background: "linear-gradient(135deg, #FAF3E6 0%, #F2E4CE 100%)",
-        border: "3px double #D1B48C",
+        overflow: "hidden",
+        background: "linear-gradient(135deg, #FFF7EA 0%, #FFEED6 100%)",
+        border: "1px solid #E8DCC8",
         borderRadius: "30px",
-        boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+        boxShadow: "0 12px 24px rgba(0,0,0,0.12)",
         transition: "transform 0.3s ease, border-color 0.3s ease",
         "&:hover": {
           transform: "scale(1.02)",
-          borderColor: "#C49260",
+          borderColor: "#E2CDAE",
         },
       }}
     >
-      <CardContent sx={{ padding: "24px" }}>
+      {/* Soft header tint */}
+      <Box sx={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 76,
+        background: "linear-gradient(180deg, #FFF3DD 0%, rgba(255,255,255,0) 100%)",
+        pointerEvents: "none",
+      }}/>
+
+      <CardContent sx={{ padding: "24px", position: "relative", zIndex: 1 }}>
         <Link href={`/pool/${id}`} passHref legacyBehavior>
           <a aria-label={`View details for pool ${name}`} style={{ textDecoration: 'none', color: 'inherit' }}>
             {icon && (
-              <Box sx={{ fontSize: "48px", mb: 1 }} aria-hidden="true">
-                {icon}
-              </Box>
+              <FloatyIcon sx={{ mb: 1 }} aria-hidden="true">
+                <Aura />
+                <span style={{ position: "relative", zIndex: 1 }}>{icon}</span>
+              </FloatyIcon>
             )}
             <Typography
               variant="h5"
@@ -239,84 +305,134 @@ export default function PoolCard({
         />
       </CardContent>
 
-      {/* Vertical list of actions */}
+      {/* Actions: one bold brown CTA + clean outlined secondary buttons */}
       <Box
         component="nav"
         sx={{
           px: 2,
           pb: 2,
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
+          display: "grid",
+          gridTemplateColumns: "1fr",
+          gap: 1.25,
         }}
       >
+        {/* Primary CTA (brown) */}
         <Button
           variant="contained"
-          size="small"
-          href={checkPoolUrl}
+          size="medium"
+          href={checkPoolUrl || url || dexscreenerUrl || `/pool/${id}`}
           target="_blank"
           rel="noopener noreferrer"
           sx={{
-            background: "linear-gradient(45deg, #7D5A50, #A67C52)",
+            background: "linear-gradient(180deg, #8B6A5F 0%, #6F5249 100%)",
+            border: "1px solid #5E463E",
             textTransform: "none",
-            height: "42px",
+            height: 46,
             width: "100%",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-            transition: "background 0.3s ease, transform 0.3s ease",
+            color: "#fff",
+            borderRadius: "14px",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15), 0 10px 18px rgba(0,0,0,0.16)",
+            letterSpacing: 0.3,
+            fontWeight: 800,
+            transition: "transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease",
             "&:hover": {
-              background: "linear-gradient(45deg, #6C4A3C, #8A623F)",
+              filter: "brightness(1.04)",
               animation: `${wiggle} 0.4s ease-in-out`,
               transform: "translateY(-2px)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2), 0 12px 22px rgba(0,0,0,0.2)",
             },
+            "&:active": {
+              transform: "translateY(0)",
+              filter: "brightness(0.98)",
+              boxShadow: "inset 0 1px 0 rgba(0,0,0,0.1), 0 6px 12px rgba(0,0,0,0.16)",
+            }
           }}
         >
           TRADE
         </Button>
-        <Button
-          variant="contained"
-          size="small"
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          sx={{
-            background: "linear-gradient(45deg, #7D5A50, #A67C52)",
-            textTransform: "none",
-            height: "42px",
-            width: "100%",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-            transition: "background 0.3s ease, transform 0.3s ease",
-            "&:hover": {
-              background: "linear-gradient(45deg, #6C4A3C, #8A623F)",
-              animation: `${wiggle} 0.4s ease-in-out`,
-              transform: "translateY(-2px)",
-            },
-          }}
-        >
-          CONTRACT
-        </Button>
-        <Button
-          variant="contained"
-          size="small"
-          href={dexscreenerUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          sx={{
-            background: "linear-gradient(45deg, #7D5A50, #A67C52)",
-            textTransform: "none",
-            height: "42px",
-            width: "100%",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
-            transition: "background 0.3s ease, transform 0.3s ease",
-            "&:hover": {
-              background: "linear-gradient(45deg, #6C4A3C, #8A623F)",
-              animation: `${wiggle} 0.4s ease-in-out`,
-              transform: "translateY(-2px)",
-            },
-          }}
-        >
-          EXPLORE
-        </Button>
+
+        {/* Secondary actions (outlined, brown) */}
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" }, gap: 1 }}>
+          <Link href={`/pool/${id}`} passHref legacyBehavior>
+            <a aria-label={`Open profile for pool ${name}`} style={{ textDecoration: 'none' }}>
+              <Button
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={{
+                  textTransform: "none",
+                  borderColor: "#7D5A50",
+                  color: "#7D5A50",
+                  borderRadius: "12px",
+                  height: 40,
+                  backgroundColor: "rgba(125,90,80,0.04)",
+                  borderWidth: 1.5,
+                  fontWeight: 700,
+                  "&:hover": {
+                    backgroundColor: "rgba(125,90,80,0.09)",
+                    borderColor: "#6C4A3C",
+                  },
+                }}
+              >
+                DETAILS
+              </Button>
+            </a>
+          </Link>
+          <Button
+            variant="outlined"
+            size="small"
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              textTransform: "none",
+              borderColor: "#7D5A50",
+              color: "#7D5A50",
+              borderRadius: "12px",
+              height: 40,
+              backgroundColor: "rgba(125,90,80,0.04)",
+              borderWidth: 1.5,
+              fontWeight: 700,
+              "&:hover": {
+                backgroundColor: "rgba(125,90,80,0.09)",
+                borderColor: "#6C4A3C",
+              },
+            }}
+          >
+            CONTRACT
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            href={dexscreenerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              textTransform: "none",
+              borderColor: "#7D5A50",
+              color: "#7D5A50",
+              borderRadius: "12px",
+              height: 40,
+              backgroundColor: "rgba(125,90,80,0.04)",
+              borderWidth: 1.5,
+              fontWeight: 700,
+              "&:hover": {
+                backgroundColor: "rgba(125,90,80,0.09)",
+                borderColor: "#6C4A3C",
+              },
+            }}
+          >
+            EXPLORE
+          </Button>
+        </Box>
       </Box>
+
+      {/* Soft floating background emojis using existing icon */}
+      {icon && floaters.map((f, i) => (
+        <FloatingEmoji key={i} left={f.left} top={f.top} delay={f.delay}>
+          {icon}
+        </FloatingEmoji>
+      ))}
 
       {/* Render animated splashes */}
       {splashes.map((splash) => (

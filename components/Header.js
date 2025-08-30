@@ -178,9 +178,23 @@ const Header = () => {
     >
       <Toolbar>
         <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
-          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            BASED NUT 🌰
-          </Typography>
+          {/* Make the brand/logo a Home link */}
+          <Link href="/" style={{ textDecoration: "none", color: "inherit" }} title="Home">
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: "bold",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 1,
+                cursor: "pointer",
+                '&:hover': { textDecoration: "underline" },
+              }}
+              aria-label="Go to Home"
+            >
+              BASED NUT 🌰
+            </Typography>
+          </Link>
         </Box>
 
         {/* Desktop "LEARN MORE" button */}
@@ -197,9 +211,40 @@ const Header = () => {
           </Button>
         )}
 
-        <IconButton onClick={toggleDrawer(true)} color="inherit">
-          <MenuIcon />
-        </IconButton>
+        {/* Prominent Menu trigger: desktop shows labeled button, mobile shows larger icon */}
+        {isMobile ? (
+          <IconButton
+            onClick={toggleDrawer(true)}
+            color="inherit"
+            aria-label="Open menu"
+            sx={{
+              ...gradientButtonStyle,
+              width: 48,
+              height: 48,
+              borderRadius: 2,
+              p: 1,
+            }}
+          >
+            <MenuIcon sx={{ fontSize: 28 }} />
+          </IconButton>
+        ) : (
+          <Button
+            onClick={toggleDrawer(true)}
+            variant="contained"
+            sx={{
+              ...gradientButtonStyle,
+              px: 2.5,
+              py: 1,
+              borderRadius: 999,
+              fontWeight: 800,
+              letterSpacing: 1,
+            }}
+            startIcon={<MenuIcon sx={{ fontSize: 24 }} />}
+            aria-label="Open menu"
+          >
+            MENU
+          </Button>
+        )}
 
         <SwipeableDrawer
           anchor="right"

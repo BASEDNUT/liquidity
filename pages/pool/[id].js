@@ -2,15 +2,35 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Layout from '../../components/Layout';
 import { fetchPools } from '../../utils/fetchPools';
-import { Box, Chip, Typography, Button, Grid } from '@mui/material';
+import { Box, Chip, Typography, Button, Grid, Stack } from '@mui/material';
 import GlossaryTooltip from '../../components/GlossaryTooltip';
 import { useMemo } from 'react';
+import { fetchTokens } from '../../utils/fetchTokens';
 
 const PoolPage = ({ pool: initialPool }) => {
   const router = useRouter();
   const { id } = router.query;
   const pools = fetchPools();
+  const tokenData = fetchTokens();
   const pool = initialPool || pools.find((p) => p.id === id);
+  const tokenList = useMemo(() => {
+    if (!tokenData) return [];
+    return [
+      { ...tokenData.trunk, id: (tokenData.trunk?.name || 'trunk').toLowerCase() },
+      ...(tokenData.branches || []).map((t, i) => ({ ...t, id: (t.name || `branch-${i}`).toLowerCase() })),
+      ...(tokenData.nestedTokens || []).map((t, i) => ({ ...t, id: (t.name || `nested-${i}`).toLowerCase() })),
+      ...(tokenData.soil || []).map((t, i) => ({ ...t, id: (t.name || `soil-${i}`).toLowerCase() })),
+    ];
+  }, [tokenData]);
+
+  const constituents = useMemo(() => {
+    if (!initialPool && !pool) return [];
+    const parts = String((initialPool || pool)?.name || '').split('/').map(s => s.trim());
+    return parts.map((nm) => ({
+      name: nm,
+      token: tokenList.find((t) => (t.name || '').toLowerCase() === nm.toLowerCase()) || null,
+    }));
+  }, [initialPool, pool, tokenList]);
 
   const embed = useMemo(() => {
     if (!pool?.dexscreenerUrl) return null;
@@ -77,19 +97,32 @@ const PoolPage = ({ pool: initialPool }) => {
         <title>{pool.name} | Pool Profile</title>
         <meta name="description" content={`Profile for ${pool.name} on ${pool.platform}.`} />
       </Head>
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h3" sx={{ mb: 1 }}>{pool.icon} {pool.name}</Typography>
-        <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-          <Chip label={pool.platform} />
-          {Array.isArray(pool.category) ? pool.category.map((c, i) => <Chip key={i} label={c} />) : <Chip label={pool.category} />}
-          <Chip label={pool.status} color="primary" icon={<span style={{ width: 0 }} />} />
-          <GlossaryTooltip term={pool.status === 'Concentrated' ? 'Concentrated' : 'Volatile'} />
+      <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto' }}>
+        <Box sx={{
+          mb: 3,
+          p: { xs: 2, md: 3 },
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #FAF3E6 0%, #E6C9A8 50%, #C8A27A 100%)',
+          color: '#3D2B1F',
+          boxShadow: '0 10px 30px rgba(90, 60, 30, 0.25)'
+        }}>
+          <Typography variant="h3" sx={{ mb: 1 }}>{pool.icon} {pool.name}</Typography>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Chip sx={{ bgcolor: 'rgba(100,70,40,0.15)', color: '#3D2B1F' }} label={pool.platform} />
+            {Array.isArray(pool.category) ? pool.category.map((c, i) => (
+              <Chip key={i} sx={{ bgcolor: 'rgba(100,70,40,0.12)', color: '#3D2B1F' }} label={c} />
+            )) : (
+              <Chip sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: '#fff' }} label={pool.category} />
+            )}
+              <Chip sx={{ bgcolor: 'rgba(100,70,40,0.18)', color: '#3D2B1F' }} label={pool.status} />
+            <GlossaryTooltip term={pool.status === 'Concentrated' ? 'Concentrated' : 'Volatile'} />
+          </Box>
         </Box>
 
         <Grid container spacing={2}>
           <Grid item xs={12} md={8}>
             {embed ? (
-              <Box sx={{ position: 'relative', width: '100%', pb: { xs: '125%', md: '65%' }, borderRadius: 2, overflow: 'hidden', border: '1px solid #E0D5C1' }}>
+              <Box sx={{ position: 'relative', width: '100%', pb: { xs: '125%', md: '65%' }, borderRadius: 3, overflow: 'hidden', border: '1px solid rgba(100,70,40,0.25)', boxShadow: '0 6px 18px rgba(90,60,30,0.15)' }}>
                 <iframe
                   title={`${pool.name} ${embed.type} embed`}
                   src={embed.src}
@@ -99,13 +132,13 @@ const PoolPage = ({ pool: initialPool }) => {
                 />
               </Box>
             ) : (
-              <Box sx={{ height: 260, border: '2px dashed #D1B48C', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Chart placeholder">
+              <Box sx={{ height: 260, border: '2px dashed rgba(100,70,40,0.35)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#5B3A29' }} aria-label="Chart placeholder">
                 <Typography>Chart coming soon</Typography>
               </Box>
             )}
           </Grid>
           <Grid item xs={12} md={4}>
-            <Box sx={{ p: 2, border: '1px solid #E0D5C1', borderRadius: 2 }}>
+            <Box sx={{ p: 2, border: '1px solid rgba(124,58,237,0.25)', borderRadius: 3, boxShadow: '0 4px 12px rgba(6,182,212,0.08)' }}>
               <Typography variant="h6" sx={{ mb: 1 }}>Stats</Typography>
               <Typography>TVL: {pool.tvl}</Typography>
               <Typography>Price: TBD</Typography>
@@ -117,23 +150,52 @@ const PoolPage = ({ pool: initialPool }) => {
             </Box>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Box sx={{ p: 2, border: '1px solid #E0D5C1', borderRadius: 2 }}>
+            <Box sx={{ p: 2, border: '1px solid rgba(124,58,237,0.25)', borderRadius: 3 }}>
               <Typography variant="h6">Holders</Typography>
               <Typography>Coming soon</Typography>
             </Box>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Box sx={{ p: 2, border: '1px solid #E0D5C1', borderRadius: 2 }}>
+            <Box sx={{ p: 2, border: '1px solid rgba(124,58,237,0.25)', borderRadius: 3 }}>
               <Typography variant="h6">Transfers</Typography>
               <Typography>Coming soon</Typography>
             </Box>
           </Grid>
         </Grid>
 
-        <Box sx={{ display: 'flex', gap: 2, mt: 3, flexWrap: 'wrap' }}>
-          <Button variant="contained" href={pool.checkPoolUrl} target="_blank" rel="noopener noreferrer">Trade</Button>
-          <Button variant="outlined" href={pool.url} target="_blank" rel="noopener noreferrer">Contract</Button>
-          <Button variant="outlined" href={pool.dexscreenerUrl} target="_blank" rel="noopener noreferrer">Explore</Button>
+        <Box sx={{ display: 'flex', gap: 1.25, mt: 3, flexWrap: 'wrap' }}>
+          <Button href={pool.checkPoolUrl} target="_blank" rel="noopener noreferrer"
+            sx={{
+              px: 2.5, py: 1.25, borderRadius: 2, color: '#fff', textTransform: 'none', fontWeight: 700,
+              backgroundImage: 'linear-gradient(90deg, #A67C52, #7D5A50)', boxShadow: '0 8px 20px rgba(93,58,41,0.25)', '&:hover': { filter: 'brightness(1.05)' }
+            }}
+          >
+            Trade
+          </Button>
+          <Button href={pool.url} target="_blank" rel="noopener noreferrer"
+            sx={{ px: 2, py: 1, borderRadius: 999, color: '#5B3A29', textTransform: 'none', border: '1px solid rgba(100,70,40,0.25)', backgroundColor: 'rgba(100,70,40,0.05)', '&:hover': { backgroundColor: 'rgba(100,70,40,0.1)' } }}
+          >
+            Contract
+          </Button>
+          <Button href={pool.dexscreenerUrl} target="_blank" rel="noopener noreferrer"
+            sx={{ px: 2, py: 1, borderRadius: 999, color: '#5B3A29', textTransform: 'none', border: '1px solid rgba(100,70,40,0.25)', backgroundColor: 'rgba(100,70,40,0.05)', '&:hover': { backgroundColor: 'rgba(100,70,40,0.1)' } }}
+          >
+            Explore
+          </Button>
+        </Box>
+
+        {/* Constituents */}
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6" sx={{ mb: 1 }}>Constituent tokens</Typography>
+          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+            {constituents.map(({ name, token }) => (
+              <Button key={name} href={token ? `/token/${token.id}` : undefined} target={token ? undefined : '_blank'}
+                sx={{ textTransform: 'none', border: '1px solid rgba(100,70,40,0.25)' }}
+              >
+                {name}
+              </Button>
+            ))}
+          </Stack>
         </Box>
       </Box>
     </Layout>

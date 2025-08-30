@@ -89,9 +89,9 @@ const GreatNutWar = () => {
             overflow: 'hidden', // Prevent content overflow
           }}
         >
-          {/* Armies */}
+          {/* Army Factions */}
           <h2 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#5D4037', textAlign: 'center', marginBottom: '2rem' }}>
-            Armies
+            Army Factions
           </h2>
           <div className="factions-grid">
             {/* Peanut Legion */}
@@ -287,183 +287,9 @@ const GreatNutWar = () => {
             </div>
           </div>
 
-          {/* For Salt Tokens */}
+          {/* NFTs - moved up */}
           <h2 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#5D4037', textAlign: 'center', marginBottom: '2rem' }}>
-            For Salt Tokens
-          </h2>
-          <div className="war-machinery-grid">
-            {/* Salt Forge */}
-            <div
-              style={{
-                background: 'linear-gradient(to bottom, rgba(205,127,50,0.05), #fff)',
-                padding: '2rem',
-                borderRadius: '1rem',
-                border: '2px solid rgba(205,127,50,0.2)',
-                transition: 'all 0.3s',
-                boxSizing: 'border-box',
-                overflow: 'hidden',
-                wordWrap: 'break-word', // Ensure long text wraps properly
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037', flex: '1', marginRight: '1rem' }}>
-                  Salt Forge
-                </h3>
-                <div
-                  style={{
-                    width: '3rem',
-                    height: '3rem',
-                    backgroundColor: '#CD7F32',
-                    borderRadius: '0.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                  }}
-                >
-                  🌋
-                </div>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                Forge your destiny in the fires of the Great Nut War. Mint SALT to fuel your faction's ambitions and dominate the battlefield. 
-                Every contract strengthens your army's resolve.
-              </p>
-              <a
-                href="https://mint.club/token/base/SALT" // changed href from "#"
-                className="button-effect"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '1rem 1.5rem',
-                  backgroundColor: '#CD7F32',
-                  color: '#fff',
-                  borderRadius: '0.5rem',
-                  textDecoration: 'none',
-                  transition: 'background-color 0.3s ease',
-                  width: '100%',
-                  maxWidth: '300px',
-                  margin: '0 auto',
-                  textAlign: 'center', // Center-align text
-                }}
-              >
-                <span style={{ fontSize: '1.125rem', textAlign: 'center' }}>Mint Salt</span>
-              </a>
-            </div>
-
-            {/* NFT Armory */}
-            <div
-              style={{
-                background: 'linear-gradient(to bottom, rgba(180,126,91,0.1), #fff)',
-                padding: '2rem',
-                borderRadius: '1rem',
-                border: '2px solid rgba(205,127,50,0.3)',
-                boxShadow: '0 5px 10px rgba(0,0,0,0.1)',
-                transition: 'all 0.3s',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  NUT Nested NFTs
-                  <span style={{ display: 'inline-flex' }}>
-                    <GlossaryTooltip term="Liquidity" title="Nested collections under NUT; ranks influence spoils distribution." />
-                  </span>
-                </h3>
-                <div
-                  style={{
-                    width: '3rem',
-                    height: '3rem',
-                    backgroundColor: '#B47E5B',
-                    borderRadius: '9999px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontSize: '1.5rem',
-                  }}
-                >
-                  🛡️
-                </div>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                Collect NFTs to have a chance at Spoils of War. From Footsoldier to General your NFT rank determines spoils division.
-              </p>
-              <a
-                href="https://mint.club/nut" // changed href from "#"
-                className="button-effect"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#B47E5B',
-                  color: '#fff',
-                  borderRadius: '0.5rem',
-                  textDecoration: 'none',
-                }}
-              >
-                View Nested Collections
-                <svg style={{ width: '1.25rem', height: '1.25rem', marginLeft: '0.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </a>
-            </div>
-
-            {/* Volcanic Vault */}
-            <div
-              style={{
-                background: 'linear-gradient(to bottom, #FFEBEE, #fff)',
-                padding: '2rem',
-                borderRadius: '1rem',
-                border: '2px solid rgba(205,127,50,0.3)',
-                boxShadow: '0 5px 10px rgba(0,0,0,0.1)',
-                transition: 'all 0.3s',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037' }}>Molten Salt Vault</h3>
-                <div
-                  style={{
-                    width: '3rem',
-                    height: '3rem',
-                    backgroundColor: '#B71C1C',
-                    borderRadius: '9999px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontSize: '1.5rem',
-                  }}
-                >
-                  🏰
-                </div>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                Stake SALT in our molten core to generate strategic reserves.
-              </p>
-              <a
-                href="#"
-                className="button-effect"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#B71C1C',
-                  color: '#fff',
-                  borderRadius: '0.5rem',
-                  textDecoration: 'none',
-                }}
-              >
-                Enter Salt Vault
-                <svg style={{ width: '1.25rem', height: '1.25rem', marginLeft: '0.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          {/* NFTs */}
-          <h2 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#5D4037', textAlign: 'center', marginBottom: '2rem' }}>
-            NFTs
+            Army Ranks NFTs
           </h2>
           <div className="nft-stats-grid">
             <section id="peanut-soldiers">
@@ -684,51 +510,178 @@ const GreatNutWar = () => {
             </section>
           </div>
           
-          {/* REMOVE the "Growth Comparison" block */}
-          <div
-            style={{
-              marginTop: '4rem',
-              marginBottom: '4rem',
-              padding: '2rem',
-              backgroundColor: '#FFF5E0',
-              border: '3px double #8B4513',
-              borderRadius: '0.75rem',
-              boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-              maxWidth: '900px',
-              marginLeft: 'auto',
-              marginRight: 'auto',
-              fontFamily: 'Courier New, monospace',
-              color: '#5D4037',
-              textAlign: 'center',
-              lineHeight: '1.75',
-            }}
-          >
-            <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-              📄 <strong>TOP SECRET // DNUT-COMM-420 // CLASSIFIED INTEL</strong><br />
-              Under the Great Meme War Accord, Section 69, we are required to inform you that these tokens are NOT financial weapons—they are <strong>weapons of mass distraction</strong>.
-            </p>
-            <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-              No roadmaps. No promises. Just chaos, dopamine, and shellshock camaraderie.
-            </p>
-            <p style={{ fontSize: '0.875rem' }}>
-              🥜 <strong>DO NUT LISTEN TO THE NUTMERICAN WAR MACHINE. NUT AT YOUR OWN RISK.</strong><br />
-            </p>
-            <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-              ⚠️ <strong>WARNING FROM CENTRAL COMMAND:</strong> You are entering a <em>memetic combat zone</em>. All NUT-related deployments fall under “<strong>Operation: VIBES ONLY</strong>.” These digital NUTS hold <strong>zero financial payload</strong>, no tactical utility, and are entirely composed of salty delusions and copium fumes.
-            </p>
-            <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-              The BASED NUT War Machine is not responsible for lost bags, crushed dreams, or emotional damage. Any perceived value is purely the result of advanced memetic psychological warfare.
-            </p>
-            <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-              💀 You will NOT buy a lambo. You may lose your keys, your faith in humanity, and your dating prospects.
-            </p>
-            <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-              All operatives engaging in $NUT, $SNUT, or $pNUT must acknowledge they are doing so under <strong>delirious conditions</strong> and with a complete disregard for sanity, reality, or fiat.
-            </p>
-            <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-              🔒 <strong>DO NOT lock your NUTS expecting profit. LOCK THEM EXPECTING DELUSION.</strong>
-            </p>
-            
+          {/* For Salt Tokens - moved below NFTs */}
+          <h2 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#5D4037', textAlign: 'center', marginBottom: '2rem', marginTop: '3rem' }}>
+            For Salt Tokens
+          </h2>
+          <div className="war-machinery-grid">
+            {/* Salt Forge */}
+            <div
+              style={{
+                background: 'linear-gradient(to bottom, rgba(205,127,50,0.05), #fff)',
+                padding: '2rem',
+                borderRadius: '1rem',
+                border: '2px solid rgba(205,127,50,0.2)',
+                transition: 'all 0.3s',
+                boxSizing: 'border-box',
+                overflow: 'hidden',
+                wordWrap: 'break-word',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037', flex: '1', marginRight: '1rem' }}>
+                  Salt Forge
+                </h3>
+                <div
+                  style={{
+                    width: '3rem',
+                    height: '3rem',
+                    backgroundColor: '#CD7F32',
+                    borderRadius: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                  }}
+                >
+                  🌋
+                </div>
+              </div>
+              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                Forge your destiny in the fires of the Great Nut War. Mint SALT to fuel your faction's ambitions and dominate the battlefield.
+                Every contract strengthens your army's resolve.
+              </p>
+              <a
+                href="https://mint.club/token/base/SALT"
+                className="button-effect"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '1rem 1.5rem',
+                  backgroundColor: '#CD7F32',
+                  color: '#fff',
+                  borderRadius: '0.5rem',
+                  textDecoration: 'none',
+                  transition: 'background-color 0.3s ease',
+                  width: '100%',
+                  maxWidth: '300px',
+                  margin: '0 auto',
+                  textAlign: 'center',
+                }}
+              >
+                <span style={{ fontSize: '1.125rem', textAlign: 'center' }}>Mint Salt</span>
+              </a>
+            </div>
+
+            {/* NFT Armory */}
+            <div
+              style={{
+                background: 'linear-gradient(to bottom, rgba(180,126,91,0.1), #fff)',
+                padding: '2rem',
+                borderRadius: '1rem',
+                border: '2px solid rgba(205,127,50,0.3)',
+                boxShadow: '0 5px 10px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  NUT Nested NFTs
+                  <span style={{ display: 'inline-flex' }}>
+                    <GlossaryTooltip term="Liquidity" title="Nested collections under NUT; ranks influence spoils distribution." />
+                  </span>
+                </h3>
+                <div
+                  style={{
+                    width: '3rem',
+                    height: '3rem',
+                    backgroundColor: '#B47E5B',
+                    borderRadius: '9999px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    fontSize: '1.5rem',
+                  }}
+                >
+                  🛡️
+                </div>
+              </div>
+              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                Collect NFTs to have a chance at Spoils of War. From Footsoldier to General your NFT rank determines spoils division.
+              </p>
+              <a
+                href="https://mint.club/nut"
+                className="button-effect"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#B47E5B',
+                  color: '#fff',
+                  borderRadius: '0.5rem',
+                  textDecoration: 'none',
+                }}
+              >
+                View Nested Collections
+                <svg style={{ width: '1.25rem', height: '1.25rem', marginLeft: '0.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+            </div>
+
+            {/* Volcanic Vault */}
+            <div
+              style={{
+                background: 'linear-gradient(to bottom, #FFEBEE, #fff)',
+                padding: '2rem',
+                borderRadius: '1rem',
+                border: '2px solid rgba(205,127,50,0.3)',
+                boxShadow: '0 5px 10px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037' }}>Molten Salt Vault</h3>
+                <div
+                  style={{
+                    width: '3rem',
+                    height: '3rem',
+                    backgroundColor: '#B71C1C',
+                    borderRadius: '9999px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    fontSize: '1.5rem',
+                  }}
+                >
+                  🏰
+                </div>
+              </div>
+              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                Stake SALT in our molten core to generate strategic reserves.
+              </p>
+              <a
+                href="#"
+                className="button-effect"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#B71C1C',
+                  color: '#fff',
+                  borderRadius: '0.5rem',
+                  textDecoration: 'none',
+                }}
+              >
+                Enter Salt Vault
+                <svg style={{ width: '1.25rem', height: '1.25rem', marginLeft: '0.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </a>
+            </div>
           </div>
 
           <div style={{ marginTop: '3rem', textAlign: 'center' }}>
@@ -738,13 +691,14 @@ const GreatNutWar = () => {
             <p style={{ fontSize: '1rem', color: '#5D4037', marginBottom: '2rem' }}>
               Join the war effort. Mint. Stake. Meme. Get roasted.
             </p>
-            <div 
-              className="propaganda-grid" 
-              style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(2, 1fr)', 
-                gap: '2rem', 
-                justifyItems: 'center' 
+            <div
+              className="propaganda-grid"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '2rem',
+                justifyItems: 'center',
+                alignItems: 'start',
               }}
             >
               {/* Poster 1 */}
@@ -768,6 +722,50 @@ const GreatNutWar = () => {
                 />
                 <p style={{ fontSize: '1rem', color: '#5D4037', fontWeight: 'bold' }}>
                   “Decentralize. Deflate. Dominate.”
+                </p>
+              </div>
+
+              {/* TOP SECRET block inserted between posters, spanning full width */}
+              <div
+                style={{
+                  gridColumn: '1 / -1',
+                  marginTop: '0.5rem',
+                  marginBottom: '0.5rem',
+                  padding: '2rem',
+                  backgroundColor: '#FFF5E0',
+                  border: '3px double #8B4513',
+                  borderRadius: '0.75rem',
+                  boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+                  fontFamily: 'Courier New, monospace',
+                  color: '#5D4037',
+                  textAlign: 'center',
+                  lineHeight: '1.75',
+                }}
+              >
+                <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
+                  📄 <strong>TOP SECRET // DNUT-COMM-420 // CLASSIFIED INTEL</strong><br />
+                  Under the Great Meme War Accord, Section 69, we are required to inform you that these tokens are NOT financial weapons—they are <strong>weapons of mass distraction</strong>.
+                </p>
+                <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
+                  No roadmaps. No promises. Just chaos, dopamine, and shellshock camaraderie.
+                </p>
+                <p style={{ fontSize: '0.875rem' }}>
+                  🥜 <strong>DO NUT LISTEN TO THE NUTMERICAN WAR MACHINE. NUT AT YOUR OWN RISK.</strong><br />
+                </p>
+                <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
+                  ⚠️ <strong>WARNING FROM CENTRAL COMMAND:</strong> You are entering a <em>memetic combat zone</em>. All NUT-related deployments fall under “<strong>Operation: VIBES ONLY</strong>.” These digital NUTS hold <strong>zero financial payload</strong>, no tactical utility, and are entirely composed of salty delusions and copium fumes.
+                </p>
+                <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
+                  The BASED NUT War Machine is not responsible for lost bags, crushed dreams, or emotional damage. Any perceived value is purely the result of advanced memetic psychological warfare.
+                </p>
+                <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
+                  💀 You will NOT buy a lambo. You may lose your keys, your faith in humanity, and your dating prospects.
+                </p>
+                <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
+                  All operatives engaging in $NUT, $SNUT, or $pNUT must acknowledge they are doing so under <strong>delirious conditions</strong> and with a complete disregard for sanity, reality, or fiat.
+                </p>
+                <p style={{ fontSize: '0.875rem', marginBottom: '0' }}>
+                  🔒 <strong>DO NOT lock your NUTS expecting profit. LOCK THEM EXPECTING DELUSION.</strong>
                 </p>
               </div>
 

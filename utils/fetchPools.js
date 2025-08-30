@@ -132,6 +132,34 @@ export function fetchPools() {
       status: "Volatile",
       icon: "🌰🍫🌾",
     },
+  {
+      name: "SALT/USDC",
+      tvl: "TBD",
+      flavor: "Savory Stable Seasoning",
+      platform: "Aerodrome",
+      category: ["TKNs", "NUTcoins"],
+      url: "https://basescan.org/address/0x64ca0b147f625007b6f082abbb3ba217930eccb2",
+      checkPoolUrl:
+        "https://aerodrome.finance/pools?token0=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913&chain0=8453&token1=0x1ede2afc985f6d7aeb3f4c84b95a103c00d5de81&chain1=8453",
+      dexscreenerUrl:
+        "https://dexscreener.com/base/0x64ca0b147f625007b6f082abbb3ba217930eccb2",
+  status: "Volatile",
+      icon: "🧂💵",
+    },
+    {
+      name: "NUT/SALT",
+      tvl: "TBD",
+      flavor: "Perfectly Salted Crunch",
+  platform: "MintClub",
+  category: ["TKNs", "NUTcoins"],
+  url: "https://basescan.org/token/0x1EDe2AFC985F6D7aEb3F4c84B95A103c00D5dE81",
+      checkPoolUrl:
+        "https://www.defined.fi/base/0xe4d2da0ff50d98d1cf065f3c9b41279aa7aa0d467fb30c14876086b8df89bdee?quoteToken=token0&utm_campaign=embed&utm_source=https://mint.club&cache=afd85",
+      dexscreenerUrl:
+        "https://www.defined.fi/base/0xe4d2da0ff50d98d1cf065f3c9b41279aa7aa0d467fb30c14876086b8df89bdee?quoteToken=token0",
+      status: "Volatile",
+      icon: "🌰🧂",
+    },
     {
       name: "PNUTS/NUT",
       tvl: "TBD",
