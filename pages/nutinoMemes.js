@@ -5,8 +5,8 @@ import Footer from "../components/Footer";
 const NutinoMemes = () => {
   const [input, setInput] = useState('');
   const [style, setStyle] = useState('kawaii'); // Default style
-  const [model, setModel] = useState('flux-dev'); // Default model (will be overwritten by server config)
-  const [models, setModels] = useState(['flux-dev']);
+  const [model, setModel] = useState('qwen-image'); // Default model (will be overwritten by server config)
+  const [models, setModels] = useState(['qwen-image', 'hidream-i1', 'stable-diffusion-3.5-large']);
   useEffect(() => {
     let cancelled = false;
     (async () => {

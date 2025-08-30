@@ -54,8 +54,9 @@ function validateEnv() {
 
     // Soft validations / defaults
     process.env.VENICE_CHAT_MODEL = process.env.VENICE_CHAT_MODEL || 'default-reasoning';
-    process.env.VENICE_IMAGE_MODEL_DEFAULT = process.env.VENICE_IMAGE_MODEL_DEFAULT || 'flux-dev';
-    process.env.VENICE_IMAGE_MODELS = process.env.VENICE_IMAGE_MODELS || 'flux-dev,stable-diffusion-3.5,fluently-xl';
+    // Prefer modern defaults if not provided
+    process.env.VENICE_IMAGE_MODEL_DEFAULT = process.env.VENICE_IMAGE_MODEL_DEFAULT || 'qwen-image';
+    process.env.VENICE_IMAGE_MODELS = process.env.VENICE_IMAGE_MODELS || 'qwen-image,hidream-i1,stable-diffusion-3.5-large';
     process.env.REQUEST_TIMEOUT_MS = process.env.REQUEST_TIMEOUT_MS || '120000';
     process.env.LOG_LEVEL = process.env.LOG_LEVEL || 'info';
 

@@ -6,11 +6,12 @@ function parseCsvList(value, fallback = []) {
 }
 
 const chatModel = process.env.VENICE_CHAT_MODEL || 'default-reasoning';
-const defaultImageModel = process.env.VENICE_IMAGE_MODEL_DEFAULT || 'flux-dev';
+// Default to modern Venice image models if env not provided
+const defaultImageModel = process.env.VENICE_IMAGE_MODEL_DEFAULT || 'qwen-image';
 const allowedImageModels = parseCsvList(process.env.VENICE_IMAGE_MODELS, [
-  'flux-dev',
-  'stable-diffusion-3.5',
-  'fluently-xl',
+  'qwen-image',
+  'hidream-i1',
+  'stable-diffusion-3.5-large',
 ]);
 
 function getValidImageModel(candidate) {

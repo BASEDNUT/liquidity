@@ -295,8 +295,10 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
                 newOutcome.imageUrl = imageUrl;
                 throw new Error('Image generation disabled by FEATURE_IMAGE_GEN_ENABLED');
             }
+            // Pick a valid image model from ENV-provided list; default already validated in catalog
+            const selectedImageModel = modelCatalog.image.getValidImageModel(modelCatalog.image.defaultModel);
             const imagePayload = {
-                model: modelCatalog.image.defaultModel,
+                model: selectedImageModel,
                 prompt: imagePrompt, // Use the prompt from Peanutoshi
                 safe_mode: true,
                 width: 512,
