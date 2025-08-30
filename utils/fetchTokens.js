@@ -159,7 +159,7 @@ const nutTreeData = {
     },
     {
       name: "USDC",
-      role: "Base Stablecoin",
+  role: "Base Stablecoin (USDC)",
       utility: "Fiat-backed stablecoin on Base.",
       color: "#9C7B5A",
       icon: "💵",

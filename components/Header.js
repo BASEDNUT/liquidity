@@ -12,6 +12,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { useTheme, keyframes } from "@mui/system";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 // Wiggle Animation (borrowed from the pool cards)
 const wiggle = keyframes`
@@ -40,10 +41,27 @@ const Header = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const router = useRouter();
+  const isTreePage = router.pathname === "/tree";
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
   };
+
+  const headerButtonSx = isTreePage
+    ? {
+        background: "rgba(0,0,0,0.06)",
+        color: "#5D3A1A",
+        textTransform: "none",
+        border: "1px solid rgba(93,58,26,0.25)",
+        boxShadow: "none",
+        transition: "background 0.2s ease, transform 0.2s ease",
+        "&:hover": {
+          background: "rgba(0,0,0,0.1)",
+          transform: "translateY(-1px)",
+        },
+      }
+    : gradientButtonStyle;
 
   const menuItems = (
     <Box
@@ -63,7 +81,7 @@ const Header = () => {
         <Button
           variant="contained"
           sx={{
-            ...gradientButtonStyle,
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
             width: "100%",
             my: 1,
           }}
@@ -76,7 +94,7 @@ const Header = () => {
         <Button
           variant="contained"
           sx={{
-            ...gradientButtonStyle,
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
             width: "100%",
             my: 1,
           }}
@@ -89,7 +107,7 @@ const Header = () => {
         <Button
           variant="contained"
           sx={{
-            ...gradientButtonStyle,
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
             width: "100%",
             my: 1,
           }}
@@ -102,7 +120,7 @@ const Header = () => {
         <Button
           variant="contained"
           sx={{
-            ...gradientButtonStyle,
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
             width: "100%",
             my: 1,
           }}
@@ -115,7 +133,7 @@ const Header = () => {
         <Button
           variant="contained"
           sx={{
-            ...gradientButtonStyle,
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
             width: "100%",
             my: 1,
           }}
@@ -128,7 +146,7 @@ const Header = () => {
         <Button
           variant="contained"
           sx={{
-            ...gradientButtonStyle,
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
             width: "100%",
             my: 1,
           }}
@@ -141,7 +159,7 @@ const Header = () => {
         <Button
           variant="contained"
           sx={{
-            ...gradientButtonStyle,
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
             width: "100%",
             my: 1,
           }}
@@ -150,12 +168,12 @@ const Header = () => {
           FAQ
         </Button>
       </Link>
-      {isMobile && (
+      {isMobile && !isTreePage && (
         <Link href="https://docs.basednut.com/" passHref>
           <Button
             variant="contained"
             sx={{
-              ...gradientButtonStyle,
+              ...(isTreePage ? headerButtonSx : gradientButtonStyle),
               width: "100%",
               my: 1,
             }}
@@ -172,8 +190,9 @@ const Header = () => {
     <AppBar
       position="static"
       sx={{
-        backgroundColor: "#D1B48C", // Warm peanut-brown
-        borderBottom: "4px solid #7D5A50", // Darker brown border for emphasis
+        backgroundColor: isTreePage ? "transparent" : "#D1B48C", // Warm peanut-brown or transparent on Tree
+        borderBottom: isTreePage ? "none" : "4px solid #7D5A50", // No border on Tree
+        boxShadow: isTreePage ? "none" : undefined,
       }}
     >
       <Toolbar>
@@ -188,6 +207,7 @@ const Header = () => {
                 alignItems: "center",
                 gap: 1,
                 cursor: "pointer",
+                color: isTreePage ? "#3E1F0A" : undefined,
                 '&:hover': { textDecoration: "underline" },
               }}
               aria-label="Go to Home"
@@ -198,12 +218,12 @@ const Header = () => {
         </Box>
 
         {/* Desktop "LEARN MORE" button */}
-        {!isMobile && (
+        {!isMobile && !isTreePage && (
           <Button
             variant="contained"
             href="https://docs.basednut.com/"
             sx={{
-              ...gradientButtonStyle,
+              ...(isTreePage ? headerButtonSx : gradientButtonStyle),
               mr: 2,
             }}
           >
@@ -218,7 +238,7 @@ const Header = () => {
             color="inherit"
             aria-label="Open menu"
             sx={{
-              ...gradientButtonStyle,
+              ...(isTreePage ? headerButtonSx : gradientButtonStyle),
               width: 48,
               height: 48,
               borderRadius: 2,
@@ -232,7 +252,7 @@ const Header = () => {
             onClick={toggleDrawer(true)}
             variant="contained"
             sx={{
-              ...gradientButtonStyle,
+              ...(isTreePage ? headerButtonSx : gradientButtonStyle),
               px: 2.5,
               py: 1,
               borderRadius: 999,
