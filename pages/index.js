@@ -65,10 +65,20 @@ export default function Home() {
   return (
     <Layout>
       <FallingNutsOverlay active density="low" />
-      <Head>
-        <title>Explore Nutty Assets | BASED NUT</title>
-        <meta name="description" content="Browse nutty assets across the BASED NUT orchard — liquidity pools and tokens in one place." />
-      </Head>
+      {(() => {
+        // Dynamic titles based on current view
+        const headingMap = { pools: 'Explore Nut Trees', tokens: 'Explore Nuts' };
+        const dynamicHeading = headingMap[view] || 'Explore Nutty Assets';
+        return (
+          <Head>
+            <title>{`${dynamicHeading} | BASED NUT`}</title>
+            <meta
+              name="description"
+              content="Browse nutty assets across the BASED NUT orchard — liquidity pools and tokens in one place."
+            />
+          </Head>
+        );
+      })()}
       <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4, px: { xs: 2, sm: 4 }, maxWidth: 'lg' }}>
         <Box sx={{ width: '100%', textAlign: 'center', mb: 0 }}>
           <Image src="/img/based-nuts-hero.png" alt="Based Nut's - The Orchard" layout="responsive" width={800} height={600} priority />
@@ -76,9 +86,15 @@ export default function Home() {
         {process.env.NEXT_PUBLIC_FEATURE_ORCHARD_SIGN_ENABLED !== 'false' && (
           <OrchardTVLNotice />
         )}
-        <Typography variant="h4" gutterBottom sx={{ color: '#5B3A29', textAlign: 'center' }}>
-          Explore Nutty Assets
-        </Typography>
+        {(() => {
+          const headingMap = { pools: 'Explore Nut Trees', tokens: 'Explore Nuts' };
+          const dynamicHeading = headingMap[view] || 'Explore Nutty Assets';
+          return (
+            <Typography variant="h4" gutterBottom sx={{ color: '#5B3A29', textAlign: 'center' }}>
+              {dynamicHeading}
+            </Typography>
+          );
+        })()}
 
         <Box
           sx={{
