@@ -12,6 +12,7 @@ import DataToggle from "../components/DataToggle";
 import { fetchPools } from "../utils/fetchPools";
 import { fetchTokens } from "../utils/fetchTokens";
 import Image from "next/image";
+import OrchardTVLNotice from "../components/OrchardTVLNotice";
 
 export default function Home() {
   const [pools, setPools] = useState([]);
@@ -69,9 +70,12 @@ export default function Home() {
         <meta name="description" content="Browse nutty assets across the BASED NUT orchard — liquidity pools and tokens in one place." />
       </Head>
       <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4, px: { xs: 2, sm: 4 }, maxWidth: 'lg' }}>
-        <Box sx={{ width: '100%', textAlign: 'center', mb: 3 }}>
+        <Box sx={{ width: '100%', textAlign: 'center', mb: 0 }}>
           <Image src="/img/based-nuts-hero.png" alt="Based Nut's - The Orchard" layout="responsive" width={800} height={600} priority />
         </Box>
+        {process.env.NEXT_PUBLIC_FEATURE_ORCHARD_SIGN_ENABLED !== 'false' && (
+          <OrchardTVLNotice />
+        )}
         <Typography variant="h4" gutterBottom sx={{ color: '#5B3A29', textAlign: 'center' }}>
           Explore Nutty Assets
         </Typography>

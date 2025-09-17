@@ -32,6 +32,15 @@ function validateEnv() {
         );
     }
 
+    // n8n webhook required in prod if orchard sign is enabled
+    const orchardSignEnabled = asBool(process.env.FEATURE_ORCHARD_SIGN_ENABLED, true);
+    if (isProd && orchardSignEnabled) {
+        requiredEnvVars.push(
+            { key: 'N8N_WEBHOOK_URL', description: 'n8n Webhook URL for Orchard TVL' },
+        );
+        // Note: CRON_REFRESH_TOKEN is optional and only needed if you plan to use the /refresh endpoint via a scheduler.
+    }
+
     const missingVars = requiredEnvVars.filter(({ key }) => {
         const value = process.env[key];
         return !value || value === 'undefined' || (typeof value === 'string' && value.startsWith('<'));
@@ -59,6 +68,7 @@ function validateEnv() {
     process.env.VENICE_IMAGE_MODELS = process.env.VENICE_IMAGE_MODELS || 'qwen-image,hidream-i1,stable-diffusion-3.5-large';
     process.env.REQUEST_TIMEOUT_MS = process.env.REQUEST_TIMEOUT_MS || '120000';
     process.env.LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+    process.env.FEATURE_ORCHARD_SIGN_ENABLED = String(orchardSignEnabled);
 
     return true;
 }

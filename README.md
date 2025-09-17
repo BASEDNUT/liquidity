@@ -101,3 +101,35 @@ For more details, refer to the [Venice API Documentation](https://docs.venice.ai
 ## License
 
 [Insert license details if applicable]
+
+## Orchard TVL Sign (n8n)
+
+The homepage includes an optional rustic Orchard TVL sign that pulls metrics from an n8n workflow.
+
+Environment variables:
+
+- `N8N_WEBHOOK_URL`: URL of your n8n Webhook node (Respond to Webhook output should match sample). Example:
+  `https://n8n.example.com/webhook/1e5b023d-38e3-4f55-9bb0-49593c38a683`
+- `FEATURE_ORCHARD_SIGN_ENABLED`: Set to `false` to disable backend validation for the sign (default `true`).
+- `NEXT_PUBLIC_FEATURE_ORCHARD_SIGN_ENABLED`: Set to `false` to hide the sign in the UI (default `true`).
+
+API proxy:
+
+- `GET /api/orchard-tvl` — Proxies the webhook and normalizes the response to:
+  `{ tvl, assets, pools, timestamp, volume24hTotal, priceChange24hAvg }`. TVL is pulled dynamically; no hardcoded fallback is used.
+
+UI component:
+
+- `components/OrchardTVLNotice.js` — Renders a wood-style sign: `123,456 TVL planted 🌰 across 14 soil mixes and 19 nut groves`,
+  plus small timestamp and 24h metrics. Updates every 5 minutes. Zero values are shown (not hidden) to reflect small-project transparency.
+
+### Caching and refresh
+
+- `GET /api/orchard-tvl` uses a 24h cache (Redis if configured, else in-memory). It returns cached data instantly and refreshes in the background if stale. If no cached value exists and the webhook fails, the endpoint returns `502` (no fallback).
+- Optional forced refresh: `POST /api/orchard-tvl/refresh` with header `Authorization: Bearer <CRON_REFRESH_TOKEN>` writes fresh data to the cache.
+- For exact scheduling, configure a daily cron to hit the refresh endpoint (e.g., Vercel Cron or GitHub Actions).
+
+Env variables:
+
+- `CRON_REFRESH_TOKEN` — Shared secret for the refresh endpoint.
+- `ORCHARD_REFRESH_URL` — Absolute URL to your refresh endpoint; used by `npm run cron:orchard-refresh`.

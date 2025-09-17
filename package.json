@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "echo \"No tests defined\" && exit 0"
+    "test": "echo \"No tests defined\" && exit 0",
+    "cron:orchard-refresh": "node scripts/cron/refresh-orchard-tvl.js"
   },
   "keywords": [],
   "author": "",
