@@ -218,6 +218,7 @@ export default function OrchardTVLNotice({ dense = false }) {
                 .num{ font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-variant-numeric: tabular-nums lining-nums; font-weight: 800; letter-spacing: 0.02em; }
                 .numPrimary { fill: #17130F; }
                 .numAlt { fill: #2A1D12; }
+                .var { fill: #1B5E20; }
                 .nut { fill: #b07b49; }
                 .cashew { fill: #a56e3c; }
                 .dark { fill: #23160d; }
@@ -225,6 +226,7 @@ export default function OrchardTVLNotice({ dense = false }) {
                 .pos { fill:#1B5E20; } .neg { fill:#B71C1C; } .neu { fill:#455A64; }
                 .outline { paint-order: stroke fill; stroke: rgba(0,0,0,.36); stroke-width: 1.4px; }
                 .contrastStroke { paint-order: stroke fill; stroke: rgba(255,255,255,.95); stroke-width: 3px; }
+                .contrastStrokeLite { paint-order: stroke fill; stroke: rgba(255,255,255,.9); stroke-width: 2.2px; }
                 .hl { paint-order: stroke fill; stroke: rgba(255,255,255,.24); stroke-width: .6px; }
                 .stamp { fill: #3f2a16; opacity: .95; font-variant-numeric: tabular-nums; }
                 .body { fill: #2f2318; opacity: .98; }
@@ -292,35 +294,35 @@ export default function OrchardTVLNotice({ dense = false }) {
               {/** Main body copy: clear TVL label, Title Case, no trailing periods; larger TVL number for hierarchy **/}
               <text x="560" y="236" className="p body hl" textAnchor="middle" fontSize="40" letterSpacing="0.2px" filter="url(#carve)">
                 <tspan x="560">
-                  <tspan className="num numPrimary" style={{ fontSize: '56px' }}>{tvlText}</tspan>
+                  <tspan className="num var contrastStrokeLite" style={{ fontSize: '56px' }}>{tvlText}</tspan>
                   <tspan className="p"> TVL (USD)</tspan>
                 </tspan>
                 <tspan x="560" dy="1.55em">
                   <tspan className="p">Grown From </tspan>
-                  <tspan className="num numAlt">{assets}</tspan>
+                  <tspan className="num var contrastStrokeLite">{assets}</tspan>
                   <tspan className="p"> Different </tspan>
                   <tspan className="p" fill="#b07b49">NUT Tree Types</tspan>
                 </tspan>
                 <tspan x="560" dy="1.55em">
                   <tspan className="p">Planted Across </tspan>
-                  <tspan className="num numAlt">{pools}</tspan>
+                  <tspan className="num var contrastStrokeLite">{pools}</tspan>
                   <tspan className="p"> Farm Plots</tspan>
                 </tspan>
               </text>
               <text x="560" y="238" className="p dark outline" textAnchor="middle" fontSize="40" letterSpacing="0.2px" filter="url(#carve)">
                 <tspan x="560">
-                  <tspan className="num numPrimary" id="tvlValue" style={{ fontSize: '56px' }}>{tvlText}</tspan>
+                  <tspan className="num var contrastStrokeLite" id="tvlValue" style={{ fontSize: '56px' }}>{tvlText}</tspan>
                   <tspan className="p dark"> TVL (USD)</tspan>
                 </tspan>
                 <tspan x="560" dy="1.55em">
                   <tspan className="p dark">Grown From </tspan>
-                  <tspan className="num numAlt" id="soilCount">{assets}</tspan>
+                  <tspan className="num var contrastStrokeLite" id="soilCount">{assets}</tspan>
                   <tspan className="p dark"> Different </tspan>
                   <tspan className="p dark" fill="#b07b49">NUT Tree Types</tspan>
                 </tspan>
                 <tspan x="560" dy="1.55em">
                   <tspan className="p dark">Planted Across </tspan>
-                  <tspan className="num numAlt" id="groveCount">{pools}</tspan>
+                  <tspan className="num var contrastStrokeLite" id="groveCount">{pools}</tspan>
                   <tspan className="p dark"> Farm Plots</tspan>
                 </tspan>
               </text>
@@ -329,16 +331,16 @@ export default function OrchardTVLNotice({ dense = false }) {
             <g ref={subRef} transform={subTransform}>
               <text x="560" y="274" className="p body hl" textAnchor="middle" fontSize="26" letterSpacing="0.12px" filter="url(#carve)">
                 <tspan className="p">24h Vol </tspan>
-                <tspan className="num">{volText}</tspan>
+                <tspan className="num var contrastStrokeLite">{volText}</tspan>
                 <tspan className="p">  •  Avg 24h Price Δ </tspan>
-                <tspan className={`num ${priceClass} contrastStroke`}>{priceText}</tspan>
+                <tspan className="num var contrastStroke">{priceText}</tspan>
                 <tspan x="560" dy="1.6em" className="stamp">{shortStamp}</tspan>
               </text>
               <text x="560" y="276" className="p outline" textAnchor="middle" fontSize="26" letterSpacing="0.12px" filter="url(#carve)">
                 <tspan className="p dark">24h Vol </tspan>
-                <tspan className="num dark" id="vol24h">{volText}</tspan>
+                <tspan className="num var contrastStrokeLite" id="vol24h">{volText}</tspan>
                 <tspan className="p dark">  •  Avg 24h Price Δ </tspan>
-                <tspan className={`num ${priceClass} contrastStroke`} id="price24h">{priceText}</tspan>
+                <tspan className="num var contrastStroke" id="price24h">{priceText}</tspan>
                 <tspan x="560" dy="1.6em" className="stamp">{shortStamp}</tspan>
               </text>
             </g>
