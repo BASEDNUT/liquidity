@@ -1,9 +1,15 @@
 import { validateEnv } from '../../utils/validateEnv';
 import { Redis } from '@upstash/redis';
 import modelCatalog from '../../utils/modelCatalog';
+import { rateLimit } from '../../src/utils/rateLimit';
 
-console.log('[warmachineAction] Initializing Redis client...');
-console.log('[warmachineAction] UPSTASH_REDIS_REST_URL configured:', Boolean(process.env.UPSTASH_REDIS_REST_URL));
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '1mb',
+        },
+    },
+};
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
@@ -69,7 +75,6 @@ function parsePeanutoshiResponse(responseText) {
 }
 
 export default async function handler(req, res) {
-    console.log('[warmachineAction] Handler invoked.');
     try {
         const aiEnabled = process.env.FEATURE_AI_ENABLED !== 'false';
         const imageEnabled = process.env.FEATURE_IMAGE_GEN_ENABLED !== 'false';
@@ -81,10 +86,6 @@ export default async function handler(req, res) {
                 message: 'Warmachine feature is disabled via FEATURE_WARMACHINE_ENABLED',
             });
         }
-        // Enhanced logging for env vars inside handler
-        console.log('[warmachineAction] Inside handler - VENICE_API_KEY set:', Boolean(process.env.VENICE_API_KEY));
-        console.log('[warmachineAction] Inside handler - UPSTASH_REDIS_REST_URL set:', Boolean(process.env.UPSTASH_REDIS_REST_URL));
-
         // Check if VENICE_API_KEY exists when AI is enabled
         if (aiEnabled && (!process.env.VENICE_API_KEY || process.env.VENICE_API_KEY === 'undefined')) {
             console.error('[warmachineAction] VENICE_API_KEY is confirmed missing or invalid inside handler');
@@ -112,9 +113,15 @@ export default async function handler(req, res) {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
-        console.log('[warmachineAction] Attempting Redis GET for warmachine_lastActionTimestamp...');
+        const rl = rateLimit(req, { windowMs: 60 * 1000, max: 8, keyPrefix: 'warmachine-action' });
+        res.setHeader('X-RateLimit-Limit', String(rl.limit));
+        res.setHeader('X-RateLimit-Remaining', String(rl.remaining));
+        res.setHeader('X-RateLimit-Reset', String(rl.reset));
+        if (!rl.ok) {
+            return res.status(429).json({ error: 'Rate limit exceeded' });
+        }
+
     const lastActionTimestamp = await safeGet('warmachine_lastActionTimestamp');
-        console.log('[warmachineAction] Successfully fetched lastActionTimestamp.');
         if (lastActionTimestamp) {
             const now = Math.floor(Date.now() / 1000);
             const timeSinceLastAction = now - Number(lastActionTimestamp);
@@ -135,9 +142,15 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Faction and action are required' });
         }
 
-        console.log('[warmachineAction] Attempting Redis GET for warmachine_gameState...');
+        if (typeof faction !== 'string' || typeof action !== 'string') {
+            return res.status(400).json({ error: 'Invalid input types' });
+        }
+
+        if (faction.length > 60 || action.length > 200) {
+            return res.status(400).json({ error: 'Input too long' });
+        }
+
     let gameState = await safeGet('warmachine_gameState');
-        console.log('[warmachineAction] Successfully fetched gameState (or null if not found).');
         
         // MODIFIED: Initialize game state with all 10 factions if it doesn't exist or is incomplete
         if (!gameState || !gameState.factionStats || Object.keys(gameState.factionStats).length < initialFactions.length) {
@@ -168,7 +181,7 @@ export default async function handler(req, res) {
             };
             // No need to save here, as getWarmachineState would have/should handle primary initialization.
             // This is more of a fallback for this specific action handler if state is unexpectedly missing/incomplete.
-            console.log('[warmachineAction] Initialized/merged gameState as it was missing or incomplete.');
+            // Initialized/merged gameState as it was missing or incomplete.
         }
 
         let historyString = "No previous actions logged.";
@@ -207,7 +220,6 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
                 top_p: 0.9,
             };
 
-            console.log("Attempting to fetch from Venice Chat API...");
             const controller = new AbortController();
             const timeoutMs = parseInt(process.env.REQUEST_TIMEOUT_MS || '120000', 10);
             const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -225,7 +237,6 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
             let chatData;
             if (chatResponse.ok) {
                 chatData = await chatResponse.json();
-                console.log("Successfully fetched and parsed response from Venice Chat API.");
             } else {
                 let errorText = 'Failed to read error response from Venice Chat API.';
                 try {
@@ -247,10 +258,7 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
             console.error("No valid response content (reply or choices) from Peanutoshi (Chat API)." );
             throw new Error('No valid response content from Peanutoshi (Chat API).');
         }
-        console.log("Raw Peanutoshi response:", peanutoshiRawResponse); // Added log
-
         const { narrative, effects, imagePrompt } = parsePeanutoshiResponse(peanutoshiRawResponse);
-        console.log("Parsed Peanutoshi response - Narrative:", narrative, "Effects:", effects, "Image Prompt:", imagePrompt); // Added log
 
         // Update faction stats based on effects
         const updatedFactionStats = JSON.parse(JSON.stringify(gameState.factionStats)); // Deep copy
@@ -311,8 +319,6 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
                 negative_prompt: "low-quality, blurry, watermark, text, signature, human"
             };
 
-            console.log('Attempting to generate image with prompt:', imagePrompt); // Log before image generation
-            
             const imageController = new AbortController();
             const imageTimeoutMs = parseInt(process.env.REQUEST_TIMEOUT_MS || '120000', 10);
             const imageTimeout = setTimeout(() => imageController.abort(), imageTimeoutMs);
@@ -335,7 +341,6 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
                     const imageArrayBuffer = await imageGenResponse.arrayBuffer();
                     const base64Image = Buffer.from(imageArrayBuffer).toString('base64');
                     imageUrl = `data:image/webp;base64,${base64Image}`;
-                    console.log('Image generated successfully.'); // Added log
                     // Update the imageUrl in the newOutcome AFTER it's generated
                     newOutcome.imageUrl = imageUrl;
                 } else {
@@ -366,12 +371,8 @@ IMAGE_PROMPT: [A concise, vivid visual prompt (max 150 characters) for an image 
             outcomes: updatedOutcomes.map(o => o.imageUrl === 'pending' && o.timestamp === newOutcome.timestamp ? { ...o, imageUrl: newOutcome.imageUrl } : o), // ensure the latest outcome has the final imageUrl
             factionStats: updatedFactionStats
         };
-        console.log('[warmachineAction] Attempting Redis SET for warmachine_gameState...');
     await safeSet('warmachine_gameState', newGameState);
-        console.log('[warmachineAction] Successfully SET warmachine_gameState.');
-        console.log('[warmachineAction] Attempting Redis SET for warmachine_lastActionTimestamp...');
     await safeSet('warmachine_lastActionTimestamp', Math.floor(Date.now() / 1000));
-        console.log('[warmachineAction] Successfully SET warmachine_lastActionTimestamp.');
         
 
         res.status(200).json({

@@ -133,3 +133,7 @@ Env variables:
 
 - `CRON_REFRESH_TOKEN` — Shared secret for the refresh endpoint.
 - `ORCHARD_REFRESH_URL` — Absolute URL to your refresh endpoint; used by `npm run cron:orchard-refresh`.
+
+Optional security env:
+
+- `APP_ORIGIN` or `NEXT_PUBLIC_APP_ORIGIN` — If set, API routes send `Access-Control-Allow-Origin` with this value (locks CORS to your site). Leave unset to disable cross-origin access.

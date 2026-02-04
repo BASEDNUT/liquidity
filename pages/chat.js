@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Layout from "../components/Layout";
 import ReactMarkdown from 'react-markdown'; // Install this library using `npm install react-markdown`
 
@@ -44,18 +44,6 @@ const Chat = () => {
     setInput(prompt);
     handleSendMessage();
   };
-
-  useEffect(() => {
-    fetch('/api/chat')
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Network response was not ok: " + res.status);
-        }
-        return res.json();
-      })
-      .then((data) => setMessages(data))
-      .catch((err) => console.error("Error fetching chat messages:", err));
-  }, []);
 
   const parseResponse = (reply) => {
     // Use the dotAll flag (s) to capture multiple lines if necessary.

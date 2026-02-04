@@ -1,7 +1,5 @@
 import { Redis } from '@upstash/redis';
-
-console.log('[getWarmachineState] Initializing Redis client...');
-console.log('[getWarmachineState] UPSTASH_REDIS_REST_URL configured:', Boolean(process.env.UPSTASH_REDIS_REST_URL));
+import { rateLimit } from '../../src/utils/rateLimit';
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
@@ -26,9 +24,16 @@ const initialFactions = [
 ];
 
 export default async function handler(req, res) {
-  console.log('[getWarmachineState] Handler invoked.');
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const rl = rateLimit(req, { windowMs: 60 * 1000, max: 30, keyPrefix: 'warmachine-state' });
+  res.setHeader('X-RateLimit-Limit', String(rl.limit));
+  res.setHeader('X-RateLimit-Remaining', String(rl.remaining));
+  res.setHeader('X-RateLimit-Reset', String(rl.reset));
+  if (!rl.ok) {
+    return res.status(429).json({ error: 'Rate limit exceeded' });
   }
 
   try {
@@ -36,9 +41,6 @@ export default async function handler(req, res) {
     if (!warmachineEnabled) {
       return res.status(503).json({ error: 'Feature disabled', message: 'Warmachine feature is disabled via FEATURE_WARMACHINE_ENABLED' });
     }
-    // Enhanced logging for env vars inside handler
-    console.log('[getWarmachineState] Inside handler - UPSTASH_REDIS_REST_URL set:', Boolean(process.env.UPSTASH_REDIS_REST_URL));
-
     if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
       console.error('[getWarmachineState] Upstash Redis environment variables are confirmed missing inside handler.');
       return res.status(500).json({
@@ -47,9 +49,7 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('[getWarmachineState] Attempting to connect to Redis...');
   let gameState = await safeGet('warmachine_gameState');
-    console.log('[getWarmachineState] Successfully fetched gameState (or null if not found).');
 
     if (!gameState || !gameState.factionStats || Object.keys(gameState.factionStats).length < initialFactions.length) {
       // Initialize or update game state if it doesn't exist or has fewer factions than current list
@@ -68,11 +68,9 @@ export default async function handler(req, res) {
       };
       // Save the initial/updated state back to Redis
   await safeSet('warmachine_gameState', gameState);
-      console.log('[getWarmachineState] Successfully set initial gameState to Redis.');
     }
 
   const lastActionTimestamp = await safeGet('warmachine_lastActionTimestamp');
-    console.log('[getWarmachineState] Successfully fetched lastActionTimestamp.');
     const now = Math.floor(Date.now() / 1000);
     let timeLeft = 0;
     if (lastActionTimestamp) {

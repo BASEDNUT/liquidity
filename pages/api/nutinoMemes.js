@@ -1,5 +1,14 @@
 import { validateEnv } from '../../utils/validateEnv';
 import modelCatalog from '../../utils/modelCatalog';
+import { rateLimit } from '../../src/utils/rateLimit';
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '1mb',
+    },
+  },
+};
 
 export default async function handler(req, res) {
   try {
@@ -9,10 +18,20 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    const rl = rateLimit(req, { windowMs: 60 * 1000, max: 10, keyPrefix: 'memes' });
+    res.setHeader('X-RateLimit-Limit', String(rl.limit));
+    res.setHeader('X-RateLimit-Remaining', String(rl.remaining));
+    res.setHeader('X-RateLimit-Reset', String(rl.reset));
+    if (!rl.ok) {
+      return res.status(429).json({ error: 'Rate limit exceeded' });
+    }
+
     const { input, style, model } = req.body; // Add model to destructuring
     if (!input || typeof input !== 'string' || input.trim() === '') {
-      console.error('Invalid input:', input); // Debugging log
       return res.status(400).json({ error: 'Invalid input' });
+    }
+    if (input.length > 500) {
+      return res.status(400).json({ error: 'Input too long' });
     }
 
     // Validate style
@@ -62,8 +81,6 @@ export default async function handler(req, res) {
 
       if (chatResponse.ok) {
         const chatData = await chatResponse.json();
-        console.log("Chat Data:", JSON.stringify(chatData, null, 2)); // Debugging log
-
         comment = chatData.reply ||
                   chatData.choices?.[0]?.message?.content ||
                   chatData.choices?.[0]?.text ||
@@ -93,12 +110,8 @@ export default async function handler(req, res) {
     const thinkingMatch = comment.match(thinkRegex);
     const thinking = thinkingMatch ? thinkingMatch[1].trim() : null; // Extract <think> content
     const sanitizedComment = comment.replace(thinkRegex, '').trim(); // Remove <think> content
-    console.log("Sanitized Comment:", sanitizedComment);
-    console.log("Thinking Content:", thinking);
-
     // Format the image prompt using Peanutoshi’s reworded output and truncate to 1500 characters
     const prompt = sanitizedComment.slice(0, 1500);
-    console.log("Generated Prompt for Image (truncated to 1500 characters):", prompt);
 
     const imagePayload = {
       model: selectedModel, // Ensure only the validated model is sent
@@ -114,12 +127,6 @@ export default async function handler(req, res) {
       return_binary: true, // Request binary image output
       format: "webp",
     };
-
-    // Add debugging log to confirm the payload
-    console.log("Image Payload:", JSON.stringify(imagePayload, null, 2));
-
-    // Add logging to verify payload
-    console.log("Sending payload to Venice Image API:", JSON.stringify(imagePayload, null, 2));
 
   const controller = new AbortController();
   const timeoutMs = parseInt(process.env.REQUEST_TIMEOUT_MS || '120000', 10);
