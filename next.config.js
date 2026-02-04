@@ -20,17 +20,12 @@ module.exports = (phase) => {
 
   return {
     reactStrictMode: true,
-    swcMinify: true,
     images: {
-        domains: ['basescan.org', 'opensea.io'],
+        remotePatterns: [
+            { protocol: 'https', hostname: 'basescan.org' },
+            { protocol: 'https', hostname: 'opensea.io' },
+        ],
     },
-        // Do not expose secrets in env or publicRuntimeConfig
-        // Server code reads process.env directly
-        publicRuntimeConfig: {
-            apiBaseUrl: process.env.NODE_ENV === 'production' 
-                ? 'https://your-production-url.vercel.app' 
-                : 'http://localhost:3000',
-        },
         async headers() {
         return [
             {

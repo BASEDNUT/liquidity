@@ -8,8 +8,7 @@ app.use(express.json());
 // Serve static files (index.html, tree.html, chat.html, assets, etc.)
 app.use(express.static(path.join(__dirname, 'out')));
 
-// Debugging: Log the environment variable
-console.log('VENICE_API_KEY:', process.env.VENICE_API_KEY);
+// Avoid logging secrets in any environment
 
 // Venice API setup
 const openai = new OpenAI({
