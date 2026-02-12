@@ -90,6 +90,19 @@ const Header = () => {
           Home
         </Button>
       </Link>
+      <Link href="/arb-bot" passHref>
+        <Button
+          variant="contained"
+          sx={{
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
+            width: "100%",
+            my: 1,
+          }}
+          aria-label="Navigate to Arb Bot"
+        >
+          Arb Bot
+        </Button>
+      </Link>
     <Link href="/great-nut-war" passHref>
         <Button
           variant="contained"
