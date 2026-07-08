@@ -116,6 +116,19 @@ const Header = () => {
       Great Nut War
         </Button>
       </Link>
+    <Link href="/staking" passHref>
+        <Button
+          variant="contained"
+          sx={{
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
+            width: "100%",
+            my: 1,
+          }}
+      aria-label="Navigate to Staking"
+        >
+      Staking
+        </Button>
+      </Link>
     <Link href="/chat" passHref>
         <Button
           variant="contained"
@@ -168,6 +181,19 @@ const Header = () => {
       Tree
         </Button>
       </Link>
+      <Link href="/tvl" passHref>
+        <Button
+          variant="contained"
+          sx={{
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
+            width: "100%",
+            my: 1,
+          }}
+          aria-label="Navigate to TVL Transparency"
+        >
+          TVL
+        </Button>
+      </Link>
       <Link href="/faq" passHref>
         <Button
           variant="contained"
@@ -181,7 +207,20 @@ const Header = () => {
           FAQ
         </Button>
       </Link>
-      {isMobile && !isTreePage && (
+      <Link href="/nut-catcher" passHref>
+        <Button
+          variant="contained"
+          sx={{
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
+            width: "100%",
+            my: 1,
+          }}
+          aria-label="Play Nut Catcher Game"
+        >
+          🌰 Nut Catcher
+        </Button>
+      </Link>
+      {isMobile && (
         <Link href="https://docs.basednut.com/" passHref>
           <Button
             variant="contained"
@@ -231,7 +270,7 @@ const Header = () => {
         </Box>
 
         {/* Desktop "LEARN MORE" button */}
-        {!isMobile && !isTreePage && (
+        {!isMobile && (
           <Button
             variant="contained"
             href="https://docs.basednut.com/"

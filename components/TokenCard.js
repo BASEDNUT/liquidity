@@ -182,8 +182,7 @@ const TokenCard = ({ token }) => {
       <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: 76, background: 'linear-gradient(180deg, #FFF3DD 0%, rgba(255,255,255,0) 100%)', pointerEvents: 'none' }} />
 
       <CardContent sx={{ padding: '24px', position: 'relative', zIndex: 1 }}>
-        <Link href={`/token/${token.id}`} passHref legacyBehavior>
-          <a aria-label={`View details for token ${token.name}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Link href={`/token/${token.id}`} aria-label={`View details for token ${token.name}`} style={{ textDecoration: 'none', color: 'inherit' }}>
             <FloatyIcon sx={{ mb: 1 }} aria-hidden="true">
               <Aura />
               <span style={{ position: 'relative', zIndex: 1 }}>{token.icon}</span>
@@ -194,6 +193,27 @@ const TokenCard = ({ token }) => {
             <Typography variant="body1" sx={{ color: '#7D5A50', mb: 1 }}>
               {token.role}
             </Typography>
+            {/* Price: all sources with labels */}
+            <Typography variant="body2" sx={{ color: '#8B5A2B', mb: 0.5, fontSize: '0.85rem' }}>
+              Price:{' '}
+              {(() => {
+                const parts = [];
+                const fmt = (v) => { if (v == null || isNaN(v)) return null; return v >= 1 ? v.toFixed(4) : v.toFixed(6); };
+                const fmtTime = (iso) => { try { const d = new Date(iso); return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }); } catch { return ''; } };
+                if (token.marketData?.geckoTerminal?.price_usd != null) { const t = fmtTime(token.marketData.geckoTerminal.lastCheckedAt); parts.push(<React.Fragment key="gt"><strong>${fmt(token.marketData.geckoTerminal.price_usd)}</strong>{' '}<small style={{ color: '#A0522D', fontWeight: 'bold' }}>(GT{t ? ` ${t}` : ''})</small></React.Fragment>); }
+                if (token.marketData?.dexScreener?.priceUsd != null) { const t = fmtTime(token.marketData.dexScreener.lastCheckedAt); parts.push(<React.Fragment key="ds">{' | '}<strong>${fmt(token.marketData.dexScreener.priceUsd)}</strong>{' '}<small style={{ color: '#A0522D', fontWeight: 'bold' }}>(DS{t ? ` ${t}` : ''})</small></React.Fragment>); }
+                if (token.marketData?.coinGecko?.price_usd != null) { const t = fmtTime(token.marketData.coinGecko.lastCheckedAt); parts.push(<React.Fragment key="cg">{' | '}<strong>${fmt(token.marketData.coinGecko.price_usd)}</strong>{' '}<small style={{ color: '#A0522D', fontWeight: 'bold' }}>(CG{t ? ` ${t}` : ''})</small></React.Fragment>); }
+                if (token.marketData?.balancer?.bptPrice != null) { const t = fmtTime(token.marketData.balancer.lastCheckedAt); parts.push(<React.Fragment key="bal">{' | '}<strong>${fmt(token.marketData.balancer.bptPrice)}</strong>{' '}<small style={{ color: '#A0522D', fontWeight: 'bold' }}>(BAL{t ? ` ${t}` : ''})</small></React.Fragment>); }
+                if (parts.length === 0) {
+                  const name = (token.name || '').toLowerCase();
+                  const tags = (token.tags || []).join(' ').toLowerCase();
+                  if (name === 'pnut' || tags.includes('index') || tags.includes('balancer')) return <strong>Index Token (Balancer)</strong>;
+                  if (tags.includes('bonding curve') || tags.includes('mintclub') || name === 'nutino' || name === 'salt') return <strong>Bonding Curve Token (MintClub)</strong>;
+                  return <strong>Not available</strong>;
+                }
+                return parts;
+              })()}
+            </Typography>
             {/* Category and Tags */}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
               {token.category && <Chip size="small" label={token.category} />}
@@ -201,8 +221,7 @@ const TokenCard = ({ token }) => {
                 <Chip key={i} size="small" label={t} variant="outlined" />
               ))}
             </Box>
-          </a>
-        </Link>
+          </Link>
       </CardContent>
       <Box
         component="nav"
@@ -214,8 +233,7 @@ const TokenCard = ({ token }) => {
           gap: 1.25,
         }}
       >
-        <Link href={`/token/${token.id}`} passHref legacyBehavior>
-          <a aria-label={`Open profile for token ${token.name}`} style={{ textDecoration: 'none' }}>
+        <Link href={`/token/${token.id}`} aria-label={`Open profile for token ${token.name}`} style={{ textDecoration: 'none' }}>
             <Button
               variant="contained"
               size="medium"
@@ -246,32 +264,68 @@ const TokenCard = ({ token }) => {
             >
               DETAILS
             </Button>
-          </a>
-        </Link>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr' }, gap: 1 }}>
-          <Button
-            variant="outlined"
-            size="small"
-            href={token.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{
+          </Link>
+        {/* Action buttons: Trade | Liquidity | Explorer */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0.75 }}>
+          {(() => {
+            const firstPool = token.pools?.[0];
+            const tradeUrl = firstPool?.dexscreenerUrl || firstPool?.url || `https://basescan.org/token/${token.address}`;
+            const liqUrl = firstPool?.dexscreenerUrl || firstPool?.url || `https://basescan.org/token/${token.address}`;
+            const explorerUrl = `https://basescan.org/token/${token.address}`;
+            const actionBtnSx = {
               textTransform: 'none',
-              borderColor: '#7D5A50',
-              color: '#7D5A50',
-              borderRadius: '12px',
-              height: 40,
-              backgroundColor: 'rgba(125,90,80,0.04)',
+              borderColor: '#8B6A5F',
+              color: '#5B3A29',
+              borderRadius: '10px',
+              height: 36,
+              fontSize: '0.75rem',
+              backgroundColor: 'rgba(139,106,95,0.06)',
               borderWidth: 1.5,
               fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 0.5,
               '&:hover': {
-                backgroundColor: 'rgba(125,90,80,0.09)',
-                borderColor: '#6C4A3C',
+                backgroundColor: 'rgba(139,106,95,0.12)',
+                borderColor: '#6B3D20',
               },
-            }}
-          >
-            VIEW CONTRACT
-          </Button>
+            };
+            return (
+              <>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  href={tradeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={actionBtnSx}
+                >
+                  🔄 Trade
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  href={liqUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={actionBtnSx}
+                >
+                  💧 Liquidity
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  href={explorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={actionBtnSx}
+                >
+                  🔍 Explorer
+                </Button>
+              </>
+            );
+          })()}
         </Box>
       </Box>
       {/* Soft floating background emojis using existing icon */}

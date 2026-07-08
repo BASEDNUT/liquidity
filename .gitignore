@@ -14,6 +14,7 @@ yarn-error.log*
 dist/
 build/
 .next
+out/
 
 # Coverage reports
 coverage/
@@ -21,3 +22,15 @@ coverage/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Playwright
+.playwright-cli/
+
+# Audit temp files
+*_audit*.md
+*_audit*.png
+snut_*.png
+*_validation*.json
+*_verification*.json
+rpc_test*.json
+real_onchain_data*.json

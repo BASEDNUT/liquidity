@@ -1,0 +1,52 @@
+# BASED NUT
+
+> BASED NUT is an experimental memefi project on Base (Coinbase L2) featuring a unity token (NUT, supply=1), deflationary reward-position (SNUT, 6% tax buyback/burn), Balancer index basket (pNUT, 25% cbETH/cbBTC/NUT/SNUT), and Mint Club bonding-curve tokens (SALT, NUTINO). NOT financial advice. Trade at your own risk.
+
+Key information:
+
+- This is a Next.js frontend for the BASED NUT DeFi ecosystem on Base mainnet (chainId 8453)
+- All token pages display real-time on-chain data fetched from Base RPC, GeckoTerminal, DexScreener, CoinGecko, and Balancer API
+- Contract addresses are listed on each token page and the arb-bot machine spec
+- The SNUT page features live burn tracking, tax flow diagrams, and recursive deflationary mechanics
+- The arb-bot page documents 9 arbitrage loops with execution strategies and a machine-readable JSON spec
+- NUT has supply=1 (unity token) — TRUE Price = TRUE Market Cap. Standard APIs often miscalculate.
+- SNUT is a non-escrow reward-position: hold SNUT to automatically earn NUT rewards, no locking required
+- pNUT NAV = totalLiquidity / totalShares (Balancer V2 weighted pool)
+- Mint Club tokens use bonding curves: price = NUT_locked / token_supply, 1% royalty on mint/burn
+- This is an EXPERIMENTAL MEMEFI project — NOT financial advice, NOT an investment
+
+## Core Pages
+
+- [Home](/): Landing page with ecosystem overview, token cards, and live market data
+- [All Tokens](/tokens): Overview of all tokens in the ecosystem with filters
+- [Token Tree](/tree): Visual hierarchy showing token relationships and derivation
+- [Staking](/staking): Active reward-position pools, vaults, and TVL
+- [Arb Bot War Room](/arb-bot): 9 arbitrage loops, machine-readable spec, execution doctrine, risk disclaimer
+- [FAQ](/faq): 42 questions in 6 categories (Basics, Tokens, Arbitrage, Liquidity, NFTs, Risks)
+- [Chat](/chat): Community chat with Peanutoshi AI assistant
+- [Images](/images): Media gallery and asset collection
+
+## Token Pages
+
+- [NUT](/token/nut): Unity token — supply=1, no tax, anchor asset for all nested tokens
+- [SNUT](/token/snut): Deflationary reward-position — 6% tax, live burn tracker, recursive burn flywheel
+- [pNUT](/token/pnut): Balancer V2 index basket — 25% each cbETH/cbBTC/NUT/SNUT, inflationary counterbalance
+- [SALT](/token/salt): Mint Club bonding-curve token — arbitrage via Aerodrome SALT/USDC
+- [NUTINO](/token/nutino): Mint Club bonding-curve token — arbitrage via Uniswap V2 NUTINO/cbBTC
+- [pNUTS](/token/pnuts): Peanut War Generals NFT — 251 supply, linear bonding curve
+- [ALMD](/token/almd): Almond War Generals NFT — 424 supply, exponential bonding curve
+- [sALMD](/token/salmd): Almond Soldiers NFT — 6,238 supply
+- [PNUTRMY](/token/pnutrmy): Peanut Soldiers NFT — 5,013 supply
+
+## Lore & Community
+
+- [The Great Nut War](/great-nut-war): Epic narrative of Peanut Republic vs Almond Empire
+- [War Machine](/warmachine): Faction abilities and protocol defensive infrastructure
+- [NUTINO Memes](/nutinoMemes): Community meme gallery and creative content
+
+## Optional
+
+- [Official Site](https://basednut.com): Main BASED NUT website
+- [GitBook Docs](https://docs.basednut.com/): Full protocol documentation (note: may be outdated — refer to on-chain data and this portal for current state)
+- [Twitter/X](https://x.com/BASEDNUT_): Official social channel
+- [Liquidity Portal](https://liquidity-six.vercel.app/): This site (production deployment)

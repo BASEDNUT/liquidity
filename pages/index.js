@@ -1,66 +1,64 @@
 // Unified Home with Pools/Tokens toggle and shared fetch
-import { useState, useEffect, useMemo } from "react";
-import { Container, Grid, CircularProgress, Typography, Box } from "@mui/material";
+import { useState, useMemo } from "react";
+import { Container, Grid, Typography, Box } from "@mui/material";
 import Head from "next/head";
 import Layout from "../components/Layout";
 import FallingNutsOverlay from "../components/FallingNutsOverlay";
 import FilterTabs from "../components/FilterTabs";
 import FilterTokens from "../components/FilterTokens";
+import SearchBar from "../components/SearchBar";
 import PoolCard from "../components/PoolCard";
 import TokenCard from "../components/TokenCard";
 import DataToggle from "../components/DataToggle";
 import { fetchPools } from "../utils/fetchPools";
-import { fetchTokens } from "../utils/fetchTokens";
+import { fetchTokens, fetchTokensWithMarketData } from "../utils/fetchTokens";
 import Image from "next/image";
 import OrchardTVLNotice from "../components/OrchardTVLNotice";
 
-export default function Home() {
-  const [pools, setPools] = useState([]);
-  const [tokens, setTokens] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [view, setView] = useState("pools");
+export default function Home({ initialPools, initialTokens }) {
+  const [view, setView] = useState("tokens");
   const [poolFilter, setPoolFilter] = useState("All");
   const [tokenFilter, setTokenFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    let active = true;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const [p, t] = await Promise.all([
-          Promise.resolve(fetchPools()),
-          Promise.resolve(fetchTokens()),
-        ]);
-
-        if (!active) return;
-        setPools(p);
-        // Flatten tokens similar to tokens page
-        const flatTokens = [
-          { ...t.trunk, id: (t.trunk?.name || "trunk").toLowerCase(), category: "Trunk" },
-          ...(t.branches || []).map((item, i) => ({ ...item, id: (item.name || `branch-${i}`).toLowerCase(), category: "Branch" })),
-          ...(t.nestedTokens || []).map((item, i) => ({ ...item, id: (item.name || `nested-${i}`).toLowerCase(), category: "Nested" })),
-          ...(t.soil || []).map((item, i) => ({ ...item, id: (item.name || `soil-${i}`).toLowerCase(), category: "Soil" })),
-        ];
-        setTokens(flatTokens);
-      } catch (e) {
-        console.error("Error loading data", e);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-    load();
-    return () => { active = false; };
-  }, []);
+  const pools = initialPools || [];
+  const tokens = initialTokens || [];
 
   const filteredPools = useMemo(() => {
-    if (poolFilter === "All") return pools;
-    return pools.filter((pool) => Array.isArray(pool.category) ? pool.category.includes(poolFilter) : pool.category === poolFilter);
-  }, [pools, poolFilter]);
+    let result = pools;
+    if (poolFilter !== "All") {
+      result = result.filter((pool) => Array.isArray(pool.category) ? pool.category.includes(poolFilter) : pool.category === poolFilter);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter((pool) => {
+        const name = (pool.name || "").toLowerCase();
+        const platform = (pool.platform || "").toLowerCase();
+        const flavor = (pool.flavor || "").toLowerCase();
+        const id = (pool.id || "").toLowerCase();
+        return name.includes(q) || platform.includes(q) || flavor.includes(q) || id.includes(q);
+      });
+    }
+    return result;
+  }, [pools, poolFilter, searchQuery]);
 
   const filteredTokens = useMemo(() => {
-    if (tokenFilter === "All") return tokens;
-    return tokens.filter((t) => t.category === tokenFilter);
-  }, [tokens, tokenFilter]);
+    let result = tokens;
+    if (tokenFilter !== "All") {
+      result = result.filter((t) => t.category === tokenFilter);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter((t) => {
+        const name = (t.name || "").toLowerCase();
+        const role = (t.role || "").toLowerCase();
+        const category = (t.category || "").toLowerCase();
+        const tags = (t.tags || []).join(" ").toLowerCase();
+        return name.includes(q) || role.includes(q) || category.includes(q) || tags.includes(q);
+      });
+    }
+    return result;
+  }, [tokens, tokenFilter, searchQuery]);
 
   return (
     <Layout>
@@ -74,14 +72,14 @@ export default function Home() {
             <title>{`${dynamicHeading} | BASED NUT`}</title>
             <meta
               name="description"
-              content="Browse nutty assets across the BASED NUT orchard — liquidity pools and tokens in one place."
+              content="BASED NUT — an experimental memefi project. Browse tokens, liquidity pools, and arbitrage pathways across the orchard."
             />
           </Head>
         );
       })()}
       <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4, px: { xs: 2, sm: 4 }, maxWidth: 'lg' }}>
         <Box sx={{ width: '100%', textAlign: 'center', mb: 0 }}>
-          <Image src="/img/based-nuts-hero.png" alt="Based Nut's - The Orchard" layout="responsive" width={800} height={600} priority />
+          <Image src="/img/hero-logo.png" alt="Based Nut's - The Orchard" width={800} height={600} priority style={{ width: '100%', height: 'auto' }} />
         </Box>
         {process.env.NEXT_PUBLIC_FEATURE_ORCHARD_SIGN_ENABLED !== 'false' && (
           <OrchardTVLNotice />
@@ -95,6 +93,10 @@ export default function Home() {
             </Typography>
           );
         })()}
+
+        <Box sx={{ width: '100%', mb: 2, mt: 1 }}>
+          <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder={view === 'pools' ? "Search pools, platforms, flavors..." : "Search tokens, roles, categories..."} />
+        </Box>
 
         <Box
           sx={{
@@ -115,14 +117,10 @@ export default function Home() {
           )}
         </Box>
 
-        {loading ? (
-          <Grid container justifyContent="center" sx={{ mt: 4 }}>
-            <CircularProgress />
-          </Grid>
-        ) : view === 'pools' ? (
+        {view === 'pools' ? (
           <Grid container spacing={3} sx={{ mt: 2 }}>
             {filteredPools.map((pool) => (
-              <Grid item xs={12} sm={6} md={4} key={pool.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pool.id}>
                 <PoolCard {...pool} />
               </Grid>
             ))}
@@ -130,13 +128,55 @@ export default function Home() {
         ) : (
           <Grid container spacing={3} sx={{ mt: 2 }}>
             {filteredTokens.map((token) => (
-              <Grid item xs={12} sm={6} md={4} key={token.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={token.id}>
                 <TokenCard token={token} />
               </Grid>
             ))}
           </Grid>
         )}
+
+        <Box sx={{ width: '100%', textAlign: 'center', mt: 3, mb: 2 }}>
+          <Typography variant="caption" sx={{ color: 'rgba(93,64,55,0.6)', fontSize: '0.7rem' }}>
+            📊 Data sources: <strong>GT</strong> = GeckoTerminal · <strong>DS</strong> = DexScreener · <strong>RPC</strong> = Base RPC · <strong>CG</strong> = CoinGecko
+          </Typography>
+        </Box>
       </Container>
     </Layout>
   );
+}
+
+
+export async function getServerSideProps() {
+  try {
+    const [p, t] = await Promise.all([
+      fetchPools(),
+      fetchTokensWithMarketData(),
+    ]);
+
+    const flatTokens = [
+      { ...t.trunk, id: (t.trunk?.name || "trunk").toLowerCase(), category: "Trunk" },
+      ...(t.branches || []).map((item, i) => ({ ...item, id: (item.name || `branch-${i}`).toLowerCase(), category: "Branch" })),
+      ...(t.nestedTokens || []).map((item, i) => ({ ...item, id: (item.name || `nested-${i}`).toLowerCase(), category: "Nested" })),
+      ...(t.soil || []).map((item, i) => ({ ...item, id: (item.name || `soil-${i}`).toLowerCase(), category: "Soil" })),
+    ];
+
+    // Serialize dates for JSON
+    const serializedPools = JSON.parse(JSON.stringify(p));
+    const serializedTokens = JSON.parse(JSON.stringify(flatTokens));
+
+    return {
+      props: {
+        initialPools: serializedPools,
+        initialTokens: serializedTokens,
+      },
+    };
+  } catch (e) {
+    console.error("SSR data fetch failed:", e);
+    return {
+      props: {
+        initialPools: [],
+        initialTokens: [],
+      },
+    };
+  }
 }

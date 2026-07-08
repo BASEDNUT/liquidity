@@ -30,19 +30,6 @@ export default function Footer() {
           </Typography>
           <Box sx={{ display: "flex", gap: 2, mt: { xs: 1, sm: 0 } }}>
             <Link
-              href="https://dune.com/basednut/basednut"
-              target="_blank"
-              rel="noopener noreferrer" // Security improvement
-              underline="none"
-              sx={{
-                color: "#5B3A29",
-                fontWeight: "bold",
-                ":hover": { color: "#7D5A50" },
-              }}
-            >
-              Dune Dashboard
-            </Link>
-            <Link
               href="https://basednut.com"
               target="_blank"
               rel="noopener noreferrer" // Security improvement
@@ -68,7 +55,7 @@ export default function Footer() {
           sx={{ color: "#5B3A29", fontWeight: "bold", mt: 2 }}
         >
           <em style={{ color: "#7D5A50" }}>
-            BASED NUT TOKENS are whimsical meme coins devoid of any intrinsic value or anticipation of financial gains. Coins are for entertainment purposes only. No formal team or roadmap. Please nut responsibly!
+            BASED NUT is an experimental memefi project. BASED NUT TOKENS are whimsical meme coins devoid of any intrinsic value or anticipation of financial gains. Coins are for entertainment purposes only. No formal team or roadmap. Please nut responsibly!
           </em>
         </Typography>
       </Container>

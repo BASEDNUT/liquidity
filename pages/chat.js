@@ -1,28 +1,11 @@
 import React, { useState } from 'react';
+import Head from 'next/head';
 import Layout from "../components/Layout";
 import ReactMarkdown from 'react-markdown'; // Install this library using `npm install react-markdown`
-
-const defaultSettings = {
-  frequency_penalty: 0,
-  presence_penalty: 0,
-  repetition_penalty: 1.2,
-  temperature: 0.7,
-  max_tokens: 123,
-  max_temp: 1.5,
-  min_temp: 0.1,
-  max_completion_tokens: 123,
-  top_k: 40,
-  top_p: 0.9,
-  min_p: 0.05,
-  stop: "<string>",
-  stop_token_ids: [151643, 151645],
-};
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [showSettings, setShowSettings] = useState(false);
-  const [customSettings, setCustomSettings] = useState(defaultSettings);
   const [isProcessing, setIsProcessing] = useState(false); // Track if the bot is processing
 
   const prepackagedPrompts = [
@@ -32,7 +15,7 @@ const Chat = () => {
     },
     {
       label: "🔍 Peanutoshi Nutkamoto Engine",
-      prompt: "What is the Peanutoshi Nutkamoto Engine, and how does it predict liquidity shifts using the Fear & Greed index from CoinMarketCap and data DeFiLlamas TVL tides? How can Peanutoshi help me navigate the DeFi seas?",
+      prompt: "What is the Peanutoshi Nutkamoto Engine, and how does it predict liquidity shifts using the Fear & Greed index from CoinMarketCap and data DeFiLlama's TVL tides? How can Peanutoshi help me navigate the DeFi seas?",
     },
     {
       label: "📊Crack the Market",
@@ -41,8 +24,7 @@ const Chat = () => {
   ];
 
   const handlePrepackagedPrompt = (prompt) => {
-    setInput(prompt);
-    handleSendMessage();
+    handleSendMessage(prompt);
   };
 
   const parseResponse = (reply) => {
@@ -58,9 +40,10 @@ const Chat = () => {
     return { cleanedReply, chainOfThought };
   };
 
-  const handleSendMessage = async () => {
-    if (!input.trim() || isProcessing) return; // Prevent sending if processing
-    const userMessage = { text: input, timestamp: new Date(), sender: 'user' };
+  const handleSendMessage = async (overridePrompt) => {
+    const messageText = overridePrompt !== undefined ? overridePrompt : input;
+    if (!messageText.trim() || isProcessing) return; // Prevent sending if processing
+    const userMessage = { text: messageText, timestamp: new Date(), sender: 'user' };
     setMessages((prev) => [...prev, userMessage]);
     const tempId = Date.now();
     setMessages((prev) => [
@@ -69,6 +52,19 @@ const Chat = () => {
     ]);
     setInput('');
     setIsProcessing(true); // Disable sending while processing
+
+    // Timeout to handle cases where the bot takes too long to respond
+    const timeoutId = setTimeout(() => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === tempId
+            ? { ...msg, text: "The bot is taking too long to respond. Please try again later." }
+            : msg
+        )
+      );
+      setIsProcessing(false); // Reset processing state
+    }, 120000); // 2 minutes
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -91,6 +87,7 @@ const Chat = () => {
 
       const data = await response.json();
       const { cleanedReply, chainOfThought } = parseResponse(data.reply || 'No reply available.');
+      clearTimeout(timeoutId); // Clear timeout on successful response
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === tempId
@@ -100,6 +97,7 @@ const Chat = () => {
       );
     } catch (error) {
       console.error('Error sending message:', error);
+      clearTimeout(timeoutId); // Clear timeout on error
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === tempId
@@ -108,24 +106,17 @@ const Chat = () => {
         )
       );
     } finally {
+      clearTimeout(timeoutId); // Ensure timeout is cleared in all cases
       setIsProcessing(false); // Ensure processing is reset after completion
     }
-
-    // Timeout to handle cases where the bot takes too long to respond
-    setTimeout(() => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === tempId
-            ? { ...msg, text: "The bot is taking too long to respond. Please try again later." }
-            : msg
-        )
-      );
-      setIsProcessing(false); // Reset processing state
-    }, 120000); // 2 minutes
   };
 
   return (
     <Layout>
+      <Head>
+        <title>Peanutoshi Chat | BASED NUT</title>
+        <meta name="description" content="Chat with Peanutoshi Nutkamoto, the DeFi Meme Oracle of the BASED NUT ecosystem." />
+      </Head>
       <main>
         <div className="brand-box">
           <h1>Chat with our Peanutoshi</h1>
@@ -181,7 +172,7 @@ const Chat = () => {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => { if (e.key === 'Enter') handleSendMessage(); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSendMessage(); }}
               placeholder="Type your message..."
               disabled={isProcessing} // Disable input while processing
             />

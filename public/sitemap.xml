@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://liquidity-six.vercel.app/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/tokens</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/token/nut</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/token/snut</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/token/pnut</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/token/salt</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/token/nutino</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/token/pnuts</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/token/almd</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/token/salmd</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/staking</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/arb-bot</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/faq</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/tree</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/great-nut-war</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/warmachine</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/chat</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/images</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://liquidity-six.vercel.app/nutinoMemes</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url>
+    <loc>https://liquidity.basednut.com/nut-catcher</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+</urlset>

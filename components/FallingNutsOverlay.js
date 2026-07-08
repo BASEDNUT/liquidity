@@ -11,7 +11,7 @@ export default function FallingNutsOverlay({ active = true, density = 'low', int
       const next = Array.from({ length: count }).map((_, i) => ({
         id: `${Date.now()}-${i}`,
         left: Math.random() * 100,
-        emoji: Math.random() > 0.5 ? '🥜' : '🌰',
+        emoji: Math.random() > 0.5 ? '🌰' : '🥜',
         duration: 8000 + Math.random() * 4000,
       }));
       setItems((prev) => [...prev, ...next]);

@@ -7,6 +7,8 @@ import {
   Chip,
   Button,
   Box,
+  Collapse,
+  IconButton,
 } from "@mui/material";
 import { styled, keyframes } from "@mui/system";
 
@@ -122,6 +124,7 @@ export default function PoolCard({
   dexscreenerUrl,
   platform,
   icon, // new prop: the emoji icon from the pool
+  marketData, // multi-source market data from /api/market-data
 }) {
   const chipColor =
     category.includes("NFTs") && status === "Bonding"
@@ -152,6 +155,8 @@ export default function PoolCard({
       : tvl;
 
   // New state and refs for emoji animations
+  // Multi-source collapsible state
+  const [multiSourceOpen, setMultiSourceOpen] = useState(false);
   const [splashes, setSplashes] = useState([]);
   const [cursorPos, setCursorPos] = useState({ x: -100, y: -100 });
   const rainInterval = useRef(null);
@@ -252,8 +257,7 @@ export default function PoolCard({
       }}/>
 
       <CardContent sx={{ padding: "24px", position: "relative", zIndex: 1 }}>
-        <Link href={`/pool/${id}`} passHref legacyBehavior>
-          <a aria-label={`View details for pool ${name}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Link href={`/pool/${id}`} aria-label={`View details for pool ${name}`} style={{ textDecoration: 'none', color: 'inherit' }}>
             {icon && (
               <FloatyIcon sx={{ mb: 1 }} aria-hidden="true">
                 <Aura />
@@ -266,8 +270,7 @@ export default function PoolCard({
             >
               {name}
             </Typography>
-          </a>
-        </Link>
+          </Link>
 
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, my: 1 }}>
           {Array.isArray(category)
@@ -285,12 +288,59 @@ export default function PoolCard({
 
         <Typography variant="body1" sx={{ color: "#7D5A50", mb: 0.5 }}>
           <strong>TVL:</strong>{" "}
-          {formattedTVL !== "TBD" ? `$${formattedTVL}` : "TBD"}
+          {formattedTVL != null ? `$${Number(formattedTVL).toLocaleString(undefined, {maximumFractionDigits: 2})}` : "—"}{" "}
+          {formattedTVL != null && <small style={{ color: "#A0522D", fontWeight: "bold", fontSize: "0.7rem" }}>(GT)</small>}
         </Typography>
 
         <Typography variant="body1" sx={{ color: "#7D5A50", mb: 1 }}>
           <strong>Platform:</strong> {platform}
         </Typography>
+
+        {marketData && (
+          <Box sx={{ mb: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                cursor: "pointer",
+                userSelect: "none",
+                color: "#9E8B7E",
+                fontSize: "0.75rem",
+                "&:hover": { color: "#7D5A50" },
+              }}
+              onClick={() => setMultiSourceOpen((v) => !v)}
+            >
+              <span style={{ fontWeight: 600 }}>
+                📊 Multi-Source {multiSourceOpen ? "▾" : "▸"}
+              </span>
+            </Box>
+            <Collapse in={multiSourceOpen} timeout="auto" unmountOnExit>
+              <Box sx={{ mt: 0.5, fontSize: "0.72rem", color: "#9E8B7E", lineHeight: 1.6 }}>
+                <Box>
+                  <strong style={{ color: "#7D5A50" }}>GeckoTerminal:</strong>{" "}
+                  {marketData.geckoTerminal?.tvl != null
+                    ? `$${Number(marketData.geckoTerminal.tvl).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+                    : "N/A"}
+                </Box>
+                <Box>
+                  <strong style={{ color: "#7D5A50" }}>DexScreener:</strong>{" "}
+                  {marketData.dexScreener?.tvl != null
+                    ? `$${Number(marketData.dexScreener.tvl).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+                    : "N/A"}
+                </Box>
+                <Box>
+                  <strong style={{ color: "#7D5A50" }}>RPC Reserves:</strong>{" "}
+                  {marketData.rpc?.reserves0 != null && marketData.rpc?.reserves1 != null
+                    ? `${Number(marketData.rpc.reserves0).toLocaleString(undefined, { maximumFractionDigits: 4 })} / ${Number(marketData.rpc.reserves1).toLocaleString(undefined, { maximumFractionDigits: 4 })}`
+                    : marketData.rpc?.totalSupply != null
+                      ? `Supply: ${Number(marketData.rpc.totalSupply).toLocaleString(undefined, { maximumFractionDigits: 4 })}`
+                      : "N/A"}
+                </Box>
+              </Box>
+            </Collapse>
+          </Box>
+        )}
+
 
         <Chip
           label={status}
@@ -353,9 +403,8 @@ export default function PoolCard({
 
         {/* Secondary actions (outlined, brown) */}
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" }, gap: 1 }}>
-          <Link href={`/pool/${id}`} passHref legacyBehavior>
-            <a aria-label={`Open profile for pool ${name}`} style={{ textDecoration: 'none' }}>
-              <Button
+          <Link href={`/pool/${id}`} aria-label={`Open profile for pool ${name}`} style={{ textDecoration: 'none' }}>
+            <Button
                 variant="outlined"
                 size="small"
                 fullWidth
@@ -376,7 +425,6 @@ export default function PoolCard({
               >
                 DETAILS
               </Button>
-            </a>
           </Link>
           <Button
             variant="outlined"

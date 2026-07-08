@@ -1,0 +1,28 @@
+# BASED NUT robots.txt
+# https://basednut.com
+
+# All bots welcome — this is a public site
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /.next/
+Disallow: /_next/
+
+# Allow AI crawlers explicitly
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# Sitemap location
+Sitemap: https://basednut.com/sitemap.xml

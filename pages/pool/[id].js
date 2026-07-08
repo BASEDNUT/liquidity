@@ -1,18 +1,120 @@
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Layout from '../../components/Layout';
-import { fetchPools } from '../../utils/fetchPools';
-import { Box, Chip, Typography, Button, Grid, Stack } from '@mui/material';
+import PoolNav from '../../components/PoolNav';
+import { fetchPools, getStaticPools } from '../../utils/fetchPools';
+import { Box, Chip, Typography, Button, Grid, Stack, Skeleton, Tooltip } from '@mui/material';
 import GlossaryTooltip from '../../components/GlossaryTooltip';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { fetchTokens } from '../../utils/fetchTokens';
+
+// ── Pool descriptions ──
+const POOL_DESCRIPTIONS = {
+  'nut-weth-uniswap-v3': 'Primary concentrated liquidity venue for NUT. Uniswap V3 enables capital-efficient positions with custom tick ranges. Deep liquidity for large swaps with minimal slippage.',
+  'nut-weth-uniswap-v2': 'Legacy NUT/wETH pair on Uniswap V2. Simple x*y=k AMM. Full-range liquidity — easier to LP but less capital-efficient than V3.',
+  'snut-nut-aerodrome': 'Keeper-Arb Reactor pool. SNUT/NUT pair on Aerodrome. Arbitrageurs cycle between this pool and the SNUT/wETH pool to keep NUT price aligned across venues. Aerodrome emissions reward LPs.',
+  'pnut-balancer': 'Balancer V2 4-asset index basket (25% cbETH, 25% cbBTC, 25% NUT, 25% SNUT). Mint/redeem BPT to enter/exit the basket. NAV drift from market price creates arbitrage opportunities.',
+  'nut-aero-aerodrome': 'NUT/AERO pair on Aerodrome. Provides NUT exposure denominated in AERO. Aerodrome gauge emissions may incentivize liquidity.',
+  'nut-cbbtc-aerodrome': 'NUT/cbBTC pair on Aerodrome. Bitcoin-denominated NUT liquidity. Connects the NUT ecosystem to Base\'s wrapped Bitcoin via cbBTC.',
+  'snut-weth-uniswap-v2': 'Main spot liquidity for SNUT. SNUT/wETH on Uniswap V2. Primary price discovery venue for SNUT — 6% tax applies on all swaps.',
+  'snut-lp-weth-uniswap-v2': 'Meta-Market pool for SNUT-LP tokens. LPs who provide SNUT/wETH liquidity can fractionalize their LP positions here. Liquidity rights trading venue.',
+  'nutino-nut-mintclub': 'Mint Club bonding curve for NUTINO backed by NUT. Mint NUTINO by depositing NUT, burn to withdraw. Bonding curve price = NUT locked ÷ NUTINO supply. Two-venue arb: mint on Mint Club → sell on Uniswap V2 (NUTINO/cbBTC).',
+  'nutino-cbbtc-uniswap-v2': 'NUTINO/cbBTC DEX pair on Uniswap V2. Second venue for NUTINO — enables two-venue arbitrage with the Mint Club bonding curve. Bitcoin-denominated.',
+  'salt-usdc-aerodrome': 'SALT/USDC pair on Aerodrome. Primary DEX venue for SALT. Enables the two-venue arb loop: mint SALT with NUT on Mint Club → sell for USDC here.',
+  'nut-salt-mintclub': 'Mint Club bonding curve for SALT backed by NUT. Mint SALT by depositing NUT, burn to withdraw. Curve price = NUT locked ÷ SALT supply. Significant buy/sell spread is the bonding curve\'s value capture mechanism.',
+  'pnuts-nut-mintclub': 'Mint Club NFT bonding curve for P-NUTS (Extra Roasted Trio NFT collection). Backed by NUT. Mint/burn mechanism determines floor price via bonding curve position.',
+  'almd-nut-mintclub': 'Mint Club NFT bonding curve for ALMONDS (Golden Salted Swarm NFT collection). Backed by NUT. Bonding curve sets floor price.',
+  'salmd-nut-mintclub': 'Mint Club NFT bonding curve for S-ALMONDS (Sky-Seasoned Crunch NFT collection). Backed by NUT. Bonding curve sets floor price.',
+  'pnutrmy-nut-mintclub': 'Mint Club NFT bonding curve for PEANUT ARMY NFT collection. Holders received SALT airdrop. Backed by NUT.',
+  'spnut-usdc-sudoswap': 'Sudoswap fractionalization pool for SPNUT NFTs. AMM-based NFT fractionalization — buy/sell fractions priced by the Sudoswap bonding curve in USDC.',
+  'pnuts-usdc-sudoswap': 'Sudoswap fractionalization pool for P-NUTS NFTs. AMM-based NFT trading with USDC pricing. Enables fractional NFT ownership.',
+  'salmd-cbeth-sudoswap': 'Sudoswap fractionalization pool for S-ALMONDS NFTs priced in cbETH. Ethereum-backed NFT trading venue.',
+  'almd-cbeth-sudoswap': 'Sudoswap fractionalization pool for ALMONDS NFTs priced in cbETH. Ethereum-backed NFT trading venue.',
+};
+
+// ── Format helpers ──
+function fmtUsd(val) {
+  if (val == null || isNaN(val)) return '—';
+  if (val >= 1e9) return '$' + (val / 1e9).toFixed(2) + 'B';
+  if (val >= 1e6) return '$' + (val / 1e6).toFixed(2) + 'M';
+  if (val >= 1e3) return '$' + (val / 1e3).toFixed(2) + 'K';
+  return '$' + val.toFixed(4);
+}
+
+function fmtPrice(val) {
+  if (val == null || isNaN(val)) return '—';
+  if (val >= 1) return '$' + val.toFixed(4);
+  if (val >= 0.01) return '$' + val.toFixed(6);
+  if (val > 0) return '$' + val.toPrecision(4);
+  return '—';
+}
+
+function fmtPct(val) {
+  if (val == null || isNaN(val)) return null;
+  const sign = val >= 0 ? '+' : '';
+  return sign + val.toFixed(2) + '%';
+}
+
+function fmtNum(val) {
+  if (val == null || isNaN(val)) return '—';
+  if (val >= 1e9) return (val / 1e9).toFixed(2) + 'B';
+  if (val >= 1e6) return (val / 1e6).toFixed(2) + 'M';
+  if (val >= 1e3) return (val / 1e3).toFixed(2) + 'K';
+  return val.toString();
+}
+
+// ── Merge market data from multiple sources ──
+function getPoolMarketData(poolId, apiData) {
+  if (!apiData?.pools?.[poolId]) return null;
+  const p = apiData.pools[poolId];
+  // Prefer GeckoTerminal, then DexScreener, then MintClub
+  const src = p.geckoTerminal || p.dexScreener || p.mintClub || null;
+  if (!src) return null;
+  return {
+    tvl: src.tvl ?? null,
+    volume24h: src.volume24h ?? null,
+    price: src.price ?? null,
+    priceChange24h: src.priceChange24h ?? null,
+    txns24h: src.txns24h ?? null,
+    stale: src.stale || false,
+    source: p.geckoTerminal ? 'GeckoTerminal' : p.dexScreener ? 'DexScreener' : 'MintClub',
+  };
+}
 
 const PoolPage = ({ pool: initialPool }) => {
   const router = useRouter();
   const { id } = router.query;
-  const pools = fetchPools();
+  const pools = getStaticPools();
   const tokenData = fetchTokens();
   const pool = initialPool || pools.find((p) => p.id === id);
+
+  // ── Live market data ──
+  const [marketData, setMarketData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (!pool?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/market-data');
+        if (res.ok) {
+          const json = await res.json();
+          if (!cancelled) setMarketData(json);
+        }
+      } catch {
+        // silent fail — show dash
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [pool?.id]);
+
+  const liveData = useMemo(() => {
+    if (!marketData || !pool?.id) return null;
+    return getPoolMarketData(pool.id, marketData);
+  }, [marketData, pool?.id]);
+
   const tokenList = useMemo(() => {
     if (!tokenData) return [];
     return [
@@ -33,52 +135,47 @@ const PoolPage = ({ pool: initialPool }) => {
   }, [initialPool, pool, tokenList]);
 
   const embed = useMemo(() => {
+    // Issue 1 fix: Use GeckoTerminal token address embed for correct token labeling.
+    // Pool embeds show tokens in GeckoTerminal's own base/quote order which may not match
+    // our pool name. Token embeds always label correctly.
+    const poolIsNFT = (Array.isArray(pool?.category) ? pool.category : [pool?.category]).includes('NFTs') || pool?.category === 'NFTs';
+    if (poolIsNFT) return null; // NFTs not charted on DEX aggregators
+    // Find first constituent token with an address for the embed
+    const firstToken = constituents.find(c => c.token?.address)?.token;
+    if (firstToken?.address) {
+      const gtUrl = new URL(`https://www.geckoterminal.com/base/tokens/${firstToken.address}`);
+      gtUrl.searchParams.set('embed', '1');
+      gtUrl.searchParams.set('info', '0');
+      gtUrl.searchParams.set('chart', '1');
+      gtUrl.searchParams.set('theme', 'dark');
+      gtUrl.searchParams.set('chartType', 'candlestick');
+      gtUrl.searchParams.set('chartInterval', '1D');
+      gtUrl.searchParams.set('interval', '1D');
+      return { type: 'geckoterminal', src: gtUrl.toString() };
+    }
+    // Fallback: try pool-based embed from dexscreenerUrl
     if (!pool?.dexscreenerUrl) return null;
     try {
       const url = new URL(pool.dexscreenerUrl);
       if (url.hostname.includes('dexscreener.com')) {
-        const params = {
-          embed: '1',
-          loadChartSettings: '0',
-          trades: '0',
-          tabs: '0',
-          info: '0',
-          chartLeftToolbar: '0',
-          chartDefaultOnMobile: '1',
-          chartTheme: 'dark',
-          theme: 'dark',
-          chartStyle: '1',
-          chartType: 'usd',
-          interval: '1D',
-        };
-        Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-        return { type: 'dexscreener', src: url.toString() };
+        const pathSegments = url.pathname.split('/').filter(Boolean);
+        const lastSegment = pathSegments[pathSegments.length - 1] || '';
+        if (lastSegment.includes('-')) return null;
+        const gtUrl = new URL(`https://www.geckoterminal.com/base/pools/${lastSegment}`);
+        gtUrl.searchParams.set('embed', '1');
+        gtUrl.searchParams.set('info', '0');
+        gtUrl.searchParams.set('chart', '1');
+        gtUrl.searchParams.set('theme', 'dark');
+        gtUrl.searchParams.set('chartType', 'candlestick');
+        gtUrl.searchParams.set('chartInterval', '1D');
+        gtUrl.searchParams.set('interval', '1D');
+        return { type: 'geckoterminal', src: gtUrl.toString() };
       }
-      if (url.hostname.includes('defined.fi')) {
-        // Ensure "/embed" path and set sane defaults
-        const cleanPath = url.pathname.endsWith('/embed')
-          ? url.pathname
-          : `${url.pathname.replace(/\/$/, '')}/embed`;
-        url.pathname = cleanPath;
-        // Reset query to avoid duplications
-        url.search = '';
-        const params = {
-          quoteToken: 'token0',
-          hideTxTable: '1',
-          hideSidebar: '1',
-          hideChart: '0',
-          hideChartEmptyBars: '1',
-          chartSmoothing: '0',
-          embedColorMode: 'DEFAULT',
-        };
-        Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-        return { type: 'defined', src: url.toString() };
-      }
-    } catch (e) {
-      // no-op, fall through to placeholder
+    } catch {
+      // no-op
     }
     return null;
-  }, [pool?.dexscreenerUrl]);
+  }, [pool?.dexscreenerUrl, pool?.category, constituents]);
 
   if (!pool) {
     return (
@@ -91,36 +188,68 @@ const PoolPage = ({ pool: initialPool }) => {
     );
   }
 
+  const description = POOL_DESCRIPTIONS[pool.id];
+  const isNFTPool = (Array.isArray(pool.category) ? pool.category : [pool.category]).includes('NFTs') || pool.category === 'NFTs';
+  // Extract contract address from pool.url (basescan link)
+  const contractAddr = pool.url?.match(/0x[a-fA-F0-9]{40}/)?.[0] || null;
+  const tvlDisplay = liveData?.tvl ?? (pool.tvl ?? null);
+  const priceDisplay = liveData?.price ?? null;
+  const volDisplay = liveData?.volume24h ?? null;
+  const changePct = liveData?.priceChange24h ?? null;
+  const txnsDisplay = liveData?.txns24h ?? null;
+
   return (
     <Layout>
       <Head>
         <title>{pool.name} | Pool Profile</title>
-        <meta name="description" content={`Profile for ${pool.name} on ${pool.platform}.`} />
+        <meta name="description" content={description || `Profile for ${pool.name} on ${pool.platform}.`} />
       </Head>
       <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto' }}>
+        <PoolNav />
+
         <Box sx={{
-          mb: 3,
-          p: { xs: 2, md: 3 },
-          borderRadius: 3,
+          mb: 3, p: { xs: 2, md: 3 }, borderRadius: 3,
           background: 'linear-gradient(135deg, #FAF3E6 0%, #E6C9A8 50%, #C8A27A 100%)',
-          color: '#3D2B1F',
-          boxShadow: '0 10px 30px rgba(90, 60, 30, 0.25)'
+          color: '#3D2B1F', boxShadow: '0 10px 30px rgba(90, 60, 30, 0.25)'
         }}>
-          <Typography variant="h3" sx={{ mb: 1 }}>{pool.icon} {pool.name}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
+            <Typography variant="h3">{pool.icon} {pool.name}</Typography>
+            {isNFTPool && (
+              <Chip label="NFT" sx={{
+                bgcolor: '#FFD700', color: '#1a1a1a', fontWeight: 900,
+                fontSize: '1rem', height: 32, px: 1.5,
+                border: '2px solid #B8860B',
+                boxShadow: '0 2px 8px rgba(255,215,0,0.4)',
+                animation: 'pulse 2s infinite',
+                '@keyframes pulse': {
+                  '0%, 100%': { boxShadow: '0 2px 8px rgba(255,215,0,0.4)' },
+                  '50%': { boxShadow: '0 2px 16px rgba(255,215,0,0.7)' },
+                },
+              }} />
+            )}
+          </Box>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             <Chip sx={{ bgcolor: 'rgba(100,70,40,0.15)', color: '#3D2B1F' }} label={pool.platform} />
+            {pool.role && (
+              <Chip sx={{ bgcolor: 'rgba(180,60,30,0.18)', color: '#8B3A1A', fontWeight: 'bold' }} label={pool.role} />
+            )}
             {Array.isArray(pool.category) ? pool.category.map((c, i) => (
               <Chip key={i} sx={{ bgcolor: 'rgba(100,70,40,0.12)', color: '#3D2B1F' }} label={c} />
             )) : (
               <Chip sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: '#fff' }} label={pool.category} />
             )}
-              <Chip sx={{ bgcolor: 'rgba(100,70,40,0.18)', color: '#3D2B1F' }} label={pool.status} />
+            <Chip sx={{ bgcolor: 'rgba(100,70,40,0.18)', color: '#3D2B1F' }} label={pool.status} />
             <GlossaryTooltip term={pool.status === 'Concentrated' ? 'Concentrated' : 'Volatile'} />
           </Box>
+          {description && (
+            <Typography sx={{ mt: 2, fontSize: '0.95rem', lineHeight: 1.6, maxWidth: 800 }}>
+              {description}
+            </Typography>
+          )}
         </Box>
 
         <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             {embed ? (
               <Box sx={{ position: 'relative', width: '100%', pb: { xs: '125%', md: '65%' }, borderRadius: 3, overflow: 'hidden', border: '1px solid rgba(100,70,40,0.25)', boxShadow: '0 6px 18px rgba(90,60,30,0.15)' }}>
                 <iframe
@@ -132,33 +261,130 @@ const PoolPage = ({ pool: initialPool }) => {
                 />
               </Box>
             ) : (
-              <Box sx={{ height: 260, border: '2px dashed rgba(100,70,40,0.35)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#5B3A29' }} aria-label="Chart placeholder">
-                <Typography>Chart coming soon</Typography>
+              <Box sx={{ height: 260, border: '2px dashed rgba(100,70,40,0.35)', borderRadius: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#5B3A29', gap: 1, p: 2 }}>
+                <Typography sx={{ fontSize: '2rem' }}>{isNFTPool ? '🎨' : '📊'}</Typography>
+                <Typography>{isNFTPool ? 'NFT Pool — Chart not available' : 'Chart not available for this pool type'}</Typography>
+                <Typography sx={{ fontSize: '0.85rem', color: 'rgba(91,58,41,0.6)', textAlign: 'center' }}>
+                  {pool.platform === 'Sudoswap' ? 'NFT fractionalization pools are not indexed by DEX charting services' : pool.platform === 'Balancer' ? 'Balancer compound pools require specialized charting' : 'Try the Explore link below for external charts'}
+                </Typography>
+                {isNFTPool && (
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1, justifyContent: 'center' }}>
+                    {pool.checkPoolUrl && (
+                      <Button href={pool.checkPoolUrl} target="_blank" rel="noopener noreferrer" size="small" sx={{ textTransform: 'none', color: '#8B5A2B', border: '1px solid rgba(139,90,43,0.3)' }}>
+                        {pool.platform} ↗
+                      </Button>
+                    )}
+                    {pool.dexscreenerUrl && (
+                      <Button href={pool.dexscreenerUrl} target="_blank" rel="noopener noreferrer" size="small" sx={{ textTransform: 'none', color: '#8B5A2B', border: '1px solid rgba(139,90,43,0.3)' }}>
+                        OpenSea ↗
+                      </Button>
+                    )}
+                    {contractAddr && (
+                      <Button href={pool.url} target="_blank" rel="noopener noreferrer" size="small" sx={{ textTransform: 'none', color: '#8B5A2B', border: '1px solid rgba(139,90,43,0.3)' }}>
+                        Basescan ↗
+                      </Button>
+                    )}
+                  </Box>
+                )}
               </Box>
             )}
           </Grid>
-          <Grid item xs={12} md={4}>
-            <Box sx={{ p: 2, border: '1px solid rgba(124,58,237,0.25)', borderRadius: 3, boxShadow: '0 4px 12px rgba(6,182,212,0.08)' }}>
-              <Typography variant="h6" sx={{ mb: 1 }}>Stats</Typography>
-              <Typography>TVL: {pool.tvl}</Typography>
-              <Typography>Price: TBD</Typography>
-              <Typography>Volume (24h): TBD</Typography>
-              <Typography>
-                Liquidity: TBD
-                <GlossaryTooltip term="Liquidity" />
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Box sx={{ p: 2, border: '1px solid rgba(139,90,43,0.18)', borderRadius: 3, boxShadow: '0 4px 12px rgba(139,90,43,0.08)' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+                <Typography variant="h6">Pool Stats</Typography>
+                {liveData?.source && (
+                  <Tooltip title={`Data from ${liveData.source}${liveData.stale ? ' (cached)' : ''}`}>
+                    <Chip size="small" sx={{ bgcolor: 'rgba(100,70,40,0.1)', color: '#5B3A29', fontSize: '0.7rem' }} label={liveData.source} />
+                  </Tooltip>
+                )}
+              </Box>
+              <Stack spacing={1.5}>
+                {/* Show contract address prominently for NFT/empty pools */}
+                {isNFTPool && contractAddr && (
+                  <Box sx={{ pb: 1.5, borderBottom: '1px solid rgba(139,90,43,0.1)' }}>
+                    <Typography component="span" sx={{ fontSize: '0.85rem', color: 'rgba(91,58,41,0.6)', display: 'block', mb: 0.5 }}>Contract</Typography>
+                    <Box component="a" href={pool.url} target="_blank" rel="noopener noreferrer" sx={{
+                      fontSize: '0.9rem', fontFamily: 'monospace', fontWeight: 600, color: '#8B5A2B',
+                      textDecoration: 'none', '&:hover': { textDecoration: 'underline' }
+                    }}>
+                      {contractAddr.slice(0,8)}...{contractAddr.slice(-6)}
+                    </Box>
+                  </Box>
+                )}
+                <Box>
+                  <Typography component="span" sx={{ fontSize: '0.85rem', color: 'rgba(91,58,41,0.6)' }}>TVL</Typography>
+                  <Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
+                    {loading ? <Skeleton width={80} /> : (tvlDisplay != null ? fmtUsd(tvlDisplay) : '—')}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography component="span" sx={{ fontSize: '0.85rem', color: 'rgba(91,58,41,0.6)' }}>Price</Typography>
+                  <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {loading ? <Skeleton width={80} /> : (priceDisplay != null ? fmtPrice(priceDisplay) : '—')}
+                    {changePct != null && !loading && (
+                      <Chip size="small" sx={{
+                        bgcolor: changePct >= 0 ? 'rgba(34,139,34,0.15)' : 'rgba(178,34,34,0.15)',
+                        color: changePct >= 0 ? '#2a7d2a' : '#b22222',
+                        fontSize: '0.75rem', fontWeight: 700
+                      }} label={fmtPct(changePct)} />
+                    )}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography component="span" sx={{ fontSize: '0.85rem', color: 'rgba(91,58,41,0.6)' }}>Volume (24h)</Typography>
+                  <Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
+                    {loading ? <Skeleton width={80} /> : (volDisplay != null ? fmtUsd(volDisplay) : '—')}
+                  </Typography>
+                </Box>
+                {txnsDisplay != null && !loading && (
+                  <Box>
+                    <Typography component="span" sx={{ fontSize: '0.85rem', color: 'rgba(91,58,41,0.6)' }}>Transactions (24h)</Typography>
+                    <Typography sx={{ fontWeight: 700, fontSize: '1.1rem' }}>{fmtNum(txnsDisplay)}</Typography>
+                  </Box>
+                )}
+                <Box>
+                  <Typography component="span" sx={{ fontSize: '0.85rem', color: 'rgba(91,58,41,0.6)' }}>Flavor</Typography>
+                  <Typography sx={{ fontStyle: 'italic', fontSize: '0.9rem' }}>{pool.flavor}</Typography>
+                </Box>
+              </Stack>
+            </Box>
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Box sx={{ p: 2, border: '1px solid rgba(139,90,43,0.18)', borderRadius: 3 }}>
+              <Typography variant="h6" sx={{ mb: 1 }}>LP Token Info</Typography>
+              <Typography sx={{ fontSize: '0.9rem', color: 'rgba(91,58,41,0.7)' }}>
+                LP tokens represent proportional ownership of the pool\'s liquidity. Holders earn trading fees proportional to their share.
               </Typography>
+              <Box sx={{ mt: 1.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Chip size="small" sx={{ bgcolor: 'rgba(100,70,40,0.08)', color: '#5B3A29' }} label={`Platform: ${pool.platform}`} />
+                <Chip size="small" sx={{ bgcolor: 'rgba(100,70,40,0.08)', color: '#5B3A29' }} label={`Status: ${pool.status}`} />
+              </Box>
+              <Typography sx={{ mt: 1.5, fontSize: '0.85rem', color: 'rgba(91,58,41,0.5)' }}>
+                Holder counts and transfer history require on-chain indexing. Check Basescan for detailed data.
+              </Typography>
+              <Button href={pool.url} target="_blank" rel="noopener noreferrer" size="small" sx={{ mt: 1, textTransform: 'none', color: '#7D5A50' }}>
+                View on Basescan →
+              </Button>
             </Box>
           </Grid>
-          <Grid item xs={12} md={6}>
-            <Box sx={{ p: 2, border: '1px solid rgba(124,58,237,0.25)', borderRadius: 3 }}>
-              <Typography variant="h6">Holders</Typography>
-              <Typography>Coming soon</Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Box sx={{ p: 2, border: '1px solid rgba(124,58,237,0.25)', borderRadius: 3 }}>
-              <Typography variant="h6">Transfers</Typography>
-              <Typography>Coming soon</Typography>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Box sx={{ p: 2, border: '1px solid rgba(139,90,43,0.18)', borderRadius: 3 }}>
+              <Typography variant="h6" sx={{ mb: 1 }}>Arbitrage & Role</Typography>
+              {pool.role ? (
+                <Typography sx={{ fontSize: '0.9rem', color: 'rgba(91,58,41,0.7)' }}>
+                  <strong>Role:</strong> {pool.role}
+                </Typography>
+              ) : (
+                <Typography sx={{ fontSize: '0.9rem', color: 'rgba(91,58,41,0.7)' }}>
+                  Standard liquidity venue providing price discovery and swap functionality for {pool.name}.
+                </Typography>
+              )}
+              {description && (
+                <Typography sx={{ mt: 1, fontSize: '0.85rem', color: 'rgba(91,58,41,0.6)' }}>
+                  {description}
+                </Typography>
+              )}
             </Box>
           </Grid>
         </Grid>
@@ -205,13 +431,13 @@ const PoolPage = ({ pool: initialPool }) => {
 export default PoolPage;
 
 export async function getStaticPaths() {
-  const pools = fetchPools();
+  const pools = getStaticPools();
   const paths = pools.map((p) => ({ params: { id: p.id } }));
   return { paths, fallback: false };
 }
 
 export async function getStaticProps({ params }) {
-  const pools = fetchPools();
+  const pools = await fetchPools();
   const pool = pools.find((p) => p.id === params.id) || null;
   if (!pool) return { notFound: true };
   return { props: { pool } };

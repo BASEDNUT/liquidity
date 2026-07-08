@@ -21,14 +21,14 @@ const nutTreeData = {
     {
       name: "SNUT",
       role: "Super Nut (Non-Escrow Rewards)",
-      utility: "Reward/multiplier token; used in staking and campaign payouts.",
+      utility: "Liquid non-escrow NUT reward-position token with recursive burn mechanics. Hold to earn NUT automatically.",
       color: "#5BA150",
       icon: "🥥", // Lush branch full of leaves
       address: "0xac130701aa31c284c36609e2489f150f419ad7ad",
       link: "https://basescan.org/token/0xac130701aa31c284c36609e2489f150f419ad7ad",
-  tags: ["ERC-20", "Rewards", "Staking"],
+  tags: ["ERC-20", "Rewards", "Reward-Position"],
       tradeLinks: [
-        { label: "Uniswap V2 sNUT/wETH", url: "https://app.uniswap.org/explore/tokens/base/0xac130701aa31c284c36609e2489f150f419ad7ad" },
+        { label: "Uniswap V2 SNUT/wETH", url: "https://app.uniswap.org/explore/tokens/base/0xac130701aa31c284c36609e2489f150f419ad7ad" },
       ],
     },
     {
@@ -196,3 +196,53 @@ export const fetchTokens = () => {
   // Return the mock data synchronously
   return nutTreeData;
 };
+
+// Async version that enriches each token with multi-source marketData from /api/token-data
+// Falls back to no marketData if API is unreachable — never throws
+export async function fetchTokensWithMarketData() {
+  // Deep clone the static data so we do not mutate the original
+  const data = JSON.parse(JSON.stringify(nutTreeData));
+
+  // Fetch market data from API route; fallback to empty on failure
+  let tokenMarketData = {};
+  try {
+    // In SSR (getStaticProps) there is no window — use localhost fallback
+    const base = typeof window !== 'undefined' ? '' : 'http://localhost:3000';
+    const res = await fetch(`${base}/api/token-data`);
+    if (res.ok) {
+      const json = await res.json();
+      tokenMarketData = json?.tokens || {};
+    }
+  } catch {
+    // API unreachable — proceed without marketData
+  }
+
+  // Helper: attach marketData to a single token object by matching its name
+  const attachMarketData = (token) => {
+    if (!token || !token.name) return token;
+    const md = tokenMarketData[token.name];
+    if (md) {
+      token.marketData = md;
+    }
+    return token;
+  };
+
+  // Attach to trunk
+  if (data.trunk) {
+    attachMarketData(data.trunk);
+  }
+  // Attach to branches
+  if (Array.isArray(data.branches)) {
+    data.branches.forEach(attachMarketData);
+  }
+  // Attach to nestedTokens
+  if (Array.isArray(data.nestedTokens)) {
+    data.nestedTokens.forEach(attachMarketData);
+  }
+  // Attach to soil
+  if (Array.isArray(data.soil)) {
+    data.soil.forEach(attachMarketData);
+  }
+
+  return data;
+}

@@ -1,1089 +1,1599 @@
-import React, { useMemo, useState } from "react";
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+} from "react";
+import Head from "next/head";
+import Link from "next/link";
 import {
   Box,
+  Button,
+  Chip,
+  Modal,
+  Stack,
   Typography,
   useMediaQuery,
   useTheme,
-  keyframes,
-  styled,
-  Tooltip,
-  Modal,
-  Button,
 } from "@mui/material";
-import nutTreeData from "../utils/fetchTokens.js";
+
 import Layout from "../components/Layout";
-import Head from "next/head";
+import nutTreeData from "../utils/fetchTokens.js";
 
-// --------------------- ANIMATIONS ---------------------
-const wiggle = keyframes`
-  0%, 100% { transform: rotate(0deg); }
-  20% { transform: rotate(3deg); }
-  40% { transform: rotate(-3deg); }
-  60% { transform: rotate(2deg); }
-  80% { transform: rotate(-2deg); }
-`;
+/**
+ * BASED NUT Liquidity Tree
+ * Single-file production refactor.
+ *
+ * Design principles:
+ * - SVG owns the map/tree artwork.
+ * - React owns interaction state.
+ * - MUI owns shell, modal, and info panels.
+ * - SVG-native <animate> owns motion for consistent rendering.
+ * - No render-time Math.random().
+ */
 
-const fallDown = keyframes`
-  0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 1; }
-  60% { transform: translate3d(12px, 120px, 0) rotate(20deg); opacity: 0.9; }
-  100% { transform: translate3d(24px, 260px, 0) rotate(40deg); opacity: 0; }
-`;
+const BRAND = {
+  ink: "#2B1A10",
+  bark950: "#241004",
+  bark900: "#321708",
+  bark800: "#4B240B",
+  bark700: "#633315",
+  bark600: "#78370F",
+  bark500: "#8B4513",
+  bark400: "#B56B2B",
+  bark300: "#D59022",
+  bark200: "#E8B875",
 
-const swaySlow = keyframes`
-  0%, 100% { transform: rotate(-0.6deg); }
-  50% { transform: rotate(0.6deg); }
-`;
+  soil950: "#211006",
+  soil900: "#2B170B",
+  soil800: "#3F210F",
+  soil700: "#633315",
+  soil600: "#8A4A1F",
+  soil500: "#A76632",
 
-const swayBranch = keyframes`
-  0%, 100% { transform: rotate(-1.2deg); }
-  50% { transform: rotate(1.2deg); }
-`;
+  leaf950: "#17351F",
+  leaf900: "#1E4628",
+  leaf800: "#275A31",
+  leaf700: "#36713D",
+  leaf600: "#4D9546",
+  leaf500: "#62AD46",
+  leaf400: "#82C957",
+  leaf300: "#A8E46E",
+  leaf200: "#D8FF92",
 
-const flow = keyframes`
-  0% { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: 30; }
-`;
+  gold: "#FFD700",
+  gold2: "#FFD000",
+  amber: "#FFA500",
+  orange: "#FF8A2A",
 
-const pulseGlow = keyframes`
-  0%, 100% { box-shadow: 0 0 0 rgba(255, 215, 130, 0.0), 0 0 0 rgba(255, 215, 130, 0.0); }
-  50% { box-shadow: 0 0 20px rgba(255, 215, 130, 0.35), 0 0 40px rgba(255, 215, 130, 0.15); }
-`;
+  cream: "#FFF3D2",
+  cream2: "#FFEECF",
+  panel: "rgba(255, 238, 204, 0.88)",
+  panelStrong: "rgba(255, 244, 220, 0.94)",
 
-const shimmerFlow = keyframes`
-  0% { opacity: 0.4; stroke-dashoffset: 0; }
-  50% { opacity: 0.8; }
-  100% { opacity: 0.4; stroke-dashoffset: -40; }
-`;
+  greenFlow: "#B8F777",
+  goldFlow: "#FFD000",
+  rootFlow: "#8A4A1F",
+};
 
-const parallaxSway = keyframes`
-  0%, 100% { transform: translate3d(-2px, 0, 0) rotate(-0.8deg); }
-  50% { transform: translate3d(2px, -1px, 0) rotate(0.8deg); }
-`;
+const VIEWBOX = {
+  width: 1400,
+  height: 850,
+};
 
-const rootPulse = keyframes`
-  0%, 100% { stroke-width: 12; opacity: 0.7; }
-  50% { stroke-width: 16; opacity: 0.9; }
-`;
+const FALLBACK_DATA = {
+  trunk: {
+    name: "NUT",
+    icon: "🌰",
+    color: "#8B4513",
+    role: "Liquidity Anchor",
+    utility: "The root parent token anchoring the BASED NUT ecosystem.",
+  },
+  branches: [
+    {
+      name: "SNUT",
+      icon: "🔥",
+      color: "#4A7C59",
+      role: "Burn Pressure",
+      utility: "Routes deflationary pressure through the ecosystem.",
+    },
+    {
+      name: "pNUT",
+      icon: "🌰",
+      color: "#FFA500",
+      role: "Liquidity Balance",
+      utility: "Index/liquidity layer balancing deflationary forces.",
+    },
+  ],
+  nestedTokens: [
+    { name: "Nested", icon: "🍃", color: "#71CC31", role: "Child Layer" },
+    { name: "Child", icon: "🌿", color: "#71CC31", role: "Nested Token" },
+    { name: "Canopy", icon: "🍀", color: "#71CC31", role: "Epiphyte" },
+    { name: "Layer", icon: "🌱", color: "#71CC31", role: "Nested Token" },
+    { name: "Epiphyte", icon: "🪴", color: "#71CC31", role: "Micro Ecosystem" },
+  ],
+  soil: [
+    { name: "Pool", icon: "💧", color: "#8B4513", role: "Liquidity Pool" },
+    { name: "LP", icon: "🌱", color: "#8B4513", role: "LP Position" },
+    { name: "Aero", icon: "💵", color: "#8B4513", role: "Aero vAMM" },
+    { name: "UniV3", icon: "✈️", color: "#8B4513", role: "UniV3 Pool" },
+    { name: "Depth", icon: "🌊", color: "#8B4513", role: "AMM Depth" },
+  ],
+};
 
-const leafRustle = keyframes`
-  0%, 100% { transform: scale(1) rotate(0deg); }
-  25% { transform: scale(1.02) rotate(0.5deg); }
-  75% { transform: scale(0.98) rotate(-0.5deg); }
-`;
+function normalizeTreeData(data) {
+  const safeData = data && typeof data === "object" ? data : FALLBACK_DATA;
 
-const rotate = keyframes`
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-`;
+  return {
+    trunk: safeData.trunk || FALLBACK_DATA.trunk,
+    branches:
+      Array.isArray(safeData.branches) && safeData.branches.length
+        ? safeData.branches
+        : FALLBACK_DATA.branches,
+    nestedTokens:
+      Array.isArray(safeData.nestedTokens) && safeData.nestedTokens.length
+        ? safeData.nestedTokens
+        : FALLBACK_DATA.nestedTokens,
+    soil:
+      Array.isArray(safeData.soil) && safeData.soil.length
+        ? safeData.soil
+        : FALLBACK_DATA.soil,
+  };
+}
 
-// Punchier micro-interactions
-const impactPulse = keyframes`
-  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.9; }
-  60% { transform: translate(-50%, -50%) scale(1.25); opacity: 0.6; }
-  100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
-`;
+function sanitizeSvgId(value) {
+  return String(value || "nut")
+    .replace(/[^a-zA-Z0-9_-]/g, "")
+    .replace(/^(\d)/, "nut-$1");
+}
 
-const burstFlame = keyframes`
-  0% { transform: translate(-50%, -50%) scale(0.7) rotate(0deg); filter: drop-shadow(0 0 6px rgba(255,80,120,0.8)); opacity: 0.95; }
-  60% { transform: translate(-50%, -50%) scale(1.2) rotate(15deg); filter: drop-shadow(0 0 10px rgba(255,120,80,0.8)); opacity: 0.65; }
-  100% { transform: translate(-50%, -50%) scale(1.45) rotate(25deg); filter: drop-shadow(0 0 0 rgba(0,0,0,0)); opacity: 0; }
-`;
+function darkenColor(hex, amount = 0.18) {
+  if (!hex || typeof hex !== "string" || !hex.startsWith("#")) {
+    return BRAND.bark700;
+  }
 
-const bounce = keyframes`
-  0% { transform: translate(-50%, -50%) scale(1); }
-  35% { transform: translate(-50%, -54%) scale(1.08); }
-  100% { transform: translate(-50%, -50%) scale(1); }
-`;
+  const raw = hex.replace("#", "");
+  if (raw.length !== 6) return BRAND.bark700;
 
-// --------------------- DYNAMIC LAYOUT ---------------------
-// Compute aesthetically pleasing positions for tokens across canopy, branches, trunk, and soil.
-function computeLayout(data, isMobile) {
+  const r = Math.floor(parseInt(raw.slice(0, 2), 16) * (1 - amount));
+  const g = Math.floor(parseInt(raw.slice(2, 4), 16) * (1 - amount));
+  const b = Math.floor(parseInt(raw.slice(4, 6), 16) * (1 - amount));
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function shortRole(role = "", max = 28) {
+  if (!role) return "";
+  return role.length <= max ? role : `${role.slice(0, max - 1)}…`;
+}
+
+function tokenName(token) {
+  return String(token?.name || "").toLowerCase();
+}
+
+function tokenRole(token) {
+  return String(token?.role || "").toLowerCase();
+}
+
+function isPnut(token) {
+  return tokenName(token).includes("pnut") || tokenRole(token).includes("liquidity");
+}
+
+function isSnut(token) {
+  return tokenName(token).includes("snut") || tokenRole(token).includes("burn");
+}
+
+function getTokenCategory(data, token) {
+  if (!token) return "unknown";
+
+  if (data.trunk?.name === token.name) return "trunk";
+  if (data.branches?.some((item) => item.name === token.name)) return "branch";
+  if (data.nestedTokens?.some((item) => item.name === token.name)) return "canopy";
+  if (data.soil?.some((item) => item.name === token.name)) return "soil";
+
+  return "unknown";
+}
+
+function getAllTokens(data) {
+  return [
+    ...(data.nestedTokens || []),
+    ...(data.branches || []),
+    data.trunk,
+    ...(data.soil || []),
+  ].filter(Boolean);
+}
+
+function getTreeLayout(data) {
   const positions = {};
-  // Trunk (NUT) centered
-  positions[data.trunk.name] = { x: 50, y: isMobile ? 58 : 60 };
 
-  // Branches: spread left/right from trunk
-  const branchRadiusX = isMobile ? 18 : 20;
-  const branchY = isMobile ? 43 : 45;
-  data.branches.forEach((t, i) => {
-    const dir = i % 2 === 0 ? -1 : 1;
-    const offset = Math.ceil((i + 1) / 2);
-    positions[t.name] = {
-      x: 50 + dir * (branchRadiusX * offset),
-      y: branchY + (offset - 1) * (isMobile ? 2 : 1.5),
+  const canopySlots = [
+    { x: 250, y: 286 },
+    { x: 420, y: 220 },
+    { x: 590, y: 175 },
+    { x: 700, y: 160 },
+    { x: 810, y: 175 },
+    { x: 980, y: 220 },
+    { x: 1150, y: 286 },
+    { x: 515, y: 305 },
+    { x: 700, y: 280 },
+    { x: 885, y: 305 },
+  ];
+
+  const branchSlots = [
+    {
+      x: 395,
+      y: 420,
+      side: "left",
+      anchor: { x: 688, y: 420 },
+      label: "SNUT burn branch",
+    },
+    {
+      x: 1005,
+      y: 420,
+      side: "right",
+      anchor: { x: 732, y: 420 },
+      label: "pNUT liquidity branch",
+    },
+    {
+      x: 520,
+      y: 355,
+      side: "left",
+      anchor: { x: 690, y: 375 },
+      label: "branch route",
+    },
+    {
+      x: 880,
+      y: 355,
+      side: "right",
+      anchor: { x: 730, y: 375 },
+      label: "branch route",
+    },
+  ];
+
+  const rootSlots = [
+    { x: 270, y: 735 },
+    { x: 485, y: 785 },
+    { x: 700, y: 800 },
+    { x: 915, y: 785 },
+    { x: 1130, y: 735 },
+    { x: 150, y: 680 },
+    { x: 1250, y: 680 },
+  ];
+
+  if (data.trunk?.name) {
+    positions[data.trunk.name] = {
+      x: 700,
+      y: 555,
+      category: "trunk",
+      anchor: { x: 700, y: 520 },
+    };
+  }
+
+  data.branches.forEach((token, index) => {
+    const slot = branchSlots[index % branchSlots.length];
+
+    positions[token.name] = {
+      ...slot,
+      category: "branch",
+      branchIndex: index,
     };
   });
 
-  // Canopy (nested tokens) arranged on a gentle arc
-  const canopy = data.nestedTokens;
-  const canopyY = isMobile ? 22 : 24;
-  const canopySpan = isMobile ? 56 : 60; // width in percentage
-  canopy.forEach((t, i) => {
-    const pct = canopy.length > 1 ? i / (canopy.length - 1) : 0.5;
-    const x = 50 - canopySpan / 2 + canopySpan * pct;
-    // Arch curve: raise more at edges for a rounded crown
-    const curvature = Math.sin(pct * Math.PI) * (isMobile ? 6 : 8);
-    positions[t.name] = { x, y: canopyY + (8 - curvature) };
+  data.nestedTokens.forEach((token, index) => {
+    const slot =
+      canopySlots[index] ||
+      (() => {
+        const pct = index / Math.max(1, data.nestedTokens.length - 1);
+        const x = 230 + pct * 940;
+        const y = 295 - Math.sin(pct * Math.PI) * 135;
+        return { x, y };
+      })();
+
+    positions[token.name] = {
+      ...slot,
+      category: "canopy",
+      anchor: { x: 700, y: 370 },
+      canopyIndex: index,
+    };
   });
 
-  // Soil (liquidity base) arranged along bottom arc
-  const soil = data.soil;
-  const soilY = isMobile ? 86 : 84;
-  const soilSpan = isMobile ? 40 : 44;
-  soil.forEach((t, i) => {
-    const pct = soil.length > 1 ? i / (soil.length - 1) : 0.5;
-    const x = 50 - soilSpan / 2 + soilSpan * pct;
-    const curvature = Math.sin(pct * Math.PI) * (isMobile ? 3 : 4);
-    positions[t.name] = { x, y: soilY + curvature };
+  data.soil.forEach((token, index) => {
+    const slot =
+      rootSlots[index] ||
+      (() => {
+        const pct = index / Math.max(1, data.soil.length - 1);
+        const x = 170 + pct * 1060;
+        const y = 755 + Math.sin(pct * Math.PI) * 45;
+        return { x, y };
+      })();
+
+    positions[token.name] = {
+      ...slot,
+      category: "soil",
+      anchor: { x: 700, y: 630 },
+      rootIndex: index,
+    };
   });
 
   return positions;
 }
 
-// (Old straight-line connections removed; replaced with curved flows below)
+function makeBranchPath(anchor, target, side) {
+  const direction = side === "left" ? -1 : 1;
 
-// --------------------- BRAND + FALLING NUTS ---------------------
-const BRAND = {
-  brownDark: "#7D5A50",
-  brownMed: "#A67C52", 
-  brownLight: "#D1B48C",
-  barkDark: "#5D3A1A",
-  barkDeep: "#3E1F0A",
-  bark: "#8B4513",
-  leafDark: "#2F5233",
-  leafMed: "#4A7C59",
-  leafLight: "#7FB069",
-  leafBright: "#A7E080",
-  gold: "#FFD700",
-  amber: "#FFA500",
-  soil: "#8B4513",
-  soilDark: "#654321",
-  bg0: "#F5E6D3",
-  bg1: "#E8D5B7",
-  bg2: "#D4B896",
-  bg3: "#C19A6B",
-};
-
-const FallingNut = styled("div")(({ size = 22, variant = "default" }) => ({
-  position: "absolute",
-  fontSize: `${size}px`,
-  animation: `${fallDown} ${1.2 + Math.random() * 0.6}s ease-in forwards`,
-  zIndex: 4,
-  pointerEvents: "none",
-  willChange: "transform, opacity",
-  filter: variant === "glow" 
-    ? "drop-shadow(0 0 4px rgba(255,215,0,0.6)) drop-shadow(0 2px 3px rgba(0,0,0,0.25))"
-    : "drop-shadow(0 2px 3px rgba(0,0,0,0.25))",
-  transform: `rotate(${-15 + Math.random() * 30}deg)`,
-}));
-
-const Impact = styled("div")(({ kind = "ring", color = "#ffd87a" }) => ({
-  position: "absolute",
-  width: kind === "flame" ? 36 : 48,
-  height: kind === "flame" ? 36 : 48,
-  left: 0,
-  top: 0,
-  borderRadius: kind === "flame" ? 8 : "50%",
-  pointerEvents: "none",
-  zIndex: 4,
-  animation: `${kind === "flame" ? burstFlame : impactPulse} ${kind === "flame" ? 700 : 800}ms ease-out forwards`,
-  background: kind === "flame"
-    ? `radial-gradient(circle at 45% 45%, rgba(255,180,120,0.95) 0%, rgba(255,120,80,0.75) 35%, rgba(120,20,0,0.2) 100%)`
-    : "transparent",
-  boxShadow: kind === "ring" ? `0 0 0 3px ${color} inset, 0 0 12px ${color}` : "none",
-}));
-
-// --------------------- HELPER: Darken/Lighten Color ---------------------
-function darkenColor(hex, amt = 0.15) {
-  const c = hex.replace("#", "");
-  let r = parseInt(c.substring(0, 2), 16);
-  let g = parseInt(c.substring(2, 4), 16);
-  let b = parseInt(c.substring(4, 6), 16);
-  r = Math.floor(r * (1 - amt));
-  g = Math.floor(g * (1 - amt));
-  b = Math.floor(b * (1 - amt));
-  return `rgb(${r}, ${g}, ${b})`;
+  return [
+    `M ${anchor.x} ${anchor.y}`,
+    `C ${anchor.x + direction * 42} ${anchor.y - 52},`,
+    `${target.x - direction * 112} ${target.y - 58},`,
+    `${target.x} ${target.y}`,
+  ].join(" ");
 }
 
-function lightenColor(hex, amt = 0.15) {
-  const c = hex.replace("#", "");
-  let r = parseInt(c.substring(0, 2), 16);
-  let g = parseInt(c.substring(2, 4), 16);
-  let b = parseInt(c.substring(4, 6), 16);
-  r = Math.min(255, Math.floor(r + (255 - r) * amt));
-  g = Math.min(255, Math.floor(g + (255 - g) * amt));
-  b = Math.min(255, Math.floor(b + (255 - b) * amt));
-  return `rgb(${r}, ${g}, ${b})`;
+function makeCanopyPath(anchor, target) {
+  const midX = (anchor.x + target.x) / 2;
+  const controlY = Math.min(anchor.y - 90, target.y + 70);
+
+  return [
+    `M ${anchor.x} ${anchor.y}`,
+    `C ${anchor.x} ${anchor.y - 88},`,
+    `${midX} ${controlY},`,
+    `${target.x} ${target.y}`,
+  ].join(" ");
 }
 
-// --------------------- CATEGORIZATION ---------------------
-function getTokenCategory(token) {
-  if (nutTreeData.soil.some((t) => t.name === token.name)) return "soil";
-  if (nutTreeData.trunk.name === token.name) return "trunk";
-  if (nutTreeData.branches.some((t) => t.name === token.name)) return "branch";
-  if (nutTreeData.nestedTokens.some((t) => t.name === token.name))
-    return "canopy";
-  return "unknown";
+function makeRootPath(anchor, target) {
+  const midX = (anchor.x + target.x) / 2;
+
+  return [
+    `M ${anchor.x} ${anchor.y}`,
+    `C ${midX} ${anchor.y + 88},`,
+    `${midX} ${target.y - 58},`,
+    `${target.x} ${target.y}`,
+  ].join(" ");
 }
 
-// --------------------- STYLED LINES (Animated) ---------------------
-const AnimatedPath = styled("path")(({ color, thickness, dash = true }) => ({
-  stroke: color,
-  strokeWidth: thickness,
-  strokeLinecap: "round",
-  fill: "none",
-  strokeDasharray: dash ? "6 8" : "none",
-  animation: dash ? `${flow} 3s linear infinite` : "none",
-}));
+function FlowPath({
+  d,
+  color,
+  width = 6,
+  glowWidth = 18,
+  duration = 3.4,
+  delay = 0,
+  opacity = 1,
+  filterId,
+  reducedMotion,
+}) {
+  return (
+    <>
+      <path
+        d={d}
+        fill="none"
+        stroke={color}
+        strokeWidth={glowWidth}
+        strokeLinecap="round"
+        opacity="0.18"
+        filter={`url(#${filterId})`}
+      />
 
-// --------------------- NODE SHAPES ---------------------
-const TokenContainer = styled("div", {
-  shouldForwardProp: (prop) => prop !== "category" && prop !== "tokenColor",
-})(({ category, tokenColor }) => {
-  const baseStyles = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-    cursor: "pointer",
-    color: "#FFF",
-    fontWeight: "bold",
-    userSelect: "none",
-    textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
-    transition: "transform 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease",
-    "&:hover": {
-      animation: `${wiggle} 0.4s ease-in-out`,
-      transform: "translateY(-2px)",
-    },
-    "& .emoji": {
-      position: "relative",
-      zIndex: 1,
-    },
+      <path
+        d={d}
+        fill="none"
+        stroke={color}
+        strokeWidth={width}
+        strokeLinecap="round"
+        strokeDasharray={reducedMotion ? undefined : "12 15"}
+        strokeDashoffset="0"
+        opacity={opacity}
+      >
+        {!reducedMotion && (
+          <animate
+            attributeName="stroke-dashoffset"
+            values="0;-54"
+            dur={`${duration}s`}
+            begin={`${delay}s`}
+            repeatCount="indefinite"
+          />
+        )}
+      </path>
+    </>
+  );
+}
+
+function LabelPill({
+  x,
+  y,
+  text,
+  width,
+  fill = "rgba(43, 26, 16, 0.54)",
+  stroke = "rgba(255, 243, 210, 0.26)",
+}) {
+  const pillWidth = width || Math.max(150, text.length * 10.4 + 34);
+
+  return (
+    <g pointerEvents="none">
+      <rect
+        x={x - pillWidth / 2}
+        y={y - 18}
+        width={pillWidth}
+        height="34"
+        rx="17"
+        fill={fill}
+        stroke={stroke}
+        strokeWidth="1"
+      />
+      <text
+        x={x}
+        y={y + 5}
+        textAnchor="middle"
+        fontFamily="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
+        fontSize="17"
+        fontWeight="950"
+        fill={BRAND.cream}
+        paintOrder="stroke"
+        stroke="rgba(43,26,16,.7)"
+        strokeWidth="4"
+        strokeLinejoin="round"
+      >
+        {text}
+      </text>
+    </g>
+  );
+}
+
+const SvgTokenNode = memo(function SvgTokenNode({
+  token,
+  position,
+  category,
+  selected,
+  ids,
+  onSelect,
+}) {
+  const isTrunkNode = category === "trunk";
+  const isBranchNode = category === "branch";
+  const isCanopyNode = category === "canopy";
+  const isSoilNode = category === "soil";
+
+  const fill =
+    isTrunkNode
+      ? `url(#${ids.nutCore})`
+      : isSoilNode
+        ? `url(#${ids.rootNode})`
+        : isBranchNode && isPnut(token)
+          ? `url(#${ids.pnutNode})`
+          : isBranchNode
+            ? `url(#${ids.snutNode})`
+            : `url(#${ids.leafNode})`;
+
+  const stroke =
+    isTrunkNode
+      ? BRAND.gold
+      : isSoilNode
+        ? BRAND.soil700
+        : isBranchNode && isPnut(token)
+          ? BRAND.gold
+          : BRAND.leaf200;
+
+  const body = {
+    width: isTrunkNode ? 144 : isSoilNode ? 116 : isBranchNode ? 136 : 116,
+    height: isTrunkNode ? 144 : isSoilNode ? 68 : isBranchNode ? 78 : 78,
+    radius: isTrunkNode ? 72 : isSoilNode ? 34 : 39,
+    emojiSize: isTrunkNode ? 40 : isSoilNode ? 29 : isBranchNode ? 32 : 29,
   };
 
-  const greenPalette = ["#8ED172", "#71CC31", "#A3E043", "#4DBD00", "#C5F568"];
-  function pickGreenShade(name) {
-    const sum = [...name].reduce((acc, c) => acc + c.charCodeAt(0), 0);
-    return greenPalette[sum % greenPalette.length];
-  }
+  const labelY = isTrunkNode ? 104 : isSoilNode ? 63 : isBranchNode ? 72 : 70;
+  const roleY = labelY + 19;
 
-  switch (category) {
-    case "soil":
-      return {
-        ...baseStyles,
-        width: "72px",
-        height: "56px",
-        borderRadius: "36px / 28px",
-        background: `
-          radial-gradient(120% 120% at 35% 40%, ${lightenColor(tokenColor, 0.2)} 10%, ${tokenColor} 50%, ${darkenColor(tokenColor, 0.1)} 85%, ${darkenColor(tokenColor, 0.25)} 100%),
-          linear-gradient(45deg, rgba(139,69,19,0.1) 0%, transparent 50%)
-        `,
-        boxShadow: `
-          inset 0 -3px 8px rgba(0,0,0,0.35), 
-          0 3px 6px rgba(0,0,0,0.25),
-          0 0 0 1px rgba(139,69,19,0.2)
-        `,
-        position: "relative",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: "25%",
-          left: "20%",
-          width: "8px",
-          height: "8px",
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${lightenColor(tokenColor, 0.4)} 0%, ${lightenColor(tokenColor, 0.2)} 100%)`,
-          boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
-        },
-        "&::after": {
-          content: '""',
-          position: "absolute",
-          bottom: "20%",
-          right: "25%",
-          width: "6px",
-          height: "6px",
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${lightenColor(tokenColor, 0.3)} 0%, ${tokenColor} 100%)`,
-          boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
-        },
-      };
-
-    case "trunk":
-      return {
-        ...baseStyles,
-        width: "110px",
-        height: "110px",
-        borderRadius: "50%",
-        background: `
-          radial-gradient(circle at 35% 35%, ${lightenColor(tokenColor, 0.25)} 0%, ${tokenColor} 45%, ${darkenColor(tokenColor, 0.1)} 80%, ${darkenColor(tokenColor, 0.25)} 100%),
-          linear-gradient(135deg, rgba(255,215,0,0.1) 0%, transparent 50%)
-        `,
-        border: `4px solid ${BRAND.gold}`,
-        position: "relative",
-        boxShadow: `
-          0 0 20px rgba(255,215,0,0.3),
-          0 8px 16px rgba(0,0,0,0.25),
-          inset 0 2px 4px rgba(255,255,255,0.2)
-        `,
-        animation: `${pulseGlow} 4s ease-in-out infinite`,
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "90%",
-          height: "90%",
-          borderRadius: "50%",
-          background: `linear-gradient(45deg, transparent 40%, rgba(255,215,0,0.15) 50%, transparent 60%)`,
-          animation: `rotate 8s linear infinite`,
-        },
-        "&::after": {
-          content: '"👑"',
-          position: "absolute",
-          top: "-8px",
-          right: "-8px",
-          fontSize: "16px",
-          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
-        },
-      };
-
-    case "branch":
-      return {
-        ...baseStyles,
-        width: "92px",
-        height: "48px",
-        borderRadius: "28px",
-        background: `
-          linear-gradient(145deg, ${lightenColor(tokenColor, 0.1)} 0%, ${tokenColor} 50%, ${darkenColor(tokenColor, 0.15)} 100%),
-          radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 50%)
-        `,
-        boxShadow: `
-          inset 0 -3px 8px rgba(0,0,0,0.25), 
-          0 4px 8px rgba(0,0,0,0.2),
-          0 0 0 2px rgba(255,255,255,0.1)
-        `,
-        position: "relative",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: "20%",
-          left: "15%",
-          width: "12px",
-          height: "12px",
-          borderRadius: "50%",
-          background: lightenColor(tokenColor, 0.3),
-          boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
-        },
-        "&::after": {
-          content: '""',
-          position: "absolute",
-          top: "25%",
-          right: "20%",
-          width: "8px",
-          height: "8px",
-          borderRadius: "50%",
-          background: darkenColor(tokenColor, 0.2),
-          boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
-        },
-      };
-
-    case "canopy": {
-      const canopyColor = pickGreenShade(tokenColor);
-      return {
-        ...baseStyles,
-        width: "80px",
-        height: "56px",
-        backgroundColor: canopyColor,
-        borderRadius: "40px",
-        boxShadow: `
-          0 4px 8px rgba(0,0,0,0.2),
-          inset 0 2px 4px rgba(255,255,255,0.2),
-          0 0 0 2px rgba(127,176,105,0.3)
-        `,
-        position: "relative",
-        background: `
-          radial-gradient(ellipse at 30% 30%, ${lightenColor(canopyColor, 0.2)} 0%, ${canopyColor} 60%, ${darkenColor(canopyColor, 0.1)} 100%)
-        `,
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          zIndex: 0,
-          top: "-14px",
-          left: "10px",
-          width: "38px",
-          height: "38px",
-          backgroundColor: lightenColor(canopyColor, 0.15),
-          borderRadius: "50%",
-          boxShadow: `
-            0 2px 6px rgba(0,0,0,0.2),
-            inset 0 1px 2px rgba(255,255,255,0.3)
-          `,
-          border: `1px solid rgba(127,176,105,0.2)`,
-        },
-        "&::after": {
-          content: '""',
-          position: "absolute",
-          zIndex: 0,
-          top: "-12px",
-          right: "10px",
-          width: "34px",
-          height: "34px",
-          backgroundColor: darkenColor(canopyColor, 0.15),
-          borderRadius: "50%",
-          boxShadow: `
-            0 2px 6px rgba(0,0,0,0.2),
-            inset 0 1px 2px rgba(255,255,255,0.2)
-          `,
-          border: `1px solid rgba(127,176,105,0.15)`,
-        },
-      };
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onSelect(token);
     }
+  };
 
-    default:
-      return {
-        ...baseStyles,
-        width: "50px",
-        height: "50px",
-        backgroundColor: tokenColor,
-        borderRadius: "50%",
-      };
-  }
+  return (
+    <g
+      className="nut-node"
+      transform={`translate(${position.x} ${position.y})`}
+      role="button"
+      tabIndex={0}
+      focusable="true"
+      aria-label={`Open details for ${token.name}`}
+      onClick={() => onSelect(token)}
+      onKeyDown={handleKeyDown}
+    >
+      <title>{`${token.name}${token.role ? ` — ${token.role}` : ""}`}</title>
+
+      <ellipse
+        cx="0"
+        cy={isTrunkNode ? 30 : 19}
+        rx={body.width * 0.45}
+        ry={body.height * 0.28}
+        fill="rgba(0,0,0,.22)"
+        filter={`url(#${ids.blurShadow})`}
+      />
+
+      {selected && (
+        <rect
+          x={-body.width / 2 - 8}
+          y={-body.height / 2 - 8}
+          width={body.width + 16}
+          height={body.height + 16}
+          rx={body.radius + 8}
+          fill="none"
+          stroke="#FFFFFF"
+          strokeWidth="5"
+          opacity=".92"
+        />
+      )}
+
+      {isTrunkNode ? (
+        <>
+          <circle
+            className="node-body"
+            cx="0"
+            cy="0"
+            r="72"
+            fill={fill}
+            stroke={stroke}
+            strokeWidth="7"
+            filter={`url(#${ids.coreGlow})`}
+          >
+            <animate
+              attributeName="stroke-width"
+              values="7;9;7"
+              dur="4.8s"
+              repeatCount="indefinite"
+            />
+          </circle>
+          <circle cx="0" cy="0" r="50" fill="rgba(255,215,0,.12)" />
+          <path
+            d="M -28 23 C -14 -8, 5 -24, 30 23 Z"
+            fill="rgba(45, 17, 8, .45)"
+          />
+        </>
+      ) : (
+        <rect
+          className="node-body"
+          x={-body.width / 2}
+          y={-body.height / 2}
+          width={body.width}
+          height={body.height}
+          rx={body.radius}
+          fill={fill}
+          stroke={stroke}
+          strokeWidth={isSoilNode ? 3 : 3.5}
+        />
+      )}
+
+      {isCanopyNode && (
+        <>
+          <circle
+            cx="-31"
+            cy="-35"
+            r="29"
+            fill="#A2E85D"
+            opacity=".9"
+            pointerEvents="none"
+          />
+          <circle
+            cx="29"
+            cy="-32"
+            r="27"
+            fill="#67BD35"
+            opacity=".92"
+            pointerEvents="none"
+          />
+        </>
+      )}
+
+      <text
+        x="0"
+        y={isTrunkNode ? 3 : 2}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize={body.emojiSize}
+        pointerEvents="none"
+      >
+        {token.icon || "🌰"}
+      </text>
+
+      <text
+        x="0"
+        y={labelY}
+        textAnchor="middle"
+        fontFamily="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
+        fontSize={isTrunkNode ? 18 : 17}
+        fontWeight="950"
+        fill={BRAND.ink}
+        paintOrder="stroke"
+        stroke="rgba(255,246,222,.92)"
+        strokeWidth="5"
+        strokeLinejoin="round"
+        pointerEvents="none"
+      >
+        {token.name}
+      </text>
+
+      {token.role && (
+        <text
+          x="0"
+          y={roleY}
+          textAnchor="middle"
+          fontFamily="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
+          fontSize="12"
+          fontWeight="850"
+          fill="rgba(43,26,16,.78)"
+          paintOrder="stroke"
+          stroke="rgba(255,246,222,.78)"
+          strokeWidth="3"
+          strokeLinejoin="round"
+          pointerEvents="none"
+        >
+          {shortRole(token.role)}
+        </text>
+      )}
+    </g>
+  );
 });
 
-// --------------------- TOKEN MODAL ---------------------
-function TokenModal({ token, open, onClose }) {
-  const baseScanAddressUrl = token?.address
+function TreeArtwork({
+  data,
+  selectedTokenName,
+  onSelect,
+  reducedMotion,
+}) {
+  const rawId = useId();
+  const idBase = useMemo(
+    () => `based-nut-tree-${sanitizeSvgId(rawId)}`,
+    [rawId],
+  );
+
+  const ids = useMemo(
+    () => ({
+      bg: `${idBase}-bg`,
+      trunk: `${idBase}-trunk`,
+      barkLines: `${idBase}-bark-lines`,
+      canopy: `${idBase}-canopy`,
+      leafNode: `${idBase}-leaf-node`,
+      snutNode: `${idBase}-snut-node`,
+      pnutNode: `${idBase}-pnut-node`,
+      nutCore: `${idBase}-nut-core`,
+      rootNode: `${idBase}-root-node`,
+      shadow: `${idBase}-shadow`,
+      glow: `${idBase}-glow`,
+      coreGlow: `${idBase}-core-glow`,
+      blurShadow: `${idBase}-blur-shadow`,
+    }),
+    [idBase],
+  );
+
+  const url = useCallback((id) => `url(#${id})`, []);
+
+  const positions = useMemo(() => getTreeLayout(data), [data]);
+  const tokens = useMemo(() => getAllTokens(data), [data]);
+
+  const branchRoutes = useMemo(
+    () =>
+      data.branches
+        .map((token, index) => {
+          const position = positions[token.name];
+          if (!position) return null;
+
+          return {
+            token,
+            index,
+            position,
+            d: makeBranchPath(position.anchor, position, position.side),
+            color: isPnut(token)
+              ? BRAND.goldFlow
+              : isSnut(token)
+                ? BRAND.greenFlow
+                : BRAND.leaf300,
+            woodColor: isPnut(token) ? BRAND.bark300 : BRAND.bark400,
+            label:
+              index === 0 || isSnut(token)
+                ? "SNUT burn branch"
+                : index === 1 || isPnut(token)
+                  ? "pNUT liquidity branch"
+                  : `${token.name} branch`,
+          };
+        })
+        .filter(Boolean),
+    [data.branches, positions],
+  );
+
+  const canopyRoutes = useMemo(
+    () =>
+      data.nestedTokens
+        .map((token, index) => {
+          const position = positions[token.name];
+          if (!position) return null;
+
+          return {
+            token,
+            index,
+            position,
+            d: makeCanopyPath(position.anchor, position),
+          };
+        })
+        .filter(Boolean),
+    [data.nestedTokens, positions],
+  );
+
+  const rootRoutes = useMemo(
+    () =>
+      data.soil
+        .map((token, index) => {
+          const position = positions[token.name];
+          if (!position) return null;
+
+          return {
+            token,
+            index,
+            position,
+            d: makeRootPath(position.anchor, position),
+          };
+        })
+        .filter(Boolean),
+    [data.soil, positions],
+  );
+
+  return (
+    <svg
+      viewBox={`0 0 ${VIEWBOX.width} ${VIEWBOX.height}`}
+      preserveAspectRatio="xMidYMid meet"
+      width="100%"
+      height="100%"
+      role="img"
+      aria-label="Interactive BASED NUT liquidity tree map"
+      style={{
+        display: "block",
+        overflow: "visible",
+      }}
+    >
+      <defs>
+        <radialGradient id={ids.bg} cx="50%" cy="18%" r="85%">
+          <stop offset="0%" stopColor="#FFF4CF" />
+          <stop offset="44%" stopColor="#E5C594" />
+          <stop offset="100%" stopColor="#AD7841" />
+        </radialGradient>
+
+        <linearGradient id={ids.trunk} x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%" stopColor={BRAND.bark950} />
+          <stop offset="22%" stopColor={BRAND.bark600} />
+          <stop offset="45%" stopColor="#C47A2F" />
+          <stop offset="65%" stopColor={BRAND.bark600} />
+          <stop offset="100%" stopColor={BRAND.bark950} />
+        </linearGradient>
+
+        <radialGradient id={ids.canopy} cx="45%" cy="30%" r="72%">
+          <stop offset="0%" stopColor={BRAND.leaf200} />
+          <stop offset="35%" stopColor={BRAND.leaf500} />
+          <stop offset="72%" stopColor={BRAND.leaf700} />
+          <stop offset="100%" stopColor={BRAND.leaf950} />
+        </radialGradient>
+
+        <radialGradient id={ids.leafNode} cx="35%" cy="25%" r="75%">
+          <stop offset="0%" stopColor="#E4FF9B" />
+          <stop offset="50%" stopColor="#70CF35" />
+          <stop offset="100%" stopColor="#2F7927" />
+        </radialGradient>
+
+        <radialGradient id={ids.snutNode} cx="35%" cy="25%" r="75%">
+          <stop offset="0%" stopColor="#B8E28A" />
+          <stop offset="50%" stopColor="#558C46" />
+          <stop offset="100%" stopColor="#203F21" />
+        </radialGradient>
+
+        <radialGradient id={ids.pnutNode} cx="35%" cy="25%" r="75%">
+          <stop offset="0%" stopColor="#FFF1A3" />
+          <stop offset="48%" stopColor="#FFAE00" />
+          <stop offset="100%" stopColor="#8A4C00" />
+        </radialGradient>
+
+        <radialGradient id={ids.nutCore} cx="35%" cy="25%" r="75%">
+          <stop offset="0%" stopColor="#F0BD75" />
+          <stop offset="55%" stopColor="#9D5319" />
+          <stop offset="100%" stopColor="#43200D" />
+        </radialGradient>
+
+        <radialGradient id={ids.rootNode} cx="35%" cy="25%" r="75%">
+          <stop offset="0%" stopColor="#D0A06E" />
+          <stop offset="55%" stopColor="#88491E" />
+          <stop offset="100%" stopColor="#31170A" />
+        </radialGradient>
+
+        <pattern id={ids.barkLines} width="26" height="34" patternUnits="userSpaceOnUse">
+          <path
+            d="M 7 -4 C 1 9, 5 20, 13 36"
+            fill="none"
+            stroke="rgba(30,10,2,.28)"
+            strokeWidth="4"
+          />
+          <path
+            d="M 21 -3 C 15 10, 18 22, 26 37"
+            fill="none"
+            stroke="rgba(255,218,142,.14)"
+            strokeWidth="3"
+          />
+        </pattern>
+
+        <filter id={ids.shadow} x="-35%" y="-35%" width="170%" height="170%">
+          <feDropShadow
+            dx="0"
+            dy="16"
+            stdDeviation="16"
+            floodColor="#2B1607"
+            floodOpacity=".28"
+          />
+        </filter>
+
+        <filter id={ids.glow} x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="7" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <filter id={ids.coreGlow} x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="9" result="goldBlur" />
+          <feColorMatrix
+            in="goldBlur"
+            type="matrix"
+            values="
+              1 0 0 0 1
+              0 .74 0 0 .62
+              0 0 0 0 0
+              0 0 0 .55 0"
+            result="gold"
+          />
+          <feMerge>
+            <feMergeNode in="gold" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <filter id={ids.blurShadow} x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="10" />
+        </filter>
+
+        <style>
+          {`
+            .nut-node {
+              cursor: pointer;
+              outline: none;
+            }
+
+            .nut-node .node-body {
+              transition: filter 160ms ease, opacity 160ms ease;
+            }
+
+            .nut-node:hover .node-body {
+              filter: brightness(1.08);
+            }
+
+            .nut-node:focus-visible .node-body {
+              filter: brightness(1.12);
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+              .nut-node .node-body {
+                transition: none;
+              }
+            }
+          `}
+        </style>
+      </defs>
+
+      <rect width={VIEWBOX.width} height={VIEWBOX.height} fill={url(ids.bg)} />
+
+      <circle cx="230" cy="230" r="190" fill="rgba(255,255,255,.075)" />
+      <circle cx="1180" cy="260" r="225" fill="rgba(255,255,255,.065)" />
+      <circle cx="260" cy="690" r="170" fill="rgba(72,38,14,.055)" />
+      <circle cx="1110" cy="690" r="190" fill="rgba(72,38,14,.05)" />
+
+      <g filter={url(ids.shadow)}>
+        <ellipse cx="700" cy="305" rx="520" ry="210" fill={BRAND.leaf950} opacity=".42" />
+
+        <ellipse cx="590" cy="275" rx="360" ry="165" fill={BRAND.leaf700} opacity=".72">
+          {!reducedMotion && (
+            <animate attributeName="opacity" values=".68;.78;.68" dur="8.5s" repeatCount="indefinite" />
+          )}
+        </ellipse>
+
+        <ellipse cx="810" cy="275" rx="370" ry="170" fill={BRAND.leaf700} opacity=".72">
+          {!reducedMotion && (
+            <animate attributeName="opacity" values=".78;.68;.78" dur="8.5s" repeatCount="indefinite" />
+          )}
+        </ellipse>
+
+        <ellipse cx="700" cy="235" rx="345" ry="150" fill={BRAND.leaf500} opacity=".82" />
+
+        <ellipse cx="700" cy="305" rx="435" ry="178" fill={url(ids.canopy)} opacity=".76">
+          {!reducedMotion && (
+            <animate attributeName="opacity" values=".70;.82;.70" dur="7.8s" repeatCount="indefinite" />
+          )}
+        </ellipse>
+
+        <circle cx="330" cy="305" r="108" fill={BRAND.leaf500} opacity=".70" />
+        <circle cx="465" cy="185" r="128" fill={BRAND.leaf300} opacity=".60" />
+        <circle cx="635" cy="135" r="126" fill={BRAND.leaf300} opacity=".55" />
+        <circle cx="790" cy="135" r="126" fill={BRAND.leaf300} opacity=".55" />
+        <circle cx="955" cy="188" r="132" fill={BRAND.leaf300} opacity=".60" />
+        <circle cx="1085" cy="310" r="110" fill={BRAND.leaf500} opacity=".70" />
+        <ellipse cx="705" cy="250" rx="270" ry="90" fill="rgba(222,255,165,.22)" />
+      </g>
+
+      <path
+        d="M 0 730 C 210 698, 410 710, 560 742 C 680 768, 825 770, 975 740 C 1130 708, 1270 710, 1400 742 L 1400 850 L 0 850 Z"
+        fill="rgba(76,40,17,.21)"
+      />
+
+      {rootRoutes.map((route) => (
+        <g key={`${route.token.name}-root-route`}>
+          <path
+            d={route.d}
+            stroke={BRAND.soil950}
+            strokeWidth="18"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path
+            d={route.d}
+            stroke={BRAND.soil600}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+            opacity=".74"
+          />
+          <FlowPath
+            d={route.d}
+            color={BRAND.rootFlow}
+            width={5}
+            glowWidth={14}
+            duration={4.8}
+            delay={route.index * 0.18}
+            opacity=".92"
+            filterId={ids.glow}
+            reducedMotion={reducedMotion}
+          />
+        </g>
+      ))}
+
+      <g filter={url(ids.shadow)}>
+        <path
+          d="
+            M 630 815
+            C 654 700, 665 570, 672 445
+            C 676 360, 692 292, 710 245
+            C 728 292, 742 360, 748 445
+            C 758 570, 770 700, 794 815
+            C 748 794, 685 794, 630 815 Z
+          "
+          fill={url(ids.trunk)}
+        />
+
+        <path
+          d="
+            M 630 815
+            C 654 700, 665 570, 672 445
+            C 676 360, 692 292, 710 245
+            C 728 292, 742 360, 748 445
+            C 758 570, 770 700, 794 815
+            C 748 794, 685 794, 630 815 Z
+          "
+          fill={url(ids.barkLines)}
+          opacity=".62"
+        />
+
+        <path
+          d="M 698 285 C 690 430, 694 620, 685 790"
+          fill="none"
+          stroke="rgba(255,219,145,.18)"
+          strokeWidth="17"
+          strokeLinecap="round"
+        />
+
+        <path
+          d="M 638 805 C 575 797, 535 815, 487 828 C 545 839, 602 824, 673 833 C 694 828, 716 816, 744 804 Z"
+          fill={BRAND.soil700}
+        />
+
+        <path
+          d="M 784 805 C 848 797, 887 815, 936 828 C 877 839, 821 824, 750 833 C 728 828, 708 816, 681 804 Z"
+          fill={BRAND.soil700}
+        />
+      </g>
+
+      {branchRoutes.map((route) => {
+        const isMajor = route.index < 2;
+        const strokeWidth = isMajor ? 36 : 22;
+        const highlightWidth = isMajor ? 15 : 9;
+        const flowWidth = isMajor ? 8 : 5;
+
+        return (
+          <g key={`${route.token.name}-branch-route`}>
+            <path
+              d={route.d}
+              stroke={BRAND.bark900}
+              strokeWidth={strokeWidth}
+              fill="none"
+              strokeLinecap="round"
+            />
+            <path
+              d={route.d}
+              stroke={route.woodColor}
+              strokeWidth={highlightWidth}
+              fill="none"
+              strokeLinecap="round"
+              opacity=".56"
+            />
+
+            <FlowPath
+              d={route.d}
+              color={route.color}
+              width={flowWidth}
+              glowWidth={isMajor ? 18 : 13}
+              duration={isPnut(route.token) ? 2.9 : 3.4}
+              delay={route.index * 0.15}
+              filterId={ids.glow}
+              reducedMotion={reducedMotion}
+            />
+          </g>
+        );
+      })}
+
+      {canopyRoutes.map((route) => (
+        <g key={`${route.token.name}-canopy-route`}>
+          <path
+            d={route.d}
+            stroke="rgba(22,65,27,.45)"
+            strokeWidth="5"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <FlowPath
+            d={route.d}
+            color={BRAND.greenFlow}
+            width={4}
+            glowWidth={11}
+            duration={4.2}
+            delay={route.index * 0.2}
+            opacity=".78"
+            filterId={ids.glow}
+            reducedMotion={reducedMotion}
+          />
+        </g>
+      ))}
+
+      <LabelPill x={430} y={360} text="SNUT burn branch" width={205} />
+      <LabelPill x={965} y={360} text="pNUT liquidity branch" width={245} />
+      <LabelPill x={700} y={675} text="LP roots / AMM depth" width={230} />
+
+      {!reducedMotion && (
+        <g pointerEvents="none">
+          <circle cx="716" cy="366" r="7" fill={BRAND.gold}>
+            <animate attributeName="opacity" values=".28;.95;.28" dur="2.2s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="770" cy="448" r="5" fill={BRAND.gold}>
+            <animate attributeName="opacity" values=".25;.85;.25" dur="2.8s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="635" cy="455" r="5" fill={BRAND.greenFlow}>
+            <animate attributeName="opacity" values=".25;.85;.25" dur="2.5s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="710" cy="640" r="5" fill="#D88B42">
+            <animate attributeName="opacity" values=".25;.85;.25" dur="3s" repeatCount="indefinite" />
+          </circle>
+        </g>
+      )}
+
+      {tokens.map((token) => {
+        const position = positions[token.name];
+        if (!position) return null;
+
+        return (
+          <SvgTokenNode
+            key={token.name}
+            token={token}
+            position={position}
+            category={getTokenCategory(data, token)}
+            selected={selectedTokenName === token.name}
+            ids={ids}
+            onSelect={onSelect}
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+function TokenModal({ token, onClose }) {
+  if (!token) return null;
+
+  const addressUrl = token.address
     ? `https://basescan.org/address/${token.address}`
     : null;
-  const baseScanSourceUrl = token?.address
+
+  const sourceUrl = token.address
     ? `https://basescan.org/address/${token.address}#code`
     : null;
+
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal
+      open={Boolean(token)}
+      onClose={onClose}
+      aria-labelledby="based-nut-token-modal-title"
+      aria-describedby="based-nut-token-modal-description"
+    >
       <Box
         sx={{
           position: "absolute",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          bgcolor: "background.paper",
-          borderRadius: 2,
-          boxShadow: 24,
-          p: 4,
+          width: "min(440px, calc(100vw - 28px))",
+          p: { xs: 3, md: 4 },
+          borderRadius: 4,
+          bgcolor: "#FFF3D8",
+          border: "1px solid rgba(96, 53, 20, .22)",
+          boxShadow: "0 26px 90px rgba(0,0,0,.38)",
+          color: BRAND.ink,
           outline: 0,
-          maxWidth: 400,
-          width: "90%",
         }}
       >
-        <Typography variant="h6" component="h2">
-          {token.icon} {token.name}
+        <Typography
+          id="based-nut-token-modal-title"
+          variant="h5"
+          sx={{ fontWeight: 950, mb: 0.75 }}
+        >
+          {token.icon || "🌰"} {token.name}
         </Typography>
+
         {token.role && (
-          <Typography sx={{ mt: 1 }}>{token.role}</Typography>
+          <Typography
+            id="based-nut-token-modal-description"
+            sx={{ fontWeight: 800, color: "rgba(43,26,16,.78)" }}
+          >
+            {token.role}
+          </Typography>
         )}
+
         {token.utility && (
-          <Typography sx={{ mt: 1.25 }} variant="body2" color="text.secondary">
+          <Typography sx={{ mt: 1.5, color: "rgba(43,26,16,.72)" }}>
             {token.utility}
           </Typography>
         )}
+
         {token.mintUrl && (
-          <Typography sx={{ mt: 1 }} variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            sx={{
+              display: "block",
+              mt: 1.25,
+              fontWeight: 800,
+              color: "rgba(43,26,16,.6)",
+            }}
+          >
             Mint Club token
           </Typography>
         )}
-        <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+
+        <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mt: 2.5 }}>
           {token.link && (
             <Button
-              variant="contained"
               href={token.link}
               target="_blank"
               rel="noopener noreferrer"
+              variant="contained"
               sx={{
-                backgroundColor: token.color,
-                "&:hover": { backgroundColor: darkenColor(token.color) },
+                fontWeight: 900,
+                bgcolor: token.color || BRAND.bark500,
+                "&:hover": {
+                  bgcolor: darkenColor(token.color || BRAND.bark500),
+                },
               }}
             >
-              View on BaseScan
+              BaseScan
             </Button>
           )}
-          {baseScanAddressUrl && (
+
+          {addressUrl && (
             <Button
-              variant="outlined"
-              href={baseScanAddressUrl}
+              href={addressUrl}
               target="_blank"
               rel="noopener noreferrer"
+              variant="outlined"
             >
               Address
             </Button>
           )}
-          {baseScanSourceUrl && (
+
+          {sourceUrl && (
             <Button
-              variant="outlined"
-              href={baseScanSourceUrl}
+              href={sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
+              variant="outlined"
             >
-              View Source
+              Source
             </Button>
           )}
+
           {token.mintUrl && (
             <Button
-              variant="outlined"
               href={token.mintUrl}
               target="_blank"
               rel="noopener noreferrer"
+              variant="outlined"
             >
-              Open Mint Page
+              Mint
             </Button>
           )}
-        </Box>
+        </Stack>
+
+        {/* View Token Profile — links to /token/{name} */}
+        <Link
+          href={`/token/${(token.name || '').toLowerCase()}`}
+          style={{ textDecoration: "none", display: "block", marginTop: "1.25rem" }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 0.5,
+              py: 1,
+              borderRadius: 2,
+              fontWeight: 800,
+              fontSize: "0.9rem",
+              color: "#fff",
+              background: "linear-gradient(135deg, #8B4513 0%, #A0522D 100%)",
+              border: "1px solid #6B3D20",
+              boxShadow: "0 3px 8px rgba(139,69,19,0.2)",
+              transition: "all 0.2s ease",
+              "&:hover": {
+                background: "linear-gradient(135deg, #A0522D 0%, #B87333 100%)",
+                transform: "translateY(-1px)",
+              },
+            }}
+          >
+            🌰 View Token Profile
+          </Box>
+        </Link>
       </Box>
     </Modal>
   );
 }
 
-// --------------------- SINGLE TOKEN NODE ---------------------
-function TokenNode({ token, onClick, pos, onHoverFall }) {
-  const category = getTokenCategory(token);
-
-  const handleMouseEnter = () => {
-  onHoverFall?.({ icon: token.icon, pos });
-  };
-
-  const left = `${pos?.x ?? 50}%`;
-  const top = `${pos?.y ?? 50}%`;
+function InfoPanel({ selectedToken, visible }) {
+  if (!visible) return null;
 
   return (
     <Box
       sx={{
         position: "absolute",
-        top,
-        left,
-        transform: "translate(-50%, -50%)",
-        zIndex: 2,
+        right: { xs: 12, md: 24 },
+        top: { xs: 88, md: 112 },
+        zIndex: 7,
+        width: { xs: "min(350px, calc(100% - 24px))", md: 340 },
+        p: 2,
+        borderRadius: 4,
+        bgcolor: BRAND.panel,
+        border: "1px solid rgba(89,49,20,.22)",
+        boxShadow: "0 18px 46px rgba(49,25,8,.2)",
+        backdropFilter: "blur(12px)",
       }}
     >
-      <Tooltip title={token.role} arrow>
-        <TokenContainer
-          category={category}
-          tokenColor={token.color}
-          onClick={() => onClick(token)}
-          onMouseEnter={handleMouseEnter}
+      <Typography
+        sx={{
+          fontWeight: 950,
+          fontSize: 13,
+          letterSpacing: ".09em",
+          textTransform: "uppercase",
+          color: BRAND.bark800,
+          mb: 1,
+        }}
+      >
+        Liquidity Map
+      </Typography>
+
+      <Typography
+        sx={{
+          fontWeight: 760,
+          fontSize: 14,
+          lineHeight: 1.45,
+          color: BRAND.ink,
+        }}
+      >
+        NUT anchors the structure. SNUT routes deflationary pressure. pNUT routes
+        liquidity balance. Roots spread toward AMMs, pools, and LP depth.
+      </Typography>
+
+      <Stack direction="row" flexWrap="wrap" gap={0.75} sx={{ mt: 1.5 }}>
+        <Chip size="small" label="🌰 NUT Anchor" />
+        <Chip size="small" label="🔥 SNUT Burn" />
+        <Chip size="small" label="🌰 pNUT Liquidity" />
+        <Chip size="small" label="🌱 LP Roots" />
+      </Stack>
+
+      {selectedToken && (
+        <Box
+          sx={{
+            mt: 1.5,
+            p: 1.5,
+            borderRadius: 3,
+            bgcolor: "rgba(255,255,255,.45)",
+            border: "1px solid rgba(89,49,20,.12)",
+          }}
         >
-          <span className="emoji">{token.icon}</span>
-        </TokenContainer>
-      </Tooltip>
+          <Typography sx={{ fontWeight: 950 }}>
+            Selected: {selectedToken.icon || "🌰"} {selectedToken.name}
+          </Typography>
+          {selectedToken.role && (
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 750,
+                color: "rgba(43,26,16,.7)",
+              }}
+            >
+              {selectedToken.role}
+            </Typography>
+          )}
+        </Box>
+      )}
     </Box>
   );
 }
 
-// --------------------- MAIN COMPONENT ---------------------
+function LegendPanel({ visible }) {
+  if (!visible) return null;
+
+  return (
+    <Box
+      sx={{
+        position: "absolute",
+        left: { xs: 12, md: 24 },
+        bottom: { xs: 14, md: 24 },
+        zIndex: 7,
+        width: { xs: "min(330px, calc(100% - 24px))", md: 330 },
+        p: 2,
+        borderRadius: 4,
+        bgcolor: BRAND.panelStrong,
+        border: "1px solid rgba(89,49,20,.2)",
+        boxShadow: "0 18px 44px rgba(49,25,8,.18)",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      <Typography
+        sx={{
+          fontWeight: 950,
+          fontSize: 13,
+          letterSpacing: ".09em",
+          textTransform: "uppercase",
+          color: BRAND.bark800,
+          mb: 1,
+        }}
+      >
+        Ecosystem Legend
+      </Typography>
+
+      <Box
+        sx={{
+          display: "grid",
+          gap: 0.6,
+          fontSize: 13,
+          fontWeight: 800,
+          color: BRAND.ink,
+        }}
+      >
+        <span>🌰 Trunk / roots = NUT anchor</span>
+        <span>🔥 Left branch = SNUT burn pressure</span>
+        <span>🌰 Right branch = pNUT liquidity balance</span>
+        <span>🍃 Canopy = nested token layers</span>
+        <span>🌱 Root nodes = LPs, AMMs, and depth</span>
+      </Box>
+
+      <Button
+        href="https://docs.basednut.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        size="small"
+        sx={{
+          mt: 1.5,
+          borderRadius: 999,
+          fontWeight: 900,
+          color: BRAND.cream,
+          bgcolor: BRAND.bark800,
+          "&:hover": {
+            bgcolor: BRAND.bark900,
+          },
+        }}
+      >
+        Docs →
+      </Button>
+    </Box>
+  );
+}
+
 export default function NutTree() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isSmall = useMediaQuery(theme.breakpoints.down("md"), { noSsr: true });
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)", {
+    noSsr: true,
+  });
+
+  const data = useMemo(() => normalizeTreeData(nutTreeData), []);
   const [selectedToken, setSelectedToken] = useState(null);
-  const [falling, setFalling] = useState([]);
-  const [impacts, setImpacts] = useState([]);
+  // Start with server-safe defaults (true) and sync to media query after mount
   const [showLegend, setShowLegend] = useState(true);
+  const [showMapNotes, setShowMapNotes] = useState(true);
 
-  // Compute layout once per viewport breakpoint
-  const positions = useMemo(() => computeLayout(nutTreeData, isMobile), [isMobile]);
+  useEffect(() => {
+    setShowLegend(!isSmall);
+    setShowMapNotes(!isSmall);
+  }, [isSmall]);
 
-  const handleTokenClick = (token) => {
-    const pos = positions[token.name];
-    if (pos) {
-      const id = `${token.name}-impact-${Date.now()}`;
-      const kind = token.name === "SNUT" ? "flame" : "ring";
-      const color = token.name === "pNUT" ? BRAND.gold : token.color;
-      setImpacts((prev) => [...prev, { id, kind, color, pos }]);
-      setTimeout(() => setImpacts((prev) => prev.filter((i) => i.id !== id)), 900);
-    }
+  const handleSelect = useCallback((token) => {
     setSelectedToken(token);
-  };
-  const handleCloseModal = () => setSelectedToken(null);
-  const handleHoverFall = ({ icon, pos }) => {
-    if (!pos) return;
-    // Generate 2-3 falling nuts with slight variations
-    const nutCount = 2 + Math.floor(Math.random() * 2);
-    for (let i = 0; i < nutCount; i++) {
-      const id = `${icon}-${Date.now()}-${Math.random()}`;
-      const offsetX = (Math.random() - 0.5) * 8; // spread horizontally
-      const delay = i * 150; // stagger timing
-      const variant = icon === "🌰" ? "glow" : "default";
-      
-      setTimeout(() => {
-        setFalling((prev) => [...prev, { 
-          id, 
-          icon, 
-          pos: { x: pos.x + offsetX, y: pos.y },
-          variant 
-        }]);
-      }, delay);
-      
-      setTimeout(() => {
-        setFalling((prev) => prev.filter((f) => f.id !== id));
-      }, 1500 + delay);
-    }
-  };
-
-  // Flatten all tokens (render order: canopy, branches, trunk, soil)
-  const allTokens = useMemo(
-    () => [
-      ...nutTreeData.nestedTokens,
-      ...nutTreeData.branches,
-      nutTreeData.trunk,
-      ...nutTreeData.soil,
-    ],
-    [],
-  );
+  }, []);
 
   return (
     <Layout>
       <Head>
-  <title>The BASED NUT Tree 🌳</title>
-  <meta name="description" content="The BASED NUT Tree — art-first liquidity map: NUT is the trunk, SNUT burns, pNUT fuels liquidity, roots feed pools." />
+        <title>BASED NUT Liquidity Tree</title>
+        <meta
+          name="description"
+          content="Interactive BASED NUT liquidity tree map: NUT trunk, SNUT burn branch, pNUT liquidity branch, nested token canopy, and LP root system."
+        />
       </Head>
+
       <Box
+        component="main"
         sx={{
-          maxWidth: "1200px",
-          margin: "0 auto",
           position: "relative",
-          minHeight: "100vh",
-          background: `
-            radial-gradient(ellipse 1400px 900px at 50% 30%, ${BRAND.bg0} 0%, ${BRAND.bg1} 35%, ${BRAND.bg2} 65%, ${BRAND.bg3} 100%),
-            linear-gradient(180deg, rgba(123,90,80,0.05) 0%, rgba(212,184,150,0.1) 50%, rgba(139,69,19,0.15) 100%)
-          `,
+          minHeight: "100dvh",
           overflow: "hidden",
-          "@media (prefers-reduced-motion: reduce)": {
-            "*": {
-              animation: "none !important",
-              transition: "none !important",
-            },
-          },
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundImage: `url('/img/oak.webp')`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            opacity: 0.03,
-            zIndex: 0,
-          },
-          // Add subtle texture overlay
-          "&::after": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%", 
-            height: "100%",
-            background: `
-              radial-gradient(circle at 20% 80%, rgba(139,69,19,0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(212,184,150,0.08) 0%, transparent 50%),
-              radial-gradient(circle at 40% 40%, rgba(255,215,0,0.02) 0%, transparent 25%)
-            `,
-            zIndex: 0,
-          },
+          bgcolor: "#D7B487",
+          color: BRAND.ink,
         }}
       >
-        {/* Title */}
         <Box
           sx={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(circle at 50% 14%, rgba(255,246,219,.92), rgba(229,199,151,.74) 40%, rgba(174,125,73,.48) 100%)",
+          }}
+        />
+
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            opacity: 0.28,
+            background:
+              "radial-gradient(circle at 16% 34%, rgba(255,255,255,.15), transparent 21%), radial-gradient(circle at 82% 35%, rgba(255,255,255,.12), transparent 24%), radial-gradient(circle at 50% 82%, rgba(58,28,10,.12), transparent 32%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        <Box
+          sx={{
+            position: "absolute",
+            top: { xs: 10, md: 20 },
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "min(980px, calc(100vw - 24px))",
+            zIndex: 8,
             textAlign: "center",
-            pt: 3,
-            pb: 2,
-            position: "relative",
-            zIndex: 1,
+            pointerEvents: "none",
           }}
         >
           <Typography
-            variant={isMobile ? "h5" : "h4"}
-            sx={{ color: BRAND.brownDark, fontWeight: 900, letterSpacing: 0.5 }}
+            variant="h1"
+            sx={{
+              m: 0,
+              fontSize: { xs: 32, sm: 44, md: 56 },
+              lineHeight: 1,
+              fontWeight: 950,
+              letterSpacing: ".035em",
+              color: "#765144",
+              textShadow: "0 2px 0 rgba(255,255,255,.24)",
+            }}
           >
-            The BASED NUT Tree{" "}
-            <span role="img" aria-label="tree">
-              🌳
-            </span>
+            The BASED NUT Tree 🌳
           </Typography>
-          {/* subtitle removed per branding direction */}
+
+          <Typography
+            sx={{
+              mt: 1,
+              fontSize: { xs: 12, sm: 14, md: 16 },
+              fontWeight: 900,
+              color: "rgba(43,26,16,.68)",
+              display: { xs: "none", sm: "block" },
+            }}
+          >
+            A living liquidity map for NUT, SNUT, pNUT, nested tokens, and pools.
+          </Typography>
         </Box>
 
-        {/* Legend plaque + toggle (bottom-left) */}
-        <Box sx={{ position: "absolute", left: 12, bottom: 12, zIndex: 4 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            position: "absolute",
+            left: { xs: 12, md: 24 },
+            top: { xs: 82, md: 104 },
+            zIndex: 9,
+          }}
+        >
           <Button
             size="small"
-            onClick={() => setShowLegend((s) => !s)}
+            onClick={() => setShowLegend((value) => !value)}
             sx={{
-              borderRadius: 2,
-              px: 1.5,
-              py: 0.5,
-              fontWeight: 800,
-              letterSpacing: 0.3,
-              color: "#f7eedc",
-              background: `linear-gradient(145deg, ${BRAND.barkDark}, ${BRAND.bark})`,
-              boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-              '&:hover': { filter: "brightness(1.05)" },
+              borderRadius: 999,
+              px: 1.35,
+              fontWeight: 950,
+              color: BRAND.cream,
+              bgcolor: BRAND.bark800,
+              boxShadow: "0 8px 20px rgba(49,25,8,.18)",
+              "&:hover": {
+                bgcolor: BRAND.bark900,
+              },
             }}
           >
             ☰ Legend
           </Button>
-          {showLegend && (
-            <Box
-              sx={{
-                mt: 1,
-                px: 2,
-                py: 1.5,
-                borderRadius: 2,
-                fontSize: 13,
-                color: BRAND.brownDark,
-                background: `linear-gradient(145deg, ${BRAND.bg0} 0%, ${BRAND.bg1} 100%)`,
-                backdropFilter: "blur(6px)",
-                boxShadow: `0 6px 14px rgba(0,0,0,0.2)`,
-                border: `1px solid rgba(139,69,19,0.25)`,
-                maxWidth: 300,
-                lineHeight: 1.4,
-              }}
-            >
-              <Typography variant="caption" sx={{ display: "block", fontWeight: 800, mb: 0.75, color: BRAND.barkDark }}>
-                Legend
-              </Typography>
-              <Box sx={{ display: "grid", gap: 0.5 }}>
-                <span>🌰 Trunk = NUT (core)</span>
-                <span>🌿 Branches = SNUT (burn), pNUT (liquidity)</span>
-                <span>🍃 Canopy = nested tokens / NFTs</span>
-                <span>🌱 Roots = base LPs / pools</span>
-              </Box>
-              <Button
-                href="https://docs.basednut.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                size="small"
-                sx={{
-                  mt: 1.25,
-                  borderRadius: 999,
-                  fontWeight: 800,
-                  color: "#f7eedc",
-                  background: `linear-gradient(145deg, ${BRAND.barkDark}, ${BRAND.bark})`,
-                  '&:hover': { filter: "brightness(1.05)" },
-                }}
-              >
-                Learn More →
-              </Button>
-            </Box>
-          )}
-        </Box>
 
-        {/* Visualization Area */}
+          <Button
+            size="small"
+            onClick={() => setShowMapNotes((value) => !value)}
+            sx={{
+              borderRadius: 999,
+              px: 1.35,
+              fontWeight: 950,
+              color: BRAND.cream,
+              bgcolor: BRAND.bark800,
+              boxShadow: "0 8px 20px rgba(49,25,8,.18)",
+              "&:hover": {
+                bgcolor: BRAND.bark900,
+              },
+            }}
+          >
+            ⓘ Map
+          </Button>
+        </Stack>
+
+        <InfoPanel selectedToken={selectedToken} visible={showMapNotes} />
+        <LegendPanel visible={showLegend} />
+
         <Box
           sx={{
             position: "relative",
-            width: "100%",
-            height: "80vh",
-            zIndex: 1,
+            zIndex: 2,
+            width: "min(1500px, 100vw)",
+            height: "100dvh",
+            minHeight: { xs: 760, md: 850 },
+            mx: "auto",
+            pt: { xs: 0, md: 0 },
           }}
         >
-          {/* Tree SVG */}
-          <svg
-            width="100%"
-            height="100%"
-            viewBox="0 0 1200 800"
-            preserveAspectRatio="xMidYMid meet"
-            style={{ position: "absolute", top: 0, left: 0, zIndex: 0 }}
-          >
-            <defs>
-              <linearGradient id="bark" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor={BRAND.bark} />
-                <stop offset="40%" stopColor={BRAND.barkDark} />
-                <stop offset="100%" stopColor={BRAND.barkDeep} />
-              </linearGradient>
-              <linearGradient id="barkTexture" x1="0" x2="1" y1="0" y2="0">
-                <stop offset="0%" stopColor={BRAND.brownMed} />
-                <stop offset="50%" stopColor={BRAND.bark} />
-                <stop offset="100%" stopColor={BRAND.barkDark} />
-              </linearGradient>
-              <linearGradient id="leaf" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor={BRAND.leafBright} />
-                <stop offset="50%" stopColor={BRAND.leafLight} />
-                <stop offset="100%" stopColor={BRAND.leafMed} />
-              </linearGradient>
-              <linearGradient id="leafDeep" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor={BRAND.leafMed} />
-                <stop offset="100%" stopColor={BRAND.leafDark} />
-              </linearGradient>
-              <linearGradient id="root" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor={BRAND.soil} />
-                <stop offset="100%" stopColor={BRAND.soilDark} />
-              </linearGradient>
-              <linearGradient id="goldFlow" x1="0" x2="1" y1="0" y2="0">
-                <stop offset="0%" stopColor="transparent" />
-                <stop offset="30%" stopColor={BRAND.gold} stopOpacity="0.6" />
-                <stop offset="70%" stopColor={BRAND.amber} stopOpacity="0.8" />
-                <stop offset="100%" stopColor="transparent" />
-              </linearGradient>
-              <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
-                <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.25" />
-              </filter>
-              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                <feMerge> 
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
-              <pattern id="barkPattern" patternUnits="userSpaceOnUse" width="8" height="8">
-                <rect width="8" height="8" fill={BRAND.bark} />
-                <path d="M0,4 Q4,2 8,4 Q4,6 0,4" fill={BRAND.barkDark} opacity="0.3" />
-              </pattern>
-            </defs>
-
-            {/* Enhanced canopy with depth and parallax */}
-            <g filter="url(#softShadow)" style={{ transformOrigin: "600px 220px", animation: `${parallaxSway} 8s ease-in-out infinite` }}>
-              {/* Background canopy layer */}
-              <ellipse cx="600" cy="235" rx="380" ry="165" fill="url(#leafDeep)" opacity="0.25" />
-              <ellipse cx="580" cy="225" rx="340" ry="145" fill="url(#leafDeep)" opacity="0.35" />
-              
-              {/* Mid canopy layer */}
-              <ellipse cx="620" cy="215" rx="300" ry="125" fill="url(#leaf)" opacity="0.45" 
-                style={{ animation: `${leafRustle} 6s ease-in-out infinite` }} />
-              <ellipse cx="590" cy="210" rx="260" ry="110" fill="url(#leaf)" opacity="0.55" 
-                style={{ animation: `${leafRustle} 5s ease-in-out -1s infinite` }} />
-              
-              {/* Foreground canopy highlights */}
-              <ellipse cx="610" cy="205" rx="220" ry="95" fill="url(#leaf)" opacity="0.65" 
-                style={{ animation: `${leafRustle} 7s ease-in-out -2s infinite` }} />
-              <ellipse cx="590" cy="200" rx="180" ry="80" fill={BRAND.leafBright} opacity="0.4" />
-              
-              {/* Individual leaf clusters for detail */}
-              <circle cx="520" cy="190" r="25" fill={BRAND.leafLight} opacity="0.6" 
-                style={{ animation: `${leafRustle} 4s ease-in-out infinite` }} />
-              <circle cx="680" cy="200" r="20" fill={BRAND.leafMed} opacity="0.7" 
-                style={{ animation: `${leafRustle} 5s ease-in-out -1.5s infinite` }} />
-              <circle cx="600" cy="180" r="18" fill={BRAND.leafBright} opacity="0.8" 
-                style={{ animation: `${leafRustle} 6s ease-in-out -0.5s infinite` }} />
-            </g>
-
-            {/* Enhanced trunk with texture and depth */}
-            <g filter="url(#softShadow)">
-              {/* Main trunk body with texture */}
-              <path
-                d="M565 780 C 570 720, 575 640, 580 540 C 585 420, 580 350, 585 280 C 588 250, 590 230, 590 230 L 610 230 C 610 230, 612 250, 615 280 C 620 350, 615 420, 620 540 C 625 640, 630 720, 635 780 Z"
-                fill="url(#bark)"
-                opacity="0.95"
-              />
-              
-              {/* Bark texture overlay */}
-              <path
-                d="M570 780 C 574 720, 578 640, 582 540 C 586 420, 582 350, 585 280 C 587 250, 588 235, 590 230 L 610 230 C 612 235, 613 250, 615 280 C 618 350, 614 420, 618 540 C 622 640, 626 720, 630 780 Z"
-                fill="url(#barkPattern)"
-                opacity="0.6"
-              />
-              
-              {/* Trunk highlights for 3D effect */}
-              <path
-                d="M575 780 C 578 720, 580 640, 583 540 C 585 420, 583 350, 585 280 C 586 250, 587 240, 588 235 L 590 235 L 590 780 Z"
-                fill={BRAND.brownLight}
-                opacity="0.3"
-              />
-              
-              {/* Trunk shadows for depth */}
-              <path
-                d="M610 235 C 612 240, 613 250, 615 280 C 617 350, 615 420, 617 540 C 620 640, 622 720, 625 780 L 630 780 C 628 720, 625 640, 622 540 C 619 420, 617 350, 620 280 C 622 250, 623 240, 625 235 Z"
-                fill={BRAND.barkDeep}
-                opacity="0.4"
-              />
-            </g>
-
-            {/* Enhanced major branches with dynamic sway */}
-            <g style={{ transformOrigin: "520px 300px", animation: `${swayBranch} 7s ease-in-out infinite` }}>
-              <AnimatedPath
-                color={BRAND.leafMed}
-                thickness={12}
-                dash={false}
-                d="M600 320 C 580 310, 550 295, 520 285 C 480 270, 440 260, 400 260"
-                style={{ filter: "url(#glow)" }}
-              />
-              <AnimatedPath
-                color={BRAND.leafLight}
-                thickness={6}
-                dash={false}
-                d="M600 320 C 580 310, 550 295, 520 285 C 480 270, 440 260, 400 260"
-                style={{ filter: "url(#glow)" }}
-              />
-            </g>
-            
-            <g style={{ transformOrigin: "680px 300px", animation: `${swayBranch} 6s ease-in-out -2s infinite` }}>
-              <AnimatedPath
-                color={BRAND.amber}
-                thickness={12}
-                dash={false}
-                d="M600 320 C 620 310, 650 295, 680 285 C 720 270, 760 260, 800 260"
-                style={{ filter: "url(#glow)" }}
-              />
-              <AnimatedPath
-                color={BRAND.gold}
-                thickness={6}
-                dash={false}
-                d="M600 320 C 620 310, 650 295, 680 285 C 720 270, 760 260, 800 260"
-                style={{ filter: "url(#glow)" }}
-              />
-            </g>
-
-            {/* Enhanced flowing liquidity roots */}
-            <g style={{ animation: `${rootPulse} 5s ease-in-out infinite` }}>
-              <path d="M600 780 C 580 785, 560 790, 540 795 C 520 800, 500 795, 480 790 C 460 785, 440 795, 420 800" 
-                stroke="url(#root)" strokeWidth="14" fill="none" opacity="0.8" />
-              <path d="M600 780 C 620 785, 640 790, 660 795 C 680 800, 700 795, 720 790 C 740 785, 760 795, 780 800" 
-                stroke="url(#root)" strokeWidth="14" fill="none" opacity="0.8" />
-              
-              {/* Secondary root networks */}
-              <path d="M580 790 C 570 795, 550 800, 530 795 C 510 790, 490 800, 470 805" 
-                stroke="url(#root)" strokeWidth="8" fill="none" opacity="0.6" />
-              <path d="M620 790 C 630 795, 650 800, 670 795 C 690 790, 710 800, 730 805" 
-                stroke="url(#root)" strokeWidth="8" fill="none" opacity="0.6" />
-                
-              {/* Liquidity flow highlights */}
-              <path d="M600 780 C 580 785, 560 790, 540 795" 
-                stroke={BRAND.gold} strokeWidth="2" fill="none" opacity="0.4" 
-                style={{ animation: `${shimmerFlow} 3s ease-in-out infinite` }} />
-              <path d="M600 780 C 620 785, 640 790, 660 795" 
-                stroke={BRAND.amber} strokeWidth="2" fill="none" opacity="0.4" 
-                style={{ animation: `${shimmerFlow} 3s ease-in-out -1s infinite` }} />
-            </g>
-
-            {/* Enhanced animated nutrient flows with shimmer */}
-            {[
-              ...nutTreeData.nestedTokens.map((t) => ({ 
-                end: t.name, 
-                color: BRAND.leafLight, 
-                thickness: 5,
-                shimmer: BRAND.leafBright
-              })),
-              ...nutTreeData.branches.map((t) => ({ 
-                end: t.name, 
-                color: t.name === "SNUT" ? BRAND.leafMed : BRAND.amber, 
-                thickness: 7,
-                shimmer: t.name === "SNUT" ? BRAND.leafBright : BRAND.gold
-              })),
-              ...nutTreeData.soil.map((t) => ({ 
-                end: t.name, 
-                color: BRAND.barkDark, 
-                thickness: 6,
-                shimmer: BRAND.soil
-              })),
-            ].map((conn, i) => {
-              const start = positions[nutTreeData.trunk.name];
-              const end = positions[conn.end];
-              if (!start || !end) return null;
-              const sx = (start.x / 100) * 1200;
-              const sy = (start.y / 100) * 800;
-              const ex = (end.x / 100) * 1200;
-              const ey = (end.y / 100) * 800;
-              const mx = (sx + ex) / 2;
-              const my = sy + (ey < sy ? -90 : 70);
-              const d = `M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}`;
-              
-              return (
-                <g key={`flow-${conn.end}-${i}`}>
-                  {/* Base flow path */}
-                  <AnimatedPath
-                    d={d}
-                    color={conn.color}
-                    thickness={conn.thickness}
-                    style={{ 
-                      animation: `${shimmerFlow} ${3 + Math.random()}s ease-in-out infinite`,
-                      strokeDasharray: "8 12"
-                    }}
-                  />
-                  {/* Shimmer overlay */}
-                  <AnimatedPath
-                    d={d}
-                    color={conn.shimmer}
-                    thickness={Math.max(2, conn.thickness - 3)}
-                    dash={false}
-                    style={{ 
-                      animation: `${shimmerFlow} ${2 + Math.random() * 0.5}s ease-in-out infinite`,
-                      opacity: 0.6
-                    }}
-                  />
-                </g>
-              );
-            })}
-          </svg>
-
-          {/* Enhanced falling nuts overlay with variety */}
-          <Box sx={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }} aria-hidden>
-            {impacts.map((it) => (
-              <Impact
-                key={it.id}
-                kind={it.kind}
-                color={it.color}
-                style={{ left: `${it.pos.x}%`, top: `${it.pos.y}%` }}
-              />
-            ))}
-            {falling.map((f) => (
-              <FallingNut
-                key={f.id}
-                size={isMobile ? 16 + Math.random() * 6 : 20 + Math.random() * 8}
-                variant={f.variant}
-                style={{ 
-                  left: `${f.pos.x}%`, 
-                  top: `${f.pos.y}%`, 
-                  transform: "translate(-50%, -50%)",
-                }}
-              >
-                {f.icon}
-              </FallingNut>
-            ))}
-          </Box>
-
-          {/* Token Nodes */}
-          {allTokens.map((token) => (
-            <TokenNode
-              key={token.name}
-              token={token}
-              onClick={handleTokenClick}
-              pos={positions[token.name]}
-              onHoverFall={handleHoverFall}
-            />
-          ))}
-        </Box>
-
-        {/* Modal for Token Details */}
-        {selectedToken && (
-          <TokenModal
-            token={selectedToken}
-            open={Boolean(selectedToken)}
-            onClose={handleCloseModal}
+          <TreeArtwork
+            data={data}
+            selectedTokenName={selectedToken?.name}
+            onSelect={handleSelect}
+            reducedMotion={reducedMotion}
           />
-        )}
-        {/* Narrative card (top-right) */}
-        <Box
-          sx={{
-            position: "absolute",
-            right: 12,
-            top: { xs: 84, md: 96 },
-            zIndex: 3,
-            px: 2,
-            py: 1.5,
-            borderRadius: 2,
-            background: `linear-gradient(145deg, ${BRAND.bg0}, ${BRAND.bg1})`,
-            border: `1px solid rgba(139,69,19,0.22)`,
-            boxShadow: "0 6px 14px rgba(0,0,0,0.15)",
-            maxWidth: 320,
-          }}
-        >
-          <Typography variant="caption" sx={{ fontWeight: 900, color: BRAND.barkDark, display: "block", mb: 0.75 }}>
-            How this tree works
-          </Typography>
-          <Typography variant="caption" sx={{ display: "block", color: BRAND.barkDark }}>
-            NUT anchors the trunk. SNUT burns create pressure. pNUT fuels liquidity. Roots feed LPs and pools. The glow lines show active flow; falling symbols hint at market pressure.
-          </Typography>
         </Box>
+
+        <TokenModal
+          token={selectedToken}
+          onClose={() => setSelectedToken(null)}
+        />
       </Box>
     </Layout>
   );

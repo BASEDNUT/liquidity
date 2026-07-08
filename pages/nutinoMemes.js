@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Head from 'next/head';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -75,6 +76,10 @@ const NutinoMemes = () => {
   return (
     <>
       <Header />
+      <Head>
+        <title>Nutty Image Generator | BASED NUT</title>
+        <meta name="description" content="Generate nutty AI memes with Peanutoshi Nutkamoto. An experimental memefi project." />
+      </Head>
       <main style={{ padding: "20px", textAlign: "center", backgroundColor: "#F9F3E6", fontFamily: "Arial, sans-serif" }}>
         <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "#5D4037", marginBottom: "1rem" }}>Nutty Images</h1>
         <p style={{ fontSize: "1rem", color: "#5D4037", marginBottom: "2rem" }}>Enter your image meme idea and generate nutty images!</p>

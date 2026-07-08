@@ -1,0 +1,17 @@
+{
+  "name": "BASED NUT",
+  "short_name": "BASED NUT",
+  "description": "Experimental memefi ecosystem on Base with unity token, deflationary rewards, and arbitrage framework",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1410",
+  "theme_color": "#d4a017",
+  "icons": [
+    {
+      "src": "/img/based-nuts-hero.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

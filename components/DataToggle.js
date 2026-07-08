@@ -2,8 +2,8 @@ import { ButtonGroup, Button } from "@mui/material";
 
 export default function DataToggle({ value, onChange }) {
   const options = [
-    { key: 'pools', label: 'Pools' },
     { key: 'tokens', label: 'Tokens' },
+    { key: 'pools', label: 'Pools' },
   ];
 
   return (

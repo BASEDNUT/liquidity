@@ -9,7 +9,7 @@ export function fetchPools() {
   const base = [
     {
       name: "NUT/wETH",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Extra Crunchy Delight",
       platform: "Uniswap V3",
       category: ["TKNs", "NUT"],
@@ -23,7 +23,7 @@ export function fetchPools() {
     },
     {
       name: "NUT/wETH",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Mega Crunchy Madness",
       platform: "Uniswap V2",
       category: ["TKNs", "NUT"],
@@ -36,10 +36,11 @@ export function fetchPools() {
       icon: "🌰🌱",
     },
     {
-      name: "sNUT/NUT",
-      tvl: "TBD",
+      name: "SNUT/NUT",
+      tvl: null,
       flavor: "Cloud-Salted Breeze",
       platform: "Aerodrome", // Airplanes => "Cloud-Salted" theme
+      role: "Keeper-Arb Reactor",
       category: ["TKNs", "NUT", "SNUT"],
       url: "https://basescan.org/address/0x893faaa7baf7a8247fc7142afb28e13d51a5aae8",
       checkPoolUrl:
@@ -51,9 +52,10 @@ export function fetchPools() {
     },
     {
       name: "pNUT",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Caramelized Equilibrium",
       platform: "Balancer",
+      role: "Multi-Asset Arb Reactor",
       category: ["TKNs", "pNUT"],
       url: "https://basescan.org/address/0x2a5757b60987ff10385de1d4d923792f6fdcfff1",
       checkPoolUrl:
@@ -65,7 +67,7 @@ export function fetchPools() {
     },
     {
       name: "NUT/AERO",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Sky-Seasoned Crisp",
       platform: "Aerodrome",
       category: ["TKNs", "NUT"],
@@ -79,7 +81,7 @@ export function fetchPools() {
     },
     {
       name: "NUT/cbBTC",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Golden Butter Drizzle",
       platform: "Aerodrome", // cbBTC => "golden," "butter"
       category: ["TKNs", "NUT"],
@@ -92,10 +94,11 @@ export function fetchPools() {
       icon: "🌰🌾",
     },
     {
-      name: "sNUT/wETH",
-      tvl: "TBD",
+      name: "SNUT/wETH",
+      tvl: null,
       flavor: "Honey-Roasted Frenzy",
       platform: "Uniswap V2",
+      role: "Main Spot Liquidity",
       category: ["TKNs", "SNUT"],
       url: "https://basescan.org/address/0xB22895d2ee6e29395F30Ec47c8D9FE0d55355AE1",
       checkPoolUrl:
@@ -106,8 +109,23 @@ export function fetchPools() {
       icon: "🥥🌱",
     },
     {
+      name: "SNUT-LP/wETH",
+      tvl: null,
+      flavor: "Palm Grove Graft Market",
+      platform: "Uniswap V2",
+      role: "Meta-Market (Liquidity Rights)",
+      category: ["TKNs", "SNUT"],
+      url: "https://basescan.org/address/0x82bbadb9d6b2c0a59ed01809e30323f89f6faa1c",
+      checkPoolUrl:
+        "https://app.uniswap.org/explore/tokens/base/0x82bbadb9d6b2c0a59ed01809e30323f89f6faa1c",
+      dexscreenerUrl:
+        "https://dexscreener.com/base/0x82bbadb9d6b2c0a59ed01809e30323f89f6faa1c",
+      status: "Volatile",
+      icon: "🥥🌴",
+    },
+    {
       name: "NUTINO/NUT",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Minty Chocolate-Coated Bliss",
       platform: "MintClub", // "Mint" => chocolate mint vibe
       category: ["TKNs", "NUTcoins"],
@@ -120,7 +138,7 @@ export function fetchPools() {
     },
     {
       name: "NUTINO/cbBTC",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Buttery Mint Explosion",
       platform: "Uniswap V2", // bridging Mint + BTC gold-butter
       category: ["TKNs", "NUTcoins"],
@@ -134,7 +152,7 @@ export function fetchPools() {
     },
   {
       name: "SALT/USDC",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Savory Stable Seasoning",
       platform: "Aerodrome",
       category: ["TKNs", "NUTcoins"],
@@ -148,7 +166,7 @@ export function fetchPools() {
     },
     {
       name: "NUT/SALT",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Perfectly Salted Crunch",
   platform: "MintClub",
   category: ["TKNs", "NUTcoins"],
@@ -162,7 +180,7 @@ export function fetchPools() {
     },
     {
       name: "PNUTS/NUT",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Peanutty Dream Crunch",
       platform: "MintClub",
       category: "NFTs",
@@ -175,7 +193,7 @@ export function fetchPools() {
     },
     {
       name: "ALMD/NUT",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Wasabi-Infused Kick",
       platform: "MintClub",
       category: "NFTs",
@@ -188,7 +206,7 @@ export function fetchPools() {
     },
     {
       name: "SALMD/NUT",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Subtly Almond-Kissed",
       platform: "MintClub",
       category: "NFTs",
@@ -201,7 +219,7 @@ export function fetchPools() {
     },
     {
       name: "PNUTRMY/NUT",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Sun-Kissed Soldiers",
       platform: "MintClub",
       category: "NFTs",
@@ -214,7 +232,7 @@ export function fetchPools() {
     },
     {
       name: "SPNUT/USDC",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Battle-Hardened Peanut Warriors",
       platform: "Sudoswap",
       category: "NFTs",
@@ -228,7 +246,7 @@ export function fetchPools() {
     },
     {
       name: "PNUTS/USDC",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Elite Peanut Commanders",
       platform: "Sudoswap",
       category: "NFTs",
@@ -242,7 +260,7 @@ export function fetchPools() {
     },
     {
       name: "SALMD/cbETH",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Battle-Hardened Almond Warriors",
       platform: "Sudoswap",
       category: "NFTs",
@@ -256,7 +274,7 @@ export function fetchPools() {
     },
     {
       name: "ALMD/cbETH",
-      tvl: "TBD",
+      tvl: null,
       flavor: "Elite Almond Commanders",
       platform: "Sudoswap",
       category: "NFTs",
@@ -275,4 +293,8 @@ export function fetchPools() {
     id: `${slugify(p.name)}-${slugify(p.platform)}`,
     ...p,
   }));
+}
+
+export function getStaticPools() {
+  return fetchPools();
 }

@@ -1,30 +1,36 @@
-export default function Custom500() {
-    return (
-        <div style={{
-            padding: '20px',
-            textAlign: 'center',
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            backgroundColor: '#F9F3E6'
-        }}>
-            <h1>500 - Server-side error occurred</h1>
-            <p>We're working on fixing this issue.</p>
-            <button
-                onClick={() => window.location.reload()}
-                style={{
-                    padding: '10px 20px',
-                    margin: '20px auto',
-                    backgroundColor: '#8b572a',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer'
-                }}
-            >
-                Try Again
-            </button>
-        </div>
-    );
+import Head from "next/head";
+import Layout from "../components/Layout";
+import { Box, Button } from "@mui/material";
+import Link from "next/link";
+import Image from "next/image";
+
+export default function ServerError() {
+  return (
+    <Layout>
+      <Head>
+        <title>500 - Server Error | BASED NUT</title>
+        <meta name="description" content="Something cracked in the orchard. BASED NUT — an experimental memefi project." />
+      </Head>
+      <Box sx={{
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        flex: 1, textAlign: "center", pt: 3, pb: 2,
+        background: "#F5E6D3", borderRadius: 2, my: 1, mx: "auto", maxWidth: "95vw"
+      }}>
+        <Box sx={{ mb: 2, maxWidth: { xs: "90vw", md: "85vw" } }}>
+          <Image
+            src="/img/errors/peanut-500-1.png"
+            alt="Peanut 500 character"
+            width={1672}
+            height={941}
+            priority
+            sizes="(max-width: 600px) 90vw, 85vw"
+            style={{ width: "100%", height: "auto", maxHeight: "70vh" }}
+          />
+        </Box>
+        <Link href="/" passHref legacyBehavior>
+          <Button variant="contained" sx={{ background: "linear-gradient(135deg, #7D5A50, #A67C52)", color: "#FFF7EA", fontWeight: 600, borderRadius: 2, px: 3, py: 1.2, "&:hover": { background: "linear-gradient(135deg, #6d4321, #8B5A2B)" } }}>🌰 Back to the Orchard</Button>
+        </Link>
+      </Box>
+    </Layout>
+  );
 }

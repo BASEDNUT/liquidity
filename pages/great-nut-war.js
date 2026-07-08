@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Layout from '../components/Layout';
-import GlossaryTooltip from '../components/GlossaryTooltip';
 
 const placeholderImage = '/img/peanutoshi.png'; // Corrected placeholder image path
 
@@ -64,7 +63,88 @@ const HeroCarousel = () => {
 const peanutColor = '#FDE8B1'; // Light brown for peanuts
 const almondColor = '#D4A373'; // Dark brown (almost red) for almonds
 
+const NFT_CONTRACTS = {
+  PNUTRMY: '0xF075300b8C2EF500d8Ce4f783F910C500B9A3512',
+  PNUTS: '0x794fcD89357C1CcF04a1a9A441ad4dB2Cd5EE387',
+  SALMD: '0x1E0f80529593185C021043ffcbfDcB8f4279C649',
+  ALMD: '0x1A160456005AED47994E1c13C9bc31F274413927',
+};
+
+const NFT_MAX_SUPPLY = {
+  PNUTRMY: 10000,
+  PNUTS: 1000,
+  SALMD: 10000,
+  ALMD: 1000,
+};
+
 const GreatNutWar = () => {
+  const [nftSupplies, setNftSupplies] = useState({
+    PNUTRMY: null,
+    PNUTS: null,
+    SALMD: null,
+    ALMD: null,
+  });
+
+  useEffect(() => {
+    const rpcs = [
+      'https://mainnet.base.org',
+      'https://base.publicnode.com',
+    ];
+    const sig = '0x18160ddd'; // totalSupply()
+
+    const fetchSupply = async (addr, retryCount = 0) => {
+      const rpc = rpcs[retryCount % rpcs.length];
+      try {
+        const res = await fetch(rpc, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'eth_call',
+            params: [{ to: addr, data: sig }, 'latest'],
+            id: 1,
+          }),
+        });
+        if (res.status === 429 && retryCount < 3) {
+          await new Promise(r => setTimeout(r, 500 * (retryCount + 1)));
+          return fetchSupply(addr, retryCount + 1);
+        }
+        const json = await res.json();
+        const supply = json.result ? parseInt(json.result, 16) : null;
+        return (supply != null && !isNaN(supply)) ? supply : null;
+      } catch {
+        if (retryCount < 3) {
+          await new Promise(r => setTimeout(r, 500 * (retryCount + 1)));
+          return fetchSupply(addr, retryCount + 1);
+        }
+        return null;
+      }
+    };
+
+    // Stagger calls to avoid rate limiting
+    (async () => {
+      const entries = Object.entries(NFT_CONTRACTS);
+      const supplies = {};
+      for (let i = 0; i < entries.length; i++) {
+        const [name, addr] = entries[i];
+        supplies[name] = await fetchSupply(addr);
+        setNftSupplies({ ...supplies }); // Update progressively as each loads
+        if (i < entries.length - 1) await new Promise(r => setTimeout(r, 200));
+      }
+    })();
+  }, []);
+
+  const fmtSupply = (key) => {
+    const s = nftSupplies[key];
+    if (s === null || s === undefined || isNaN(s)) return '...';
+    return s.toLocaleString();
+  };
+
+  const hasSupply = (key) => {
+    const s = nftSupplies[key];
+    return s != null && !isNaN(s);
+  };
+
   return (
     <Layout>
       <div style={{ minHeight: '100vh', backgroundColor: '#F7F3ED', fontFamily: 'Arial, sans-serif' }}>
@@ -140,17 +220,17 @@ const GreatNutWar = () => {
                       borderRadius: '9999px',
                     }}
                   >
-                    5,263 Recruits
+                    {hasSupply('PNUTRMY') && hasSupply('PNUTS') ? (nftSupplies.PNUTRMY + nftSupplies.PNUTS).toLocaleString() : '...'} Recruits
                   </span>
                 </h3>
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                  <span style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)' }}>🥇 Leading Salt Production</span>
+                  <span style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)' }}>🌰 {hasSupply('PNUTRMY') ? `${((nftSupplies.PNUTRMY / NFT_MAX_SUPPLY.PNUTRMY) * 100).toFixed(1)}% Minted` : '...'}</span>
                 </div>
                 <div style={{ marginBottom: '1rem' }}>
                   <span style={{ fontSize: '1rem', fontWeight: 'bold', color: '#5D4037' }}>Army Composition</span>
                   <ul style={{ margin: '0.5rem 0 0 1.25rem', color: 'rgba(93,64,55,0.9)' }}>
-                    <li>Peanut Soldiers: 5,012</li>
-                    <li>Peanut Generals: 251</li>
+                    <li>Peanut Soldiers: {fmtSupply('PNUTRMY')}</li>
+                    <li>Peanut Generals: {fmtSupply('PNUTS')}</li>
                   </ul>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -236,17 +316,17 @@ const GreatNutWar = () => {
                       borderRadius: '9999px',
                     }}
                   >
-                    6,661 Recruits
+                    {hasSupply('SALMD') && hasSupply('ALMD') ? (nftSupplies.SALMD + nftSupplies.ALMD).toLocaleString() : '...'} Recruits
                   </span>
                 </h3>
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                  <span style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)' }}>🏆 Most Honey Reserves</span>
+                  <span style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)' }}>🌰 {hasSupply('SALMD') ? `${((nftSupplies.SALMD / NFT_MAX_SUPPLY.SALMD) * 100).toFixed(1)}% Minted` : '...'}</span>
                 </div>
                 <div style={{ marginBottom: '1rem' }}>
                   <span style={{ fontSize: '1rem', fontWeight: 'bold', color: '#5D4037' }}>Army Composition</span>
                   <ul style={{ margin: '0.5rem 0 0 1.25rem', color: 'rgba(93,64,55,0.9)' }}>
-                    <li>Almond Soldiers: 6,237</li>
-                    <li>Almond Generals: 424</li>
+                    <li>Almond Soldiers: {fmtSupply('SALMD')}</li>
+                    <li>Almond Generals: {fmtSupply('ALMD')}</li>
                   </ul>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -309,8 +389,7 @@ const GreatNutWar = () => {
                 />
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037' }}>Peanut Soldiers</h3>
                 <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1rem' }}>
-                  Total NFTs: 10,000<br />
-                  Average Saltiness: 10x
+                  Minted: {fmtSupply('PNUTRMY')} / {NFT_MAX_SUPPLY.PNUTRMY.toLocaleString()} max<br />
                 </p>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                   <a
@@ -329,7 +408,7 @@ const GreatNutWar = () => {
                     Mint Club
                   </a>
                   <a
-                    href="https://sudoswap.xyz/#/manage/base/0x04dbBc85E27DF12970dD62973e83a01FCd6aa8FD"
+                    href="https://sudoswap.xyz/#/manage/base/0xF075300b8C2EF500d8Ce4f783F910C500B9A3512"
                     className="button-effect"
                     style={{
                       padding: '0.5rem 1rem',
@@ -363,8 +442,7 @@ const GreatNutWar = () => {
                 />
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037' }}>Peanut Generals</h3>
                 <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1rem' }}>
-                  Total NFTs: 1,000<br />
-                  Average Saltiness: 100x
+                  Minted: {fmtSupply('PNUTS')} / {NFT_MAX_SUPPLY.PNUTS.toLocaleString()} max<br />
                 </p>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                   <a
@@ -383,7 +461,7 @@ const GreatNutWar = () => {
                     Mint Club
                   </a>
                   <a
-                    href="https://sudoswap.xyz/#/manage/base/0x262bEaa785a0eF65f5D9C1b8BA5c41980D087ff3"
+                    href="https://sudoswap.xyz/#/manage/base/0x794fcD89357C1CcF04a1a9A441ad4dB2Cd5EE387"
                     className="button-effect"
                     style={{
                       padding: '0.5rem 1rem',
@@ -417,8 +495,7 @@ const GreatNutWar = () => {
                 />
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037' }}>Almond Soldiers</h3>
                 <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1rem' }}>
-                  Total NFTs: 10,000<br />
-                  Average Saltiness: 10x
+                  Minted: {fmtSupply('SALMD')} / {NFT_MAX_SUPPLY.SALMD.toLocaleString()} max<br />
                 </p>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                   <a
@@ -437,7 +514,7 @@ const GreatNutWar = () => {
                     Mint Club
                   </a>
                   <a
-                    href="https://sudoswap.xyz/#/manage/base/0xeE7243F0E02e5890c6415B5CbAe58e0D0fb758a5"
+                    href="https://sudoswap.xyz/#/manage/base/0x1E0f80529593185C021043ffcbfDcB8f4279C649"
                     className="button-effect"
                     style={{
                       padding: '0.5rem 1rem',
@@ -471,8 +548,7 @@ const GreatNutWar = () => {
                 />
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037' }}>Almond Generals</h3>
                 <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1rem' }}>
-                  Total NFTs: 1,000<br />
-                  Average Saltiness: 100x
+                  Minted: {fmtSupply('ALMD')} / {NFT_MAX_SUPPLY.ALMD.toLocaleString()} max<br />
                 </p>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                   <a
@@ -491,7 +567,7 @@ const GreatNutWar = () => {
                     Mint Club
                   </a>
                   <a
-                    href="https://sudoswap.xyz/#/manage/base/0x308C9BC0546723d6e4905c971cd34feBF1f94031"
+                    href="https://sudoswap.xyz/#/manage/base/0x1A160456005AED47994E1c13C9bc31F274413927"
                     className="button-effect"
                     style={{
                       padding: '0.5rem 1rem',
@@ -509,180 +585,7 @@ const GreatNutWar = () => {
               </div>
             </section>
           </div>
-          
-          {/* For Salt Tokens - moved below NFTs */}
-          <h2 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#5D4037', textAlign: 'center', marginBottom: '2rem', marginTop: '3rem' }}>
-            For Salt Tokens
-          </h2>
-          <div className="war-machinery-grid">
-            {/* Salt Forge */}
-            <div
-              style={{
-                background: 'linear-gradient(to bottom, rgba(205,127,50,0.05), #fff)',
-                padding: '2rem',
-                borderRadius: '1rem',
-                border: '2px solid rgba(205,127,50,0.2)',
-                transition: 'all 0.3s',
-                boxSizing: 'border-box',
-                overflow: 'hidden',
-                wordWrap: 'break-word',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037', flex: '1', marginRight: '1rem' }}>
-                  Salt Forge
-                </h3>
-                <div
-                  style={{
-                    width: '3rem',
-                    height: '3rem',
-                    backgroundColor: '#CD7F32',
-                    borderRadius: '0.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                  }}
-                >
-                  🌋
-                </div>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                Forge your destiny in the fires of the Great Nut War. Mint SALT to fuel your faction's ambitions and dominate the battlefield.
-                Every contract strengthens your army's resolve.
-              </p>
-              <a
-                href="https://mint.club/token/base/SALT"
-                className="button-effect"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '1rem 1.5rem',
-                  backgroundColor: '#CD7F32',
-                  color: '#fff',
-                  borderRadius: '0.5rem',
-                  textDecoration: 'none',
-                  transition: 'background-color 0.3s ease',
-                  width: '100%',
-                  maxWidth: '300px',
-                  margin: '0 auto',
-                  textAlign: 'center',
-                }}
-              >
-                <span style={{ fontSize: '1.125rem', textAlign: 'center' }}>Mint Salt</span>
-              </a>
-            </div>
-
-            {/* NFT Armory */}
-            <div
-              style={{
-                background: 'linear-gradient(to bottom, rgba(180,126,91,0.1), #fff)',
-                padding: '2rem',
-                borderRadius: '1rem',
-                border: '2px solid rgba(205,127,50,0.3)',
-                boxShadow: '0 5px 10px rgba(0,0,0,0.1)',
-                transition: 'all 0.3s',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  NUT Nested NFTs
-                  <span style={{ display: 'inline-flex' }}>
-                    <GlossaryTooltip term="Liquidity" title="Nested collections under NUT; ranks influence spoils distribution." />
-                  </span>
-                </h3>
-                <div
-                  style={{
-                    width: '3rem',
-                    height: '3rem',
-                    backgroundColor: '#B47E5B',
-                    borderRadius: '9999px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontSize: '1.5rem',
-                  }}
-                >
-                  🛡️
-                </div>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                Collect NFTs to have a chance at Spoils of War. From Footsoldier to General your NFT rank determines spoils division.
-              </p>
-              <a
-                href="https://mint.club/nut"
-                className="button-effect"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#B47E5B',
-                  color: '#fff',
-                  borderRadius: '0.5rem',
-                  textDecoration: 'none',
-                }}
-              >
-                View Nested Collections
-                <svg style={{ width: '1.25rem', height: '1.25rem', marginLeft: '0.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </a>
-            </div>
-
-            {/* Volcanic Vault */}
-            <div
-              style={{
-                background: 'linear-gradient(to bottom, #FFEBEE, #fff)',
-                padding: '2rem',
-                borderRadius: '1rem',
-                border: '2px solid rgba(205,127,50,0.3)',
-                boxShadow: '0 5px 10px rgba(0,0,0,0.1)',
-                transition: 'all 0.3s',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037' }}>Molten Salt Vault</h3>
-                <div
-                  style={{
-                    width: '3rem',
-                    height: '3rem',
-                    backgroundColor: '#B71C1C',
-                    borderRadius: '9999px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontSize: '1.5rem',
-                  }}
-                >
-                  🏰
-                </div>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                Stake SALT in our molten core to generate strategic reserves.
-              </p>
-              <a
-                href="#"
-                className="button-effect"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#B71C1C',
-                  color: '#fff',
-                  borderRadius: '0.5rem',
-                  textDecoration: 'none',
-                }}
-              >
-                Enter Salt Vault
-                <svg style={{ width: '1.25rem', height: '1.25rem', marginLeft: '0.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </a>
-            </div>
-          </div>
+          {/* Staking & Vault section removed — content moved to /staking page */}
 
           <div style={{ marginTop: '3rem', textAlign: 'center' }}>
             <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#5D4037', marginBottom: '1rem' }}>
@@ -804,11 +707,8 @@ const GreatNutWar = () => {
       <style jsx>{`
         .button-effect {
           transition: background 0.3s ease, transform 0.3s ease;
-          width: 100%; /* Ensure buttons take full width on smaller screens */
-          max-width: 300px; /* Limit button width */
-          margin: 0 auto; /* Center buttons */
-          text-align: center; /* Center text */
-          box-sizing: border-box; /* Include padding in width */
+          text-align: center;
+          box-sizing: border-box;
         }
         .button-effect:hover {
           transform: translateY(-2px);
@@ -829,13 +729,6 @@ const GreatNutWar = () => {
           margin-bottom: 5rem;
         }
 
-        .war-machinery-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 2rem;
-          margin-bottom: 6rem;
-        }
-
         .nft-stats-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
@@ -845,24 +738,16 @@ const GreatNutWar = () => {
 
         @media (max-width: 768px) {
           .factions-grid,
-          .war-machinery-grid,
           .nft-stats-grid {
-            grid-template-columns: 1fr; /* Single column layout for smaller screens */
+            grid-template-columns: 1fr;
           }
           .factions-grid > div,
-          .war-machinery-grid > div,
           .nft-stats-grid > div {
-            width: 100%; /* Ensure full width on smaller screens */
+            width: 100%;
           }
           .button-effect {
-            width: 100%; /* Full width for buttons */
+            width: 100%;
           }
-        }
-
-        /* Ensure text wraps properly */
-        .war-machinery-grid div {
-          overflow-wrap: break-word;
-          word-wrap: break-word;
         }
       `}</style>
     </div>
