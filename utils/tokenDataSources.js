@@ -21,7 +21,7 @@ export const TOKEN_ADDRESSES = {
 };
 
 // Helper: fetch with timeout using AbortController
-async function fetchWithTimeout(url, options = {}, timeoutMs = 4000) {
+async function fetchWithTimeout(url, options = {}, timeoutMs = 2500) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -30,6 +30,24 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 4000) {
   } finally {
     clearTimeout(timeoutId);
   }
+}
+// Helper: batched parallel map — processes items in batches of batchSize concurrently
+// Uses Promise.allSettled to ensure one failure doesn't break the batch
+async function batchedMap(items, fn, batchSize = 3, delayMs = 150) {
+  const results = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const batchResults = await Promise.allSettled(
+      batch.map((item, j) => fn(item, i + j))
+    );
+    for (const r of batchResults) {
+      results.push(r.status === 'fulfilled' ? r.value : undefined);
+    }
+    if (i + batchSize < items.length) {
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+  return results;
 }
 
 
@@ -523,10 +541,9 @@ export async function fetchTokenData(tokenList = TOKEN_ADDRESSES) {
   // Fetch Balancer pool data once (only for pNUT)
   const balancerData = await fetchBalancerPool().catch(() => null);
 
-  // Process tokens sequentially with 200ms stagger to avoid RPC 429 rate limiting
-  // Within each token, the different sources (GeckoTerminal, DexScreener, RPC) still run in parallel
-  for (let i = 0; i < symbols.length; i++) {
-    const symbol = symbols[i];
+  // Process tokens in batches of 3 with 150ms delay between batches to avoid RPC 429 rate limiting
+  // Within each token, the different sources (GeckoTerminal, DexScreener, RPC, MintClub) still run in parallel
+  await batchedMap(symbols, async (symbol) => {
     const address = tokenList[symbol];
     // Each source has independent error isolation
     const [geckoTerminal, dexScreener, rpc, mintClub] = await Promise.all([
@@ -538,11 +555,7 @@ export async function fetchTokenData(tokenList = TOKEN_ADDRESSES) {
     // Attach Balancer data only for pNUT
     const balancer = symbol === 'pNUT' ? balancerData : null;
     results[symbol] = { geckoTerminal, dexScreener, rpc, balancer, mintClub };
-    // Stagger delay between tokens (skip after last token)
-    if (i < symbols.length - 1) {
-      await new Promise(r => setTimeout(r, 200));
-    }
-  }
+  }, 3, 150); // batch of 3, 150ms between batches
 
   return results;
 }

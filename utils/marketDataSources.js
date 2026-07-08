@@ -29,7 +29,7 @@ const POOL_CONFIG = [
 ];
 
 // Helper: fetch with timeout using AbortController
-async function fetchWithTimeout(url, options = {}, timeoutMs = 4000) {
+async function fetchWithTimeout(url, options = {}, timeoutMs = 2500) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -39,14 +39,22 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 4000) {
     clearTimeout(timeoutId);
   }
 }
-
-// Helper: sequential throttled map — processes items one at a time with a delay between each
-// Prevents rate-limiting by avoiding Promise.all() parallel bursts
-async function throttledMap(items, fn, delayMs = 500) {
+// Helper: batched parallel map — processes items in batches of batchSize concurrently
+// Uses Promise.allSettled to ensure one failure doesn't break the batch
+// Prevents rate-limiting with delayMs between batches (not between individual items)
+async function batchedMap(items, fn, batchSize = 3, delayMs = 200) {
   const results = [];
-  for (let i = 0; i < items.length; i++) {
-    results.push(await fn(items[i], i));
-    if (i < items.length - 1) await new Promise(r => setTimeout(r, delayMs));
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const batchResults = await Promise.allSettled(
+      batch.map((item, j) => fn(item, i + j))
+    );
+    for (const r of batchResults) {
+      results.push(r.status === 'fulfilled' ? r.value : undefined);
+    }
+    if (i + batchSize < items.length) {
+      await new Promise(r => setTimeout(r, delayMs));
+    }
   }
   return results;
 }
@@ -73,7 +81,7 @@ function getStaleFromCache(key) {
 export async function fetchGeckoTerminal(poolConfigs = POOL_CONFIG) {
   const results = {};
   const dexPools = poolConfigs.filter((p) => p.type === 'dex');
-  await throttledMap(dexPools, async (pool) => {
+  await batchedMap(dexPools, async (pool) => {
     try {
       const url = `https://api.geckoterminal.com/api/v2/networks/base/pools/${pool.pairAddress}`;
       const res = await fetchWithTimeout(url, { headers: { Accept: 'application/json' } });
@@ -106,7 +114,7 @@ export async function fetchGeckoTerminal(poolConfigs = POOL_CONFIG) {
       const stale = getStaleFromCache(`geckoTerminal_${pool.id}`);
       results[pool.id] = stale || null;
     }
-  }, 200); // 200ms delay — GeckoTerminal free tier ~30 req/min
+  }, 3, 200); // batch of 3, 200ms between batches — GeckoTerminal free tier
   return results;
 }
 
@@ -117,7 +125,7 @@ export async function fetchGeckoTerminal(poolConfigs = POOL_CONFIG) {
 export async function fetchDexScreener(poolConfigs = POOL_CONFIG) {
   const results = {};
   const dexPools = poolConfigs.filter((p) => p.type === 'dex');
-  await throttledMap(dexPools, async (pool) => {
+  await batchedMap(dexPools, async (pool) => {
     try {
       let url;
       if (pool.dexScreenerTokenAddress) {
@@ -154,7 +162,7 @@ export async function fetchDexScreener(poolConfigs = POOL_CONFIG) {
       const stale = getStaleFromCache(`dexScreener_${pool.id}`);
       results[pool.id] = stale || null;
     }
-  }, 150); // 150ms delay — DexScreener rate limit safe
+  }, 3, 150); // batch of 3, 150ms between batches — DexScreener rate limit safe
   return results;
 }
 
@@ -186,7 +194,7 @@ export async function fetchMintClub(poolConfigs = POOL_CONFIG) {
   const pools = poolConfigs.filter((p) => p.type === 'mintclub' || p.type === 'mintclub_nft');
   const nutUsd = await _getNutUsd().catch(() => null);
 
-  await throttledMap(pools, async (pool) => {
+  await batchedMap(pools, async (pool) => {
     try {
       const addr = pool.tokenAddress || pool.pairAddress;
       if (!addr) { results[pool.id] = null; return; }
@@ -246,7 +254,7 @@ export async function fetchMintClub(poolConfigs = POOL_CONFIG) {
       const stale = getStaleFromCache(`mintClub_${pool.id}`);
       results[pool.id] = stale || null;
     }
-  }, 100); // 100ms stagger between pools — RPC calls within each pool still run in parallel
+  }, 3, 100); // batch of 3, 100ms between batches — RPC calls within each pool still run in parallel
   return results;
 }
 
@@ -298,40 +306,27 @@ function hexToBigInt(hex) {
 export async function fetchBaseRPC(poolConfigs = POOL_CONFIG) {
   const results = {};
   const dexPools = poolConfigs.filter((p) => p.type === 'dex');
-  // Process pools sequentially with 150ms stagger to avoid RPC 429 rate limiting
-  for (let i = 0; i < dexPools.length; i++) {
-    const pool = dexPools[i];
+  // Process pools in batches of 3 with 200ms delay between batches to avoid RPC 429 rate limiting
+  await batchedMap(dexPools, async (pool) => {
     try {
-      // Fetch getReserves() — selector 0x0902f1ac
+      // Fetch getReserves() and totalSupply() in parallel (different selectors, same contract)
+      const [reservesResult, supplyResult] = await Promise.all([
+        rpcCall('eth_call', [{ to: pool.pairAddress, data: '0x0902f1ac' }, 'latest']).catch(() => null),
+        rpcCall('eth_call', [{ to: pool.pairAddress, data: '0x18160ddd' }, 'latest']).catch(() => null),
+      ]);
+
+      // Parse getReserves — V3/Balancer pools don't support it, leave as null
       let reserves0 = null;
       let reserves1 = null;
-      try {
-        const reservesResult = await rpcCall('eth_call', [
-          { to: pool.pairAddress, data: '0x0902f1ac' },
-          'latest',
-        ]);
-        // getReserves returns: uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast
-        // ABI encoding pads each to 32 bytes (64 hex chars)
-        if (reservesResult && reservesResult.length >= 130) {
-          reserves0 = hexToBigInt('0x' + reservesResult.slice(2, 66)).toString();
-          reserves1 = hexToBigInt('0x' + reservesResult.slice(66, 130)).toString();
-        }
-      } catch {
-        // V3/Balancer pools don't support getReserves — leave as null
+      if (reservesResult && reservesResult.length >= 130) {
+        reserves0 = hexToBigInt('0x' + reservesResult.slice(2, 66)).toString();
+        reserves1 = hexToBigInt('0x' + reservesResult.slice(66, 130)).toString();
       }
 
-      // Fetch totalSupply() — selector 0x18160ddd
+      // Parse totalSupply — some pool types don't support it, leave as null
       let totalSupply = null;
-      try {
-        const supplyResult = await rpcCall('eth_call', [
-          { to: pool.pairAddress, data: '0x18160ddd' },
-          'latest',
-        ]);
-        if (supplyResult && supplyResult !== '0x') {
-          totalSupply = hexToBigInt(supplyResult).toString();
-        }
-      } catch {
-        // Some pool types don't support totalSupply — leave as null
+      if (supplyResult && supplyResult !== '0x') {
+        totalSupply = hexToBigInt(supplyResult).toString();
       }
 
       results[pool.id] = { reserves0, reserves1, totalSupply, lastCheckedAt: new Date().toISOString() };
@@ -340,11 +335,7 @@ export async function fetchBaseRPC(poolConfigs = POOL_CONFIG) {
       const stale = getStaleFromCache(`rpc_${pool.id}`);
       results[pool.id] = stale || null;
     }
-    // Stagger delay between pools (skip after last pool)
-    if (i < dexPools.length - 1) {
-      await new Promise(r => setTimeout(r, 150));
-    }
-  }
+  }, 3, 200); // batch of 3, 200ms between batches — Base RPC rate limit safe
   return results;
 }
 

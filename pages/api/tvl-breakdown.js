@@ -16,6 +16,7 @@ export default async function handler(req, res) {
   try {
     const cached = await getJSON(CACHE_KEY);
  if (cached) {
+   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
    return res.status(200).json({ source: 'cache', ...cached });
  }
 
@@ -29,8 +30,12 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('[api/tvl-breakdown] Error:', err);
     const stale = await getJSON(CACHE_KEY);
-    if (stale) return res.status(200).json({ source: 'stale-cache', ...stale });
-    return res.status(502).json({ error: 'Breakdown unavailable', detail: String(err?.message || err) });
+    if (stale) {
+      res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+      return res.status(200).json({ source: 'stale-cache', ...stale });
+    }
+    res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=600');
+    return res.status(200).json({ error: 'Breakdown unavailable', detail: String(err?.message || err) });
   }
 }
 

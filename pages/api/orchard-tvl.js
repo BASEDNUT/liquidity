@@ -19,6 +19,7 @@ export default async function handler(req, res) {
     const cached = await getJSON(CACHE_KEY);
     const now = Date.now();
     if (cached) {
+      res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
       return res.status(200).json({ source: 'cache', ...cached });
     }
 
@@ -40,9 +41,11 @@ export default async function handler(req, res) {
     // Try stale cache as fallback
     const stale = await getJSON(CACHE_KEY);
     if (stale) {
+      res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
       return res.status(200).json({ source: 'stale-cache', ...stale });
     }
-    return res.status(502).json({
+    res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=600');
+    return res.status(200).json({
       error: 'Upstream TVL unavailable',
       note: String(err?.message || err),
       tvl: 0,

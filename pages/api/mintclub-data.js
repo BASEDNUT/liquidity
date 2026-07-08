@@ -69,6 +69,13 @@ export default async function handler(req, res) {
     return res.status(200).json({ source: 'fresh', ...responseData });
   } catch (err) {
     console.error('[mintclub-data] Error:', err);
-    return res.status(500).json({ error: 'Failed to fetch MintClub data' });
+    // Try stale cache as fallback
+    const stale = await getJSON(CACHE_KEY).catch(() => null);
+    if (stale) {
+      res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=300');
+      return res.status(200).json({ source: 'stale-cache', ...stale });
+    }
+    res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=300');
+    return res.status(200).json({ source: 'error', tokens: {}, error: 'fetch_failed' });
   }
 }

@@ -86,46 +86,58 @@ export async function getDataByPool(poolId) {
  * Uses a mutex (_store.refreshing) to prevent concurrent refreshes.
  * Updates _store atomically after all fetches complete.
  */
+const REFRESH_TIMEOUT_MS = 20000; // 20s hard timeout — return partial data if exceeded
+
 export async function refreshAllData() {
   // Mutex check — if already refreshing, return immediately
   if (_store.refreshing) return;
   _store.refreshing = true;
 
   try {
-    // Run GeckoTerminal and DexScreener IN PARALLEL to reduce total latency
-    // (critical for Vercel serverless 10s default timeout).
-    // Each has internal throttling (200ms / 150ms respectively) to stay under rate limits.
-    const [geckoTerminal, dexScreener] = await Promise.all([
-      fetchGeckoTerminal().catch(() => ({})),
-      fetchDexScreener().catch(() => ({})),
-    ]);
+    // Run ALL sources concurrently (GeckoTerminal, DexScreener, MintClub, BaseRPC, CoinGecko)
+    // Each fetcher writes to partialResults as it completes, so we can return
+    // whatever data was collected even if the 20s hard timeout fires first.
+    const partialResults = {
+      geckoTerminal: {},
+      dexScreener: {},
+      mintClub: {},
+      baseRPC: {},
+      coinGeckoReference: null,
+    };
 
-    // MintClub and BaseRPC can run in parallel — they use different endpoints
-    // and each has internal staggering (200ms and 300ms respectively)
-    const [mintClub, baseRPC] = await Promise.all([
-      fetchMintClub().catch(() => ({})),
-      fetchBaseRPC().catch(() => ({})),
-    ]);
+    const fetchTasks = [
+      fetchGeckoTerminal().then(r => { partialResults.geckoTerminal = r; }).catch(() => {}),
+      fetchDexScreener().then(r => { partialResults.dexScreener = r; }).catch(() => {}),
+      fetchMintClub().then(r => { partialResults.mintClub = r; }).catch(() => {}),
+      fetchBaseRPC().then(r => { partialResults.baseRPC = r; }).catch(() => {}),
+      fetchCoinGeckoReference().then(r => { partialResults.coinGeckoReference = r; }).catch(() => {}),
+    ];
 
-    // Fetch CoinGecko reference prices (lightweight, single request)
-    const coinGeckoReference = await fetchCoinGeckoReference().catch(() => null);
+    // Race all-settled against a 20s hard timeout
+    const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('timeout'), REFRESH_TIMEOUT_MS));
+    const allDone = Promise.allSettled(fetchTasks).then(() => 'done');
+
+    const outcome = await Promise.race([allDone, timeoutPromise]);
+    if (outcome === 'timeout') {
+      console.warn('[dataLayer] refreshAllData timed out after 20s — returning partial data');
+    }
 
     // Extract nutUsd from mintClub data (stored in each pool's nutUsdPrice)
     let nutUsd = null;
-    for (const poolId of Object.keys(mintClub)) {
-      if (mintClub[poolId]?.nutUsdPrice != null) {
-        nutUsd = mintClub[poolId].nutUsdPrice;
+    for (const poolId of Object.keys(partialResults.mintClub)) {
+      if (partialResults.mintClub[poolId]?.nutUsdPrice != null) {
+        nutUsd = partialResults.mintClub[poolId].nutUsdPrice;
         break;
       }
     }
 
-    // Update store atomically
+    // Update store atomically with whatever data was collected
     _store = {
-      geckoTerminal,
-      dexScreener,
-      mintClub,
-      baseRPC,
-      coinGeckoReference,
+      geckoTerminal: partialResults.geckoTerminal,
+      dexScreener: partialResults.dexScreener,
+      mintClub: partialResults.mintClub,
+      baseRPC: partialResults.baseRPC,
+      coinGeckoReference: partialResults.coinGeckoReference,
       nutUsd,
       lastRefresh: Date.now(),
       refreshing: false,
