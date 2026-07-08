@@ -118,6 +118,60 @@ Authority is unified. Roles are lenses.
 - Record context, choice, consequence, and alternative.  
 - Supersede, do not mutate history.
 
+## CODEBASE
+
+### Stack
+- Next.js Pages Router, MUI, Base L2 (chainId 8453)
+- Node 22 (see .nvmrc), npm
+- Vercel deployment (liquidity-six.vercel.app)
+
+### Structure
+- `pages/` — Next.js pages (index, tokens, token/[id], token/snut, staking, arb-bot, tree, faq, chat, great-nut-war, warmachine, nutinoMemes, images, 404, 429, 500)
+- `pages/api/` — API routes for token data, chat, images
+- `components/` — Layout, Header, Footer, TokenCard, PoolCard, etc.
+- `utils/` — Data fetchers (fetchTokens, fetchPools, marketDataSources, tokenDataSources, snutDataSources, validateEnv)
+- `src/utils/` — Shared utilities
+- `public/` — Static assets, images, robots.txt, sitemap.xml, llms.txt, skills.md, manifest.json
+- `scripts/cron/` — Cron jobs (orchard TVL refresh)
+- `styles/` — Global styles
+
+### Data Sources (all free, no API keys)
+1. GeckoTerminal (GT) — prices, volume, market cap
+2. DexScreener (DS) — DEX pair data (cannot handle UniV3)
+3. Base RPC (RPC) — on-chain supply, decimals, reserves
+4. CoinGecko (CG) — aggregated prices
+5. Balancer GraphQL (BAL) — pNUT pool data
+
+### Key Rules
+- Zero hard-coded token numbers — all data fetched live
+- Use "reward-position" not "staking" in user-facing text
+- NUT is always uppercase
+- SNUT casing (not sNUT)
+- Include experimental memefi disclaimer where appropriate
+- Build must pass 46+ pages with zero errors
+- Orchard theme: browns, creams, warm tones only
+
+### Development
+- `npm run dev` — dev server on port 3000
+- `npm run build` — production build
+- `npm start` — production server
+- `npm run cron:orchard-refresh` — TVL refresh cron
+- Docker: `docker-compose up` (uses Dockerfile)
+- CI: GitHub Actions on push/PR to main (see .github/workflows/ci.yml)
+
+### Documentation Files
+- `AGENTS.md` — This file (AI agent instructions)
+- `CONTRIBUTING.md` — Contribution guide
+- `CHANGELOG.md` — Version history
+- `CODE_OF_CONDUCT.md` — Community standards
+- `LICENSE` — MIT license
+- `public/llms.txt` — LLM-friendly site summary
+- `public/skills.md` — Developer/AI architecture docs
+- `public/robots.txt` — Crawler directives
+- `public/sitemap.xml` — Sitemap
+- `public/manifest.json` — PWA manifest
+- `public/.well-known/security.txt` — Security contact
+
 ## DEFAULTS
 - Conservative by default.  
 - Opt in to risk with flags and rollbacks.  

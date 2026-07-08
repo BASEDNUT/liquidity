@@ -1,0 +1,154 @@
+TOKEN: nutino | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+TOKEN: salt | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+TOKEN: pnuts | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+TOKEN: almd | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+TOKEN: salmd | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+TOKEN: pnutrmy | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+TOKEN: cbeth | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+TOKEN: cbbtc | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+TOKEN: usdc | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+TOKEN: aero | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+TOKEN: weth | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: nut-weth-uniswap-v3 | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: nut-weth-uniswap-v2 | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: snut-nut-aerodrome | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: pnut-balancer | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: nut-aero-aerodrome | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: nut-cbbtc-aerodrome | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: snut-weth-uniswap-v2 | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: snut-lp-weth-uniswap-v2 | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: nutino-nut-uniswap-v2 | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: nutino-cbbtc-uniswap-v2 | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: salt-usdc-aerodrome | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: nut-salt-aerodrome | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: pnuts-nut-sudoswap | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: almd-nut-sudoswap | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: salmd-nut-sudoswap | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: pnutrmy-nut-sudoswap | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: spnut-usdc-aerodrome | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: pnuts-usdc-sudoswap | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: salmd-cbeth-uniswap-v2 | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+POOL: almd-cbeth-uniswap-v2 | ### Error
+Error: TypeError: result is not a function
+    at UtilityScript.evaluate (<anonymous>:304:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)

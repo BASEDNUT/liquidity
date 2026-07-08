@@ -1,5 +1,5 @@
 // Unified Home with Pools/Tokens toggle and shared fetch
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Container, Grid, Typography, Box } from "@mui/material";
 import Head from "next/head";
 import Layout from "../components/Layout";
@@ -11,7 +11,7 @@ import PoolCard from "../components/PoolCard";
 import TokenCard from "../components/TokenCard";
 import DataToggle from "../components/DataToggle";
 import { fetchPools } from "../utils/fetchPools";
-import { fetchTokens, fetchTokensWithMarketData } from "../utils/fetchTokens";
+import { fetchTokens } from "../utils/fetchTokens";
 import Image from "next/image";
 import OrchardTVLNotice from "../components/OrchardTVLNotice";
 
@@ -20,9 +20,34 @@ export default function Home({ initialPools, initialTokens }) {
   const [poolFilter, setPoolFilter] = useState("All");
   const [tokenFilter, setTokenFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [liveTokens, setLiveTokens] = useState(null);
 
   const pools = initialPools || [];
-  const tokens = initialTokens || [];
+  const tokens = liveTokens || initialTokens || [];
+
+  // Client-side hydration: fetch live market data after initial render
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/token-data');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled || !data || !data.tokens) return;
+
+        // Merge market data into the static token list
+        const merged = (initialTokens || []).map((t) => {
+          const md = data.tokens[t.name];
+          if (!md) return t;
+          return { ...t, marketData: md };
+        });
+        setLiveTokens(merged);
+      } catch {
+        // Silent fail — static data is already rendered
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const filteredPools = useMemo(() => {
     let result = pools;
@@ -146,12 +171,12 @@ export default function Home({ initialPools, initialTokens }) {
 }
 
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   try {
-    const [p, t] = await Promise.all([
-      fetchPools(),
-      fetchTokensWithMarketData(),
-    ]);
+    // Use static data only — no external API calls during build
+    // Live market data hydrates client-side via useEffect → /api/token-data
+    const p = fetchPools();
+    const t = fetchTokens();
 
     const flatTokens = [
       { ...t.trunk, id: (t.trunk?.name || "trunk").toLowerCase(), category: "Trunk" },
@@ -160,7 +185,6 @@ export async function getServerSideProps() {
       ...(t.soil || []).map((item, i) => ({ ...item, id: (item.name || `soil-${i}`).toLowerCase(), category: "Soil" })),
     ];
 
-    // Serialize dates for JSON
     const serializedPools = JSON.parse(JSON.stringify(p));
     const serializedTokens = JSON.parse(JSON.stringify(flatTokens));
 
@@ -169,14 +193,16 @@ export async function getServerSideProps() {
         initialPools: serializedPools,
         initialTokens: serializedTokens,
       },
+      revalidate: 300, // ISR — regenerate page every 5 minutes
     };
   } catch (e) {
-    console.error("SSR data fetch failed:", e);
+    console.error("Static props build failed:", e);
     return {
       props: {
         initialPools: [],
         initialTokens: [],
       },
+      revalidate: 300,
     };
   }
 }

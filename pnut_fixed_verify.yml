@@ -1,0 +1,372 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - link "Go to Home" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - heading "Go to Home" [level=6] [ref=e8]: BASED NUT 🌰
+        - link "LEARN MORE" [ref=e9] [cursor=pointer]:
+          - /url: https://docs.basednut.com/
+        - button "Open menu" [ref=e10] [cursor=pointer]:
+          - img [ref=e12]
+          - text: MENU
+    - main [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e18]:
+          - heading "🌰 pNUT" [level=3] [ref=e19]
+          - paragraph [ref=e20]: The Basket Index Token
+          - paragraph [ref=e21]:
+            - text: A
+            - strong [ref=e22]: Balancer Weighted Pool
+            - text: holding 25% each of NUT, SNUT, cbETH, and cbBTC. pNUT is the
+            - emphasis [ref=e23]: BPT
+            - text: (Balancer Pool Token) that represents proportional ownership of the entire basket.
+          - generic [ref=e24]:
+            - generic [ref=e26]: Basket Index
+            - generic [ref=e28]: Balancer V2
+            - generic [ref=e30]: Base
+            - generic [ref=e32]: 25/25/25/25
+          - generic [ref=e33]:
+            - link "📖 Balancer Pool" [ref=e34] [cursor=pointer]:
+              - /url: https://balancer.fi/pools/base/v2/0x2a5757b60987ff10385de1d4d923792f6fdcfff100010000000000000000019e
+              - generic [ref=e35]: 📖 Balancer Pool
+            - link "🔍 Basescan" [ref=e36] [cursor=pointer]:
+              - /url: https://basescan.org/token/0x2a5757b60987ff10385de1d4d923792f6fdcfff1
+              - generic [ref=e37]: 🔍 Basescan
+          - generic [ref=e39] [cursor=pointer]:
+            - paragraph [ref=e40]: "BPT Contract:"
+            - paragraph [ref=e41]: "0x2a5757b60987ff10385de1d4d923792f6fdcfff1"
+            - paragraph [ref=e42]: 📋
+        - generic [ref=e43]:
+          - paragraph [ref=e44]: 0001f4ca Pool Metrics
+          - paragraph [ref=e45]:
+            - text: The Balancer implied price is derived from the pool's internal balances and external price feeds. This pool alone should not decide price — it relies on its internal mechanics to force arbitrage. Treat it as an
+            - emphasis [ref=e46]: endogenous state sensor
+            - text: inside a reflexive AMM network, not as an exogenous truth oracle.
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - paragraph [ref=e49]: Balancer implied price
+              - paragraph [ref=e50]: $468.7655
+              - paragraph [ref=e51]: Base RPC + Balancer
+            - generic [ref=e52]:
+              - paragraph [ref=e53]: NAV (raw)
+              - paragraph [ref=e54]: $468.7655
+              - paragraph [ref=e55]: Balances × prices
+            - generic [ref=e56]:
+              - paragraph [ref=e57]: Total Liquidity
+              - paragraph [ref=e58]: $3.27K
+              - paragraph [ref=e59]: Balancer Vault
+            - generic [ref=e60]:
+              - paragraph [ref=e61]: BPT Supply
+              - paragraph [ref=e62]: "6.9709"
+              - paragraph [ref=e63]: Base RPC
+          - paragraph [ref=e64]: Updated 14:07
+        - generic [ref=e65]:
+          - paragraph [ref=e66]: 🌰 What Is pNUT?
+          - paragraph [ref=e67]:
+            - text: pNUT is a
+            - strong [ref=e68]: basket index token
+            - text: — a
+            - emphasis [ref=e69]: BPT
+            - text: (Balancer Pool Token) that represents proportional ownership of a Balancer
+            - emphasis [ref=e70]: weighted pool
+            - text: "containing four assets: NUT, SNUT, cbETH, and cbBTC, each targeting 25% weight."
+          - paragraph [ref=e71]:
+            - text: The pool uses a
+            - emphasis [ref=e72]: constant-mean AMM
+            - text: (Automated Market Maker) — Balancer's weighted-pool math that maintains the 25/25/25/25 target ratio through trading activity. pNUT converts NUT from a
+            - strong [ref=e73]: singleton meme-root
+            - text: into a
+            - strong [ref=e74]: basketized liquidity index
+            - text: ", coupling it with blue-chip reserve assets (cbETH = Coinbase ETH, cbBTC = Coinbase BTC)."
+        - generic [ref=e75]:
+          - paragraph [ref=e76]: 📊 Basket Composition
+          - paragraph [ref=e77]: Live weights of all 4 constituents. Target is 25% each — actual weights drift as prices change.
+          - generic [ref=e79]:
+            - 'generic "cbETH: 31.66%" [ref=e80]':
+              - paragraph [ref=e81]: cbETH
+            - 'generic "SNUT: 36.49%" [ref=e82]':
+              - paragraph [ref=e83]: SNUT
+            - 'generic "cbBTC: 31.85%" [ref=e84]':
+              - paragraph [ref=e85]: cbBTC
+          - generic [ref=e86]:
+            - generic [ref=e87]:
+              - paragraph [ref=e89]: cbETH
+              - generic [ref=e90]:
+                - generic [ref=e91]:
+                  - text: "Live:"
+                  - strong [ref=e92]: 31.66%
+                - generic [ref=e93]: "Target: 25%"
+                - generic [ref=e94]: "Drift: +6.66%"
+            - generic [ref=e95]:
+              - paragraph [ref=e97]: SNUT
+              - generic [ref=e98]:
+                - generic [ref=e99]:
+                  - text: "Live:"
+                  - strong [ref=e100]: 36.49%
+                - generic [ref=e101]: "Target: 25%"
+                - generic [ref=e102]: "Drift: +11.49%"
+            - generic [ref=e103]:
+              - paragraph [ref=e105]: NUT
+              - generic [ref=e106]:
+                - generic [ref=e107]:
+                  - text: "Live:"
+                  - strong [ref=e108]: 0.00%
+                - generic [ref=e109]: "Target: 25%"
+                - generic [ref=e110]: "Drift: -25.00%"
+            - generic [ref=e111]:
+              - paragraph [ref=e113]: cbBTC
+              - generic [ref=e114]:
+                - generic [ref=e115]:
+                  - text: "Live:"
+                  - strong [ref=e116]: 31.85%
+                - generic [ref=e117]: "Target: 25%"
+                - generic [ref=e118]: "Drift: +6.85%"
+          - generic [ref=e119]:
+            - generic [ref=e120]:
+              - generic [ref=e121]:
+                - paragraph [ref=e123]: cbETH
+                - paragraph [ref=e124]: Coinbase ETH
+              - generic [ref=e125]:
+                - generic [ref=e126]:
+                  - paragraph [ref=e127]: Balance
+                  - paragraph [ref=e128]: "0.510330"
+                - generic [ref=e129]:
+                  - paragraph [ref=e130]: Price
+                  - paragraph [ref=e131]: $2.03K
+                - generic [ref=e132]:
+                  - paragraph [ref=e133]: Live Weight
+                  - paragraph [ref=e134]: 31.66% / 25%
+                - generic [ref=e135]:
+                  - paragraph [ref=e136]: Drift
+                  - paragraph [ref=e137]: +6.66%
+              - generic [ref=e138]:
+                - paragraph [ref=e139]: USD Value
+                - paragraph [ref=e140]: $1.03K
+              - link "0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22 →" [ref=e141] [cursor=pointer]:
+                - /url: https://basescan.org/token/0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22
+                - generic [ref=e142]: 0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22 →
+            - generic [ref=e143]:
+              - generic [ref=e144]:
+                - paragraph [ref=e146]: SNUT
+                - paragraph [ref=e147]: Staked NUT
+              - generic [ref=e148]:
+                - generic [ref=e149]:
+                  - paragraph [ref=e150]: Balance
+                  - paragraph [ref=e151]: 26.420590K
+                - generic [ref=e152]:
+                  - paragraph [ref=e153]: Price
+                  - paragraph [ref=e154]: $0.04513632
+                - generic [ref=e155]:
+                  - paragraph [ref=e156]: Live Weight
+                  - paragraph [ref=e157]: 36.49% / 25%
+                - generic [ref=e158]:
+                  - paragraph [ref=e159]: Drift
+                  - paragraph [ref=e160]: +11.49%
+              - generic [ref=e161]:
+                - paragraph [ref=e162]: USD Value
+                - paragraph [ref=e163]: $1.19K
+              - link "0xac130701aa31c284c36609e2489f150f419ad7ad →" [ref=e164] [cursor=pointer]:
+                - /url: /token/snut
+                - generic [ref=e165]: 0xac130701aa31c284c36609e2489f150f419ad7ad →
+            - generic [ref=e166]:
+              - generic [ref=e167]:
+                - paragraph [ref=e169]: NUT
+                - paragraph [ref=e170]: Based NUT
+              - generic [ref=e171]:
+                - generic [ref=e172]:
+                  - paragraph [ref=e173]: Balance
+                  - paragraph [ref=e174]: "0.047801"
+                - generic [ref=e175]:
+                  - paragraph [ref=e176]: Price
+                  - paragraph [ref=e177]: ...
+                - generic [ref=e178]:
+                  - paragraph [ref=e179]: Live Weight
+                  - paragraph [ref=e180]: 0.00% / 25%
+                - generic [ref=e181]:
+                  - paragraph [ref=e182]: Drift
+                  - paragraph [ref=e183]: "-25.00%"
+              - generic [ref=e184]:
+                - paragraph [ref=e185]: USD Value
+                - paragraph [ref=e186]: $0
+              - link "0xb8de15fb529d98c93c749de63c749d48d25a30df →" [ref=e187] [cursor=pointer]:
+                - /url: /token/nut
+                - generic [ref=e188]: 0xb8de15fb529d98c93c749de63c749d48d25a30df →
+            - generic [ref=e189]:
+              - generic [ref=e190]:
+                - paragraph [ref=e192]: cbBTC
+                - paragraph [ref=e193]: Coinbase BTC
+              - generic [ref=e194]:
+                - generic [ref=e195]:
+                  - paragraph [ref=e196]: Balance
+                  - paragraph [ref=e197]: "0.016359"
+                - generic [ref=e198]:
+                  - paragraph [ref=e199]: Price
+                  - paragraph [ref=e200]: $63.62K
+                - generic [ref=e201]:
+                  - paragraph [ref=e202]: Live Weight
+                  - paragraph [ref=e203]: 31.85% / 25%
+                - generic [ref=e204]:
+                  - paragraph [ref=e205]: Drift
+                  - paragraph [ref=e206]: +6.85%
+              - generic [ref=e207]:
+                - paragraph [ref=e208]: USD Value
+                - paragraph [ref=e209]: $1.04K
+              - link "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf →" [ref=e210] [cursor=pointer]:
+                - /url: https://basescan.org/token/0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf
+                - generic [ref=e211]: 0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf →
+        - generic [ref=e212]:
+          - paragraph [ref=e213]: 🧠 How It Works
+          - paragraph [ref=e214]: pNUT is powered by Balancer's weighted-pool mechanics. Here is how the basket maintains its target ratios.
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - paragraph [ref=e217]: a. Constant-Mean AMM
+              - paragraph [ref=e218]:
+                - text: Balancer's
+                - emphasis [ref=e219]: weighted pool
+                - text: uses a constant-mean invariant — the geometric weighted mean of token balances stays constant. This targets 25/25/25/25 but lets weights drift as prices move, creating natural rebalancing through trades.
+            - generic [ref=e220]:
+              - paragraph [ref=e221]: b. BPT Valuation
+              - paragraph [ref=e222]:
+                - emphasis [ref=e223]: BPT
+                - text: value = (underlying balances × market prices) / total BPT supply. Balancer explicitly warns this is
+                - strong [ref=e224]: informational and manipulable
+                - text: "if naively used as an on-chain oracle. For safer on-chain valuation: use"
+                - emphasis [ref=e225]: getActualSupply()
+                - text: (not raw totalSupply), check Vault reentrancy, and use invariant-based weighted-pool valuation rather than raw balance × price.
+            - generic [ref=e226]:
+              - paragraph [ref=e227]: c. NAV Arbitrage
+              - paragraph [ref=e228]:
+                - text: If BPT market price drifts from
+                - emphasis [ref=e229]: NAV
+                - text: (Net Asset Value — the sum of underlying values per BPT), arbitrageurs mint or redeem BPT to restore parity. This keeps pNUT priced close to its intrinsic basket value.
+            - generic [ref=e230]:
+              - paragraph [ref=e231]: d. Forced Coherence
+              - paragraph [ref=e232]:
+                - text: The basket creates
+                - emphasis [ref=e233]: arbitrage pressure
+                - text: linking NUT ecosystem tokens with blue-chip reserves. When NUT or SNUT drift in weight, traders swap them in or out of the pool, connecting their prices to cbETH and cbBTC markets.
+        - generic [ref=e234]:
+          - paragraph [ref=e235]: 🔗 Connections
+          - paragraph [ref=e236]: Constituent Tokens
+          - generic [ref=e237]:
+            - link "cbETH" [ref=e238] [cursor=pointer]:
+              - /url: https://basescan.org/token/0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22
+              - generic [ref=e239]: cbETH
+            - link "SNUT" [ref=e241] [cursor=pointer]:
+              - /url: /token/snut
+              - generic [ref=e242]: SNUT
+            - link "NUT" [ref=e244] [cursor=pointer]:
+              - /url: /token/nut
+              - generic [ref=e245]: NUT
+            - link "cbBTC" [ref=e247] [cursor=pointer]:
+              - /url: https://basescan.org/token/0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf
+              - generic [ref=e248]: cbBTC
+          - paragraph [ref=e250]: Balancer Pool
+          - link "Balancer V2 Weighted Pool 25% NUT + 25% SNUT + 25% cbETH + 25% cbBTC →" [ref=e251] [cursor=pointer]:
+            - /url: https://balancer.fi/pools/base/v2/0x2a5757b60987ff10385de1d4d923792f6fdcfff100010000000000000000019e
+            - generic [ref=e252]:
+              - paragraph [ref=e253]: Balancer V2 Weighted Pool
+              - paragraph [ref=e254]: 25% NUT + 25% SNUT + 25% cbETH + 25% cbBTC
+              - paragraph [ref=e255]: →
+          - paragraph [ref=e256]: Arbitrage Routes
+          - generic [ref=e257]:
+            - generic [ref=e258]:
+              - paragraph [ref=e260]: "1"
+              - generic [ref=e261]:
+                - paragraph [ref=e262]: BPT vs NAV
+                - paragraph [ref=e263]: Mint/redeem BPT when market price diverges from intrinsic NAV (underlying values per BPT).
+            - generic [ref=e264]:
+              - paragraph [ref=e266]: "2"
+              - generic [ref=e267]:
+                - paragraph [ref=e268]: Constituent vs Basket
+                - paragraph [ref=e269]: If NUT weight drifts high, swap NUT into pool, arbitrage vs external NUT pools (Uniswap V3, Aerodrome).
+            - generic [ref=e270]:
+              - paragraph [ref=e272]: "3"
+              - generic [ref=e273]:
+                - paragraph [ref=e274]: SNUT weight drift
+                - paragraph [ref=e275]: SNUT overweight → swap SNUT in, sell externally; underweight → buy externally, add to pool.
+            - generic [ref=e276]:
+              - paragraph [ref=e278]: "4"
+              - generic [ref=e279]:
+                - paragraph [ref=e280]: Cross-pool
+                - paragraph [ref=e281]: NUT in Balancer vs NUT in Uniswap V3 — pNUT basket creates additional arbitrage pressure on NUT price.
+        - generic [ref=e282]:
+          - paragraph [ref=e283]: "📐 Advanced: Root-Indexed Constant-Mean Market Maker"
+          - paragraph [ref=e284]: pNUT couples endogenous network assets with exogenous reserves in a reflexive AMM. The following is theoretical analysis, not financial advice.
+          - generic [ref=e285]:
+            - generic [ref=e286]:
+              - paragraph [ref=e287]: Root-Indexed AMM
+              - paragraph [ref=e288]:
+                - text: pNUT couples
+                - emphasis [ref=e289]: endogenous
+                - text: network assets (NUT, SNUT) with
+                - emphasis [ref=e290]: exogenous
+                - text: reserve assets (cbETH, cbBTC) in a reflexive AMM network. The basket's invariant links internal scarcity dynamics to external market prices.
+            - generic [ref=e291]:
+              - paragraph [ref=e292]: Basketized Liquidity Index
+              - paragraph [ref=e293]:
+                - text: pNUT converts NUT from a
+                - emphasis [ref=e294]: singleton meme-root
+                - text: into an
+                - emphasis [ref=e295]: indexable market object
+                - text: with forced coherence — the pool's constant-mean invariant continuously pushes weights toward target.
+            - generic [ref=e296]:
+              - paragraph [ref=e297]: BPT as Pseudo-Oracle
+              - paragraph [ref=e298]:
+                - text: The pool can act as a
+                - emphasis [ref=e299]: local pseudo-oracle
+                - text: — it encodes useful market state. But because the pool contains both exogenous reserves (cbETH, cbBTC) and endogenous ecosystem assets (NUT, SNUT), its spot prices and naive BPT NAV are
+                - strong [ref=e300]: manipulable via forced trading
+                - text: and circular when used as oracle truth. The pool should be treated as an
+                - emphasis [ref=e301]: endogenous state sensor
+                - text: ", not an exogenous truth oracle."
+            - generic [ref=e302]:
+              - paragraph [ref=e303]: Forced Rebalancing Pressure
+              - paragraph [ref=e304]:
+                - text: The
+                - emphasis [ref=e305]: constant-mean invariant
+                - text: creates continuous rebalancing pressure that links NUT's scarcity dynamics to blue-chip crypto markets. Every trade in the pool moves weights, and every weight gap is an arbitrage opportunity.
+          - generic [ref=e306]:
+            - paragraph [ref=e307]: "Solution: Oracle Graph"
+            - paragraph [ref=e308]:
+              - text: Treat the pool as
+              - strong [ref=e309]: one node in a robust oracle graph
+              - text: ", not a standalone source of truth. Use external feeds for exogenous assets (cbETH, cbBTC), multi-venue TWAP/median aggregation for endogenous assets (NUT, SNUT), invariant-based BPT valuation, Vault reentrancy checks, liquidity thresholds, and circuit breakers. This converts the pool from a manipulable price source into a resilient state sensor."
+          - generic [ref=e310]:
+            - paragraph [ref=e311]: Research Questions pNUT Tests
+            - generic [ref=e312]:
+              - paragraph [ref=e313]:
+                - generic [ref=e314]: "1."
+                - text: Can a basket index enforce topological monetary policy without governance?
+              - paragraph [ref=e315]:
+                - generic [ref=e316]: "2."
+                - text: Do LPs in a weighted pool act as constitutional actors in the basket?
+              - paragraph [ref=e317]:
+                - generic [ref=e318]: "3."
+                - text: Can TWAP in a weighted pool serve as memory for the basket index?
+              - paragraph [ref=e319]:
+                - generic [ref=e320]: "4."
+                - text: Is there reflexivity between the NUT singleton and the pNUT basket index?
+              - paragraph [ref=e321]:
+                - generic [ref=e322]: "5."
+                - text: Does forced coherence between meme-root and blue-chip reserves create stable pricing?
+        - generic [ref=e323]:
+          - paragraph [ref=e325]: ⚠️ Experimental Memefi
+          - paragraph [ref=e326]: pNUT is a cryptoeconomic basket index experiment. The Balancer implied price is informational and manipulable — do not use it as a standalone price oracle. Not a utility token. Not a security. No guarantee of profit or value retention. Use at your own risk.
+        - link "← Back to the Orchard" [ref=e328] [cursor=pointer]:
+          - /url: /
+          - paragraph [ref=e329]: ← Back to the Orchard
+    - contentinfo [ref=e330]:
+      - generic [ref=e331]:
+        - generic [ref=e332]:
+          - paragraph [ref=e333]: © 2026 BASED NUT. All rights reserved.
+          - link "Basednut.com" [ref=e335] [cursor=pointer]:
+            - /url: https://basednut.com
+          - link "Twitter" [ref=e337] [cursor=pointer]:
+            - /url: https://twitter.com/BASEDNUT_
+        - paragraph [ref=e338]:
+          - emphasis [ref=e339]: BASED NUT is an experimental memefi project. BASED NUT TOKENS are whimsical meme coins devoid of any intrinsic value or anticipation of financial gains. Coins are for entertainment purposes only. No formal team or roadmap. Please nut responsibly!
+  - button "Open Next.js Dev Tools" [ref=e345] [cursor=pointer]:
+    - img [ref=e346]
+  - alert [ref=e349]
