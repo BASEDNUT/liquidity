@@ -97,17 +97,27 @@ function AddrBox({ label, addr, href }) {
   );
 }
 
+import { fetchPnutData } from '../api/pnut-data';
+import { fetchTokenData, TOKEN_ADDRESSES } from '../../utils/tokenDataSources';
+
 export async function getStaticProps() {
   let initialPnut = null;
   let initialToken = null;
   try {
-    const base = process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000';
-    const [pnutRes, tokenRes] = await Promise.all([
-      fetch(base + '/api/pnut-data').then(r => r.json()),
-      fetch(base + '/api/token-data').then(r => r.json()),
-    ]);
-    initialPnut = pnutRes?.pnut || null;
-    initialToken = tokenRes?.tokens?.pNUT || tokenRes?.tokens?.PNUT || null;
+    // Direct imports — avoids self-referencing HTTP calls that fail on Vercel serverless
+    // Wrap in 10s timeout to avoid hanging during build (client-side useEffect will populate at runtime)
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Build-time fetch timeout')), 10000)
+    );
+    const [pnutData, tokenData] = await Promise.race([
+      Promise.all([
+        fetchPnutData().catch(() => null),
+        fetchTokenData(TOKEN_ADDRESSES).catch(() => null),
+      ]),
+      timeoutPromise,
+    ]).catch(() => [null, null]);
+    initialPnut = pnutData?.pnut || null;
+    initialToken = tokenData?.pNUT || tokenData?.PNUT || null;
   } catch (e) {
     // Build-time fetch may fail; client-side useEffect will populate
   }

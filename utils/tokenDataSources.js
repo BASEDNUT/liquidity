@@ -21,7 +21,7 @@ export const TOKEN_ADDRESSES = {
 };
 
 // Helper: fetch with timeout using AbortController
-async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+async function fetchWithTimeout(url, options = {}, timeoutMs = 4000) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -540,7 +540,7 @@ export async function fetchTokenData(tokenList = TOKEN_ADDRESSES) {
     results[symbol] = { geckoTerminal, dexScreener, rpc, balancer, mintClub };
     // Stagger delay between tokens (skip after last token)
     if (i < symbols.length - 1) {
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 200));
     }
   }
 

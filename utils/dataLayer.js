@@ -92,12 +92,13 @@ export async function refreshAllData() {
   _store.refreshing = true;
 
   try {
-    // Run GeckoTerminal and DexScreener SEQUENTIALLY (not simultaneously)
-    // to stay under combined rate limits. Each has internal throttling:
-    //   GeckoTerminal: 500ms delay (2 req/sec)
-    //   DexScreener:   333ms delay (3 req/sec)
-    const geckoTerminal = await fetchGeckoTerminal().catch(() => ({}));
-    const dexScreener = await fetchDexScreener().catch(() => ({}));
+    // Run GeckoTerminal and DexScreener IN PARALLEL to reduce total latency
+    // (critical for Vercel serverless 10s default timeout).
+    // Each has internal throttling (200ms / 150ms respectively) to stay under rate limits.
+    const [geckoTerminal, dexScreener] = await Promise.all([
+      fetchGeckoTerminal().catch(() => ({})),
+      fetchDexScreener().catch(() => ({})),
+    ]);
 
     // MintClub and BaseRPC can run in parallel — they use different endpoints
     // and each has internal staggering (200ms and 300ms respectively)

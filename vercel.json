@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "pages/api/*.js": {
+      "maxDuration": 30
+    },
+    "pages/index.js": {
+      "maxDuration": 30
+    },
+    "pages/token/*.js": {
+      "maxDuration": 30
+    }
+  }
+}

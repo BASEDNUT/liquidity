@@ -998,7 +998,16 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  const data = await fetchTokensWithMarketData();
+  // Wrap in 10s timeout to avoid hanging during build (client-side useEffect will populate at runtime)
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Build-time fetch timeout')), 10000)
+  );
+  let data;
+  try {
+    data = await Promise.race([fetchTokensWithMarketData(), timeoutPromise]);
+  } catch {
+    data = fetchTokens(); // Fallback to static token data without marketData
+  }
   const tokens = [
     { ...data.trunk, id: (data.trunk?.name || 'trunk').toLowerCase(), category: 'Trunk' },
     ...(data.branches || []).map((t, i) => ({ ...t, id: (t.name || `branch-${i}`).toLowerCase(), category: 'Branch' })),
@@ -1007,5 +1016,5 @@ export async function getStaticProps({ params }) {
   ];
   const token = tokens.find((t) => t.id === params.id.toLowerCase());
   if (!token) return { notFound: true };
-  return { props: { token } };
+  return { props: { token }, revalidate: 300 };
 }

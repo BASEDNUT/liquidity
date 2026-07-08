@@ -29,7 +29,7 @@ const POOL_CONFIG = [
 ];
 
 // Helper: fetch with timeout using AbortController
-async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+async function fetchWithTimeout(url, options = {}, timeoutMs = 4000) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -106,7 +106,7 @@ export async function fetchGeckoTerminal(poolConfigs = POOL_CONFIG) {
       const stale = getStaleFromCache(`geckoTerminal_${pool.id}`);
       results[pool.id] = stale || null;
     }
-  }, 500); // 500ms delay = 2 req/sec — GeckoTerminal free tier ~30 req/min
+  }, 200); // 200ms delay — GeckoTerminal free tier ~30 req/min
   return results;
 }
 
@@ -154,7 +154,7 @@ export async function fetchDexScreener(poolConfigs = POOL_CONFIG) {
       const stale = getStaleFromCache(`dexScreener_${pool.id}`);
       results[pool.id] = stale || null;
     }
-  }, 333); // 333ms delay = 3 req/sec — DexScreener rate limit safe
+  }, 150); // 150ms delay — DexScreener rate limit safe
   return results;
 }
 
@@ -246,7 +246,7 @@ export async function fetchMintClub(poolConfigs = POOL_CONFIG) {
       const stale = getStaleFromCache(`mintClub_${pool.id}`);
       results[pool.id] = stale || null;
     }
-  }, 200); // 200ms stagger between pools — RPC calls within each pool still run in parallel
+  }, 100); // 100ms stagger between pools — RPC calls within each pool still run in parallel
   return results;
 }
 
@@ -342,7 +342,7 @@ export async function fetchBaseRPC(poolConfigs = POOL_CONFIG) {
     }
     // Stagger delay between pools (skip after last pool)
     if (i < dexPools.length - 1) {
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, 150));
     }
   }
   return results;

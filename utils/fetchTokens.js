@@ -197,24 +197,23 @@ export const fetchTokens = () => {
   return nutTreeData;
 };
 
-// Async version that enriches each token with multi-source marketData from /api/token-data
-// Falls back to no marketData if API is unreachable — never throws
+// Async version that enriches each token with multi-source marketData
+// Calls fetchTokenData directly instead of self-referencing HTTP /api/token-data
+// (self-referencing HTTP calls fail on Vercel serverless — each function runs in its own container)
+// Falls back to no marketData if fetch fails — never throws
+import { fetchTokenData, TOKEN_ADDRESSES } from './tokenDataSources.js';
+
 export async function fetchTokensWithMarketData() {
   // Deep clone the static data so we do not mutate the original
   const data = JSON.parse(JSON.stringify(nutTreeData));
 
-  // Fetch market data from API route; fallback to empty on failure
+  // Fetch market data directly (no HTTP self-call — works on Vercel serverless)
   let tokenMarketData = {};
   try {
-    // In SSR (getStaticProps) there is no window — use localhost fallback
-    const base = typeof window !== 'undefined' ? '' : 'http://localhost:3000';
-    const res = await fetch(`${base}/api/token-data`);
-    if (res.ok) {
-      const json = await res.json();
-      tokenMarketData = json?.tokens || {};
-    }
+    const tokenData = await fetchTokenData(TOKEN_ADDRESSES);
+    tokenMarketData = tokenData || {};
   } catch {
-    // API unreachable — proceed without marketData
+    // Fetch failed — proceed without marketData
   }
 
   // Helper: attach marketData to a single token object by matching its name
