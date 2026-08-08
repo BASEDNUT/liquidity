@@ -370,9 +370,9 @@ export default function NutPage() {
         </Section>
 
         {/* 3b. WHY LAYERS EXIST — flat tokenomics */}
-        <Box sx={{ mb: 2, p: 1.5, borderRadius: 2, background: 'rgba(160,82,45,0.06)', border: '1px solid rgba(160,82,45,0.15)' }}>
+        <Box sx={{ mb: 2, p: 1.5, borderRadius: 2, background: 'rgba(61,32,14,0.95)', border: '1px solid rgba(212,166,118,0.4)' }}>
           <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: C.gold, mb: 0.5 }}>Why layers exist — separate the pressures without separating the system</Typography>
-          <Typography sx={{ fontSize: '0.9rem', color: C.textDim, lineHeight: 1.6 }}>
+          <Typography sx={{ fontSize: '0.9rem', color: '#F4EADA', lineHeight: 1.6 }}>
             A flat token forces incompatible economic pressures onto one instrument: if spending, rewards, collateral, and index value all ride the same balance, changing any one destabilizes the others. The layered system separates those pressures into distinct instruments <em>while keeping them all anchored to the same conserved root</em> — separation of monetary labor without splitting the monetary whole.
           </Typography>
         </Box>
