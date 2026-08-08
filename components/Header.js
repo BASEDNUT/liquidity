@@ -7,14 +7,20 @@ import {
   IconButton,
   SwipeableDrawer,
   useMediaQuery,
+  List,
+  ListItemButton,
+  Collapse,
+  Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
 import { useTheme, keyframes } from "@mui/system";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-// Wiggle Animation (borrowed from the pool cards)
+// Wiggle Animation (borrowed from the pool cards) - the juicy hover
 const wiggle = keyframes`
   0%, 100% { transform: rotate(0deg); }
   20% { transform: rotate(3deg); }
@@ -23,7 +29,7 @@ const wiggle = keyframes`
   80% { transform: rotate(-2deg); }
 `;
 
-// Reusable gradient button styling
+// Reusable gradient button styling (original juicy nutty look)
 const gradientButtonStyle = {
   background: "linear-gradient(45deg, #7D5A50, #A67C52)",
   color: "#FFFFFF",
@@ -37,8 +43,76 @@ const gradientButtonStyle = {
   },
 };
 
+// Nested leaf: slightly lighter gradient so sections still pop
+const gradientNestedStyle = {
+  background: "linear-gradient(45deg, #A67C52, #C08A5A)",
+  color: "#FFFFFF",
+  textTransform: "none",
+  boxShadow: "0 3px 6px rgba(0, 0, 0, 0.12)",
+  transition: "background 0.3s ease, transform 0.3s ease",
+  "&:hover": {
+    background: "linear-gradient(45deg, #8A623F, #A67C52)",
+    animation: `${wiggle} 0.4s ease-in-out`,
+    transform: "translateY(-2px)",
+  },
+};
+
+// Grouped navigation: top-level sections with nested juicy items.
+// All routes exist in pages/ — nothing invented, nothing removed.
+const NAV_SECTIONS = [
+  {
+    title: "🌳 The Orchard",
+    items: [
+      { label: "Home", href: "/" },
+      {
+        label: "Tokens",
+        sub: [
+          { label: "NUT", href: "/token/nut" },
+          { label: "SNUT", href: "/token/snut" },
+          { label: "pNUT", href: "/token/pnut" },
+          { label: "All Tokens", href: "/tokens" },
+        ],
+      },
+      { label: "Arb Bot", href: "/arb-bot" },
+      { label: "TVL", href: "/tvl" },
+      { label: "Staking", href: "/staking" },
+    ],
+  },
+  {
+    title: "⚔️ Nut Wars",
+    items: [
+      { label: "Great Nut War", href: "/great-nut-war" },
+      { label: "Nut War Battlefield", href: "/warmachine" },
+      { label: "🌰 Nut Catcher", href: "/nut-catcher" },
+    ],
+  },
+  {
+    title: "🖼️ Explore",
+    items: [
+      { label: "Tree", href: "/tree" },
+      { label: "Graphs", href: "/ecosystem" },
+    ],
+  },
+  {
+    title: "🤖 AI Agents",
+    items: [
+      { label: "Agents", href: "/agents" },
+      { label: "Chat", href: "/chat" },
+      { label: "Images", href: "/images" },
+    ],
+  },
+  {
+    title: "📚 Learn",
+    items: [
+      { label: "FAQ", href: "/faq" },
+      { label: "Docs", href: "https://docs.basednut.com/", external: true },
+    ],
+  },
+];
+
 const Header = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [openMap, setOpenMap] = useState({});
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const router = useRouter();
@@ -47,6 +121,7 @@ const Header = () => {
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
   };
+  const toggle = (key) => setOpenMap((m) => ({ ...m, [key]: !m[key] }));
 
   const headerButtonSx = isTreePage
     ? {
@@ -63,10 +138,76 @@ const Header = () => {
       }
     : gradientButtonStyle;
 
+  const renderItem = (item) => {
+    const key = item.label;
+    if (item.sub) {
+      const subOpen = !!openMap[key];
+      return (
+        <Box key={key} sx={{ my: 0.5 }}>
+          <Button
+            onClick={() => toggle(key)}
+            variant="contained"
+            fullWidth
+            endIcon={subOpen ? <ExpandLess /> : <ExpandMore />}
+            sx={{
+              ...gradientNestedStyle,
+              justifyContent: "space-between",
+              px: 2,
+              py: 1,
+              borderRadius: 999,
+            }}
+          >
+            {key}
+          </Button>
+          <Collapse in={subOpen} timeout="auto" unmountOnExit>
+            <Box sx={{ pl: 1, pt: 0.5 }}>
+              {item.sub.map((si) => renderItem(si))}
+            </Box>
+          </Collapse>
+        </Box>
+      );
+    }
+
+    const btn = (
+      <Button
+        variant="contained"
+        fullWidth
+        onClick={() => setDrawerOpen(false)}
+        sx={{
+          ...gradientNestedStyle,
+          px: 2,
+          py: 1,
+          borderRadius: 999,
+          my: 0.5,
+        }}
+      >
+        {item.label}
+      </Button>
+    );
+
+    if (item.external) {
+      return (
+        <a
+          key={key}
+          href={item.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: "none" }}
+        >
+          {btn}
+        </a>
+      );
+    }
+    return (
+      <Link key={key} href={item.href} style={{ textDecoration: "none" }}>
+        {btn}
+      </Link>
+    );
+  };
+
   const menuItems = (
     <Box
       role="presentation"
-      onClick={toggleDrawer(false)}
       onKeyDown={toggleDrawer(false)}
       sx={{
         display: "flex",
@@ -77,184 +218,43 @@ const Header = () => {
         backgroundColor: "#F5E9DA",
       }}
     >
-      <Link href="/" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-          aria-label="Navigate to Home"
-        >
-          Home
-        </Button>
-      </Link>
-      <Link href="/arb-bot" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-          aria-label="Navigate to Arb Bot"
-        >
-          Arb Bot
-        </Button>
-      </Link>
-    <Link href="/great-nut-war" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-      aria-label="Navigate to Great Nut War"
-        >
-      Great Nut War
-        </Button>
-      </Link>
-    <Link href="/staking" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-      aria-label="Navigate to Staking"
-        >
-      Staking
-        </Button>
-      </Link>
-    <Link href="/chat" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-      aria-label="Navigate to Chat"
-        >
-      Chat
-        </Button>
-      </Link>
-    <Link href="/images" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-      aria-label="Navigate to Images"
-        >
-      Images
-        </Button>
-      </Link>
-    <Link href="/warmachine" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-      aria-label="Navigate to Nut War Battlefield"
-        >
-      Nut War Battlefield
-        </Button>
-      </Link>
-    <Link href="/tree" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-      aria-label="Navigate to Tree"
-        >
-      Tree
-        </Button>
-      </Link>
-      <Link href="/tvl" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-          aria-label="Navigate to TVL Transparency"
-        >
-          TVL
-        </Button>
-      </Link>
-      <Link href="/faq" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-          aria-label="Navigate to FAQ"
-        >
-          FAQ
-        </Button>
-      </Link>
-      <Link href="/ecosystem" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-          aria-label="View Ecosystem Graphs"
-        >
-          Graphs
-        </Button>
-      </Link>
-      <Link href="/agents" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-          aria-label="Meet the AI Agents"
-        >
-          Agents
-        </Button>
-      </Link>
-      <Link href="/nut-catcher" passHref>
-        <Button
-          variant="contained"
-          sx={{
-            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-            width: "100%",
-            my: 1,
-          }}
-          aria-label="Play Nut Catcher Game"
-        >
-          🌰 Nut Catcher
-        </Button>
-      </Link>
+      {NAV_SECTIONS.map((sec, i) => {
+        const open = !!openMap[sec.title];
+        return (
+          <Box key={sec.title}>
+            {i > 0 && <Divider sx={{ my: 1, borderColor: "#D1B48C" }} />}
+            <Button
+              onClick={() => toggle(sec.title)}
+              variant="text"
+              fullWidth
+              endIcon={open ? <ExpandLess /> : <ExpandMore />}
+              sx={{
+                justifyContent: "space-between",
+                px: 1,
+                py: 0.75,
+                color: "#5D3A1A",
+                fontWeight: 800,
+                fontSize: "0.95rem",
+                textTransform: "none",
+                letterSpacing: 0.5,
+              }}
+            >
+              {sec.title}
+            </Button>
+            <Collapse in={open} timeout="auto" unmountOnExit>
+              <Box sx={{ px: 0.5 }}>
+                {sec.items.map((item) => renderItem(item))}
+              </Box>
+            </Collapse>
+          </Box>
+        );
+      })}
       {isMobile && (
-        <Link href="https://docs.basednut.com/" passHref>
+        <Link href="https://docs.basednut.com/" style={{ textDecoration: "none" }}>
           <Button
             variant="contained"
-            sx={{
-              ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-              width: "100%",
-              my: 1,
-            }}
+            fullWidth
+            sx={{ ...(isTreePage ? headerButtonSx : gradientButtonStyle), my: 1 }}
             aria-label="Learn more about Based Nut"
           >
             LEARN MORE
@@ -268,14 +268,13 @@ const Header = () => {
     <AppBar
       position="static"
       sx={{
-        backgroundColor: isTreePage ? "transparent" : "#D1B48C", // Warm peanut-brown or transparent on Tree
-        borderBottom: isTreePage ? "none" : "4px solid #7D5A50", // No border on Tree
+        backgroundColor: isTreePage ? "transparent" : "#D1B48C",
+        borderBottom: isTreePage ? "none" : "4px solid #7D5A50",
         boxShadow: isTreePage ? "none" : undefined,
       }}
     >
       <Toolbar>
         <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
-          {/* Make the brand/logo a Home link */}
           <Link href="/" style={{ textDecoration: "none", color: "inherit" }} title="Home">
             <Typography
               variant="h6"
@@ -286,7 +285,7 @@ const Header = () => {
                 gap: 1,
                 cursor: "pointer",
                 color: isTreePage ? "#3E1F0A" : undefined,
-                '&:hover': { textDecoration: "underline" },
+                "&:hover": { textDecoration: "underline" },
               }}
               aria-label="Go to Home"
             >
@@ -295,21 +294,16 @@ const Header = () => {
           </Link>
         </Box>
 
-        {/* Desktop "LEARN MORE" button */}
         {!isMobile && (
           <Button
             variant="contained"
             href="https://docs.basednut.com/"
-            sx={{
-              ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-              mr: 2,
-            }}
+            sx={{ ...(isTreePage ? headerButtonSx : gradientButtonStyle), mr: 2 }}
           >
             LEARN MORE
           </Button>
         )}
 
-        {/* Prominent Menu trigger: desktop shows labeled button, mobile shows larger icon */}
         {isMobile ? (
           <IconButton
             onClick={toggleDrawer(true)}
@@ -329,14 +323,7 @@ const Header = () => {
           <Button
             onClick={toggleDrawer(true)}
             variant="contained"
-            sx={{
-              ...(isTreePage ? headerButtonSx : gradientButtonStyle),
-              px: 2.5,
-              py: 1,
-              borderRadius: 999,
-              fontWeight: 800,
-              letterSpacing: 1,
-            }}
+            sx={{ ...(isTreePage ? headerButtonSx : gradientButtonStyle), px: 2.5, py: 1, borderRadius: 999, fontWeight: 800, letterSpacing: 1 }}
             startIcon={<MenuIcon sx={{ fontSize: 24 }} />}
             aria-label="Open menu"
           >
@@ -349,13 +336,7 @@ const Header = () => {
           open={drawerOpen}
           onClose={toggleDrawer(false)}
           onOpen={toggleDrawer(true)}
-          PaperProps={{
-            sx: {
-              width: 280, // Fixed side-drawer width
-              boxSizing: "border-box",
-              backgroundColor: "#F5E9DA",
-            },
-          }}
+          PaperProps={{ sx: { width: 280, boxSizing: "border-box", backgroundColor: "#F5E9DA" } }}
         >
           {menuItems}
         </SwipeableDrawer>
