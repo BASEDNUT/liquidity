@@ -207,6 +207,32 @@ const Header = () => {
           FAQ
         </Button>
       </Link>
+      <Link href="/ecosystem" passHref>
+        <Button
+          variant="contained"
+          sx={{
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
+            width: "100%",
+            my: 1,
+          }}
+          aria-label="View Ecosystem Graphs"
+        >
+          Graphs
+        </Button>
+      </Link>
+      <Link href="/agents" passHref>
+        <Button
+          variant="contained"
+          sx={{
+            ...(isTreePage ? headerButtonSx : gradientButtonStyle),
+            width: "100%",
+            my: 1,
+          }}
+          aria-label="Meet the AI Agents"
+        >
+          Agents
+        </Button>
+      </Link>
       <Link href="/nut-catcher" passHref>
         <Button
           variant="contained"

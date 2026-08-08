@@ -47,51 +47,72 @@ function formatSupply(val) {
 
 // Short, punchy descriptions — 2-3 sentences max
 const TOKEN_DESCRIPTIONS = {
-  NUT: 'The unity token. Supply = 1 (one indivisible token). All Mint Club tokens are backed by NUT. SNUT is the liquid reward-position token for NUT — hold SNUT to earn NUT automatically. TRUE Price = TRUE Market Cap.',
-  SNUT: 'Liquid non-escrow NUT reward-position token. 6% tax funds NUT rewards, buyback/burn, and liquidity. Dead-held SNUT keeps earning NUT — recursive burn flywheel.',
+  NUT: 'The singleton root — one whole asset divided into one quintillion indivisible atomic units (10^18 attoNUTs), conserved forever. No mint, no burn: every transaction merely relocates a fraction of the same supply. Because supply is 1, price equals market cap by construction — holding a fraction is holding a claim on the entire conserved coordinate. SNUT is its liquid reward-position token: hold SNUT to earn NUT automatically.',
+  SNUT: 'Liquid non-escrow NUT reward-position token. 1% tax funds NUT rewards, buyback/burn, and liquidity. Dead-held SNUT keeps earning NUT — recursive burn flywheel.',
   pNUT: 'Balancer V2 index basket holding 25% each of cbETH, cbBTC, NUT, and SNUT. NAV drift from market price creates arbitrage.',
   SALT: 'Mint Club bonding curve token backed by NUT. Two-venue arb loop: mint with NUT → sell for USDC on Aerodrome.',
   NUTINO: 'Mint Club bonding curve token backed by NUT. Two-venue arb loop: mint with NUT → sell for cbBTC on Uniswap V2.',
-  PNUTS: 'P-NUTS NFT collection. Extra Roasted Trio. Sudoswap fractionalization pool available.',
-  ALMD: 'ALMONDS NFT collection. Golden Salted Swarm. Sudoswap fractionalization pool available.',
-  SALMD: 'S-ALMONDS NFT collection. Sky-Seasoned Crunch. Sudoswap fractionalization pool available.',
-  PNUTRMY: 'PEANUT ARMY NFT collection. Holders received SALT airdrop.',
+  PNUTS: 'P-NUTS — Peanut War Generals. 251 officer NFTs bonded to NUT. Mint to enlist, burn to reclaim. 200 SALT airdropped per General. Trade fractions on Sudoswap in USDC.',
+  ALMD: 'ALMONDS — Almond War Generals. 424 officer NFTs bonded to NUT. Golden Salted Swarm. 200 SALT airdropped per General. Trade fractions on Sudoswap in cbETH.',
+  SALMD: 'S-ALMONDS — Almond Soldiers. 6,238 infantry NFTs bonded to NUT. Sky-Seasoned Crunch. 80 SALT airdropped per Soldier. Trade fractions on Sudoswap in cbETH.',
+  PNUTRMY: 'PEANUT ARMY — Peanut Soldiers. 5,013 infantry NFTs bonded to NUT. 80 SALT airdropped per Soldier. Backbone of the Orchard — no Sudoswap pool yet.',
   cbETH: 'Coinbase Wrapped Staked ETH. The staked-ETH base asset used as 25% collateral in the pNUT Balancer index basket. Earns staking yield natively.',
   cbBTC: 'Coinbase Wrapped BTC. Bitcoin base asset on Base chain. Used as 25% collateral in the pNUT Balancer index basket and as the quote token in the NUTINO/cbBTC Uniswap V2 pool.',
   USDC: 'USD Coin. The primary stablecoin on Base. Used as the quote token in the SALT/USDC Aerodrome pool — the exit venue for the SALT two-venue arbitrage loop.',
   AERO: 'Aerodrome Finance token. Governance and emissions token for Aerodrome DEX. Used as a quote token in the NUT/AERO Aerodrome pool. Aerodrome gauge emissions may incentivize NUT liquidity.',
   wETH: 'Wrapped Ether. The primary ETH base asset on Base chain. Used as the quote token in the NUT/wETH and SNUT/wETH pools — the main price discovery venues for the ecosystem.',
+  PIPS: 'What is PIPS? It is the electricity bill of the Orchard, paid in a token. Pipshell is a computer that runs the front desk — it guards, monitors, and backs up everything. Every PIPS trade fee pays for that machine, so it never sleeps. 1B supply, 18 decimals. The contract configures a 1%/1% transfer tax, but only the official Virtuals pair is registered — our external pools are untaxed today and could be registered by the owner anytime.',
 };
 
 // Tokenomics data — structured for clean card rendering
 const TOKENOMICS = {
   NUT: {
     facts: [
-      { label: 'Supply', value: '1 (indivisible)' },
+      { label: 'Supply', value: '1 whole token · 18 decimals' },
       { label: 'Decimals', value: '18' },
       { label: 'Tax', value: 'None' },
       { label: 'Launch', value: 'Stealth on Uniswap V3' },
     ],
     mechanics: [
-      'TRUE Price = TRUE Market Cap (supply = 1)',
-      'No team allocation, no pre-sale',
-      '4 liquidity venues create cross-pool arbitrage',
-      'Anchor asset for all Mint Club bonding curves',
+      'TRUE Price = TRUE Market Cap — supply is 1, so price and cap are the same number',
+      'A conserved ledger: one quintillion atomic units (10^18 attoNUTs), minted once, relocatable forever',
+      'No mint, no burn, no governance — state only changes address, never amount',
+      'Holding a fraction is holding a claim on the entire conserved coordinate',
+      'Structural arbitrage by design: four different AMM invariants tear spreads that arbitrageurs — the nervous system — close',
+      'Periphery strengthens root: SALT, NUTINO, and NFTs lock NUT in bonding curves, withdrawing it from float',
+      'SI-precise denominations: attoNUT (aNUT) ledger base, picoNUT price-impact resolution, µNUT human display',
+      'Stealth-launched on Uniswap V3 with zero ETH paired',
+      '25% weight in pNUT index basket',
       'SNUT is the liquid reward-position token for NUT — hold SNUT to earn NUT automatically',
+    ],
+    advanced: [
+      {
+        title: 'One Token. One Quintillion States.',
+        body: 'NUT is not a supply curve — it is a conserved ledger. One whole token divided into 10^18 atomic units (attoNUTs), minted once and never again. Every swap, pool, curve, and NFT simply relocates a fraction of the same fixed quantity. State changes address; amount never changes.'
+      },
+      {
+        title: 'Price Is Market Cap, By Construction',
+        body: 'Because the whole is one, the price of NUT IS the market cap of NUT. There is no circulating-supply series to model and no inflation schedule to adjust — only one conserved number, redistributed across venues.'
+      },
+      {
+        title: 'The Ecosystem Is a State Machine',
+        body: 'Each AMM invariant, bonding curve, and index basket is a transition function over the same conserved input. Cross-venue spreads are the visible gap between differing invariants; arbitrageurs are the homeostasis that closes them, relocating units until the ledger reads consistently everywhere.'
+      },
+      {
+        title: 'SI-Precise Denomination Stack',
+        body: 'attoNUT (aNUT) is the ledger base at 10^-18 resolution. picoNUT resolves price impact and quote-level changes. µNUT is the human display layer. The same conserved fact reads cleanly at every scale.'
+      }
     ],
   },
   SNUT: {
     facts: [
       { label: 'Supply', value: '100,000' },
       { label: 'Decimals', value: '9' },
-      { label: 'Tax', value: '6% per transaction' },
+      { label: 'Tax', value: '1% per transaction (cut from 6% — S30)' },
       { label: 'Reward-Position', value: 'Non-escrow (hold to earn)' },
     ],
     taxBreakdown: [
-      { pct: '1.5%', dest: 'Auto-added liquidity' },
-      { pct: '1.5%', dest: 'Manager wallet' },
-      { pct: '1.5%', dest: 'Buyback & burn (SNUT + NUT)' },
-      { pct: '1.5%', dest: 'NUT rewards' },
+      { pct: '1% total', dest: 'Split 4 ways: liquidity, manager, buyback/burn, NUT rewards. Live per-stream rates on the SNUT page.' },
     ],
     mechanics: [
       'Deflationary — supply decreases as tokens burn',
@@ -267,6 +288,21 @@ const TOKENOMICS = {
       'Deep liquidity enables large swaps with minimal slippage',
     ],
   },
+  PIPS: {
+    facts: [
+      { label: 'Supply', value: '1,000,000,000' },
+      { label: 'Decimals', value: '18' },
+      { label: 'Tax', value: '1%/1% configured — official pair only; external venues untaxed today' },
+      { label: 'Role', value: 'Compute fuel for Pipshell (DevOps agent)' },
+    ],
+    mechanics: [
+      'Trade fees fund Pipshell compute (agent wallet → compute)',
+      '1%/1% transfer tax configured — fires only on pools registered via isLiquidityPool()',
+      'Official Virtuals pair is the only registered pool; NUT/PIPS + PIPS/USDC are unregistered → untaxed today',
+      'Risk: owner can register an external pool anytime — would break CL invariant on Slipstream',
+      'Infrastructure token — not a consumer product',
+    ],
+  },
 };
 
 const BALANCER_JOIN_URL = 'https://balancer.fi/pools/base/v2/0x2a5757b60987ff10385de1d4d923792f6fdcfff100010000000000000019e';
@@ -278,6 +314,7 @@ const DOCS_LINKS = {
   pNUT: 'https://docs.basednut.com/pnut',
   SALT: 'https://docs.basednut.com/salt',
   NUTINO: 'https://docs.basednut.com/nutino',
+  PIPS: 'https://docs.basednut.com/',
   PNUTS: 'https://mint.club/nft/base/PNUTS',
   ALMD: 'https://mint.club/nft/base/ALMD',
   SALMD: 'https://mint.club/nft/base/SALMD',
@@ -869,7 +906,7 @@ export default function TokenProfile({ token: initialToken }) {
               {tokenomics.taxBreakdown && (
                 <Grid size={{ xs: 12, md: 4 }}>
                   <Box sx={{ p: 1.5, borderRadius: 2, background: 'rgba(255,252,245,0.9)', border: '1px solid rgba(139,90,43,0.1)' }}>
-                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#8B6914', mb: 1, textTransform: 'uppercase', letterSpacing: '0.05em' }}>6% Tax Breakdown</Typography>
+                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#8B6914', mb: 1, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tax Breakdown</Typography>
                     {tokenomics.taxBreakdown.map((t, i) => (
                       <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, borderBottom: i < tokenomics.taxBreakdown.length - 1 ? '1px solid rgba(139,90,43,0.08)' : 'none' }}>
                         <Box sx={{ minWidth: 36, px: 0.75, py: 0.25, borderRadius: 1, background: 'linear-gradient(135deg, #8B4513, #A0522D)', color: '#fff', fontSize: '0.75rem', fontWeight: 700, textAlign: 'center' }}>{t.pct}</Box>
@@ -897,6 +934,21 @@ export default function TokenProfile({ token: initialToken }) {
                 </Box>
               </Grid>
             </Grid>
+          </Box>
+        )}
+
+        {/* ── ADVANCED (NUT only) ── */}
+        {tokenomics && tokenomics.advanced && tokenomics.advanced.length > 0 && (
+          <Box sx={{ mb: 3, p: { xs: 2, md: 3 }, borderRadius: 3, background: 'linear-gradient(135deg, rgba(139,90,43,0.06), rgba(212,166,118,0.12))', border: '1px solid rgba(139,90,43,0.25)' }}>
+            <Typography variant="h6" sx={{ mb: 2, color: '#5B3A29', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
+              🔬 Advanced — The Physics of NUT
+            </Typography>
+            {tokenomics.advanced.map((a, i) => (
+              <Box key={i} sx={{ mb: 1.5 }}>
+                <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#8B5A2B', mb: 0.25 }}>{a.title}</Typography>
+                <Typography sx={{ fontSize: '0.85rem', color: 'rgba(40,40,60,0.78)', lineHeight: 1.5 }}>{a.body}</Typography>
+              </Box>
+            ))}
           </Box>
         )}
 

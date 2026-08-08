@@ -44,6 +44,20 @@ const nutTreeData = {
         { label: "Balancer pNUT pool", url: "https://balancer.fi/pools/base/v2/0x2a5757b60987ff10385de1d4d923792f6fdcfff100010000000000000000019e" },
       ],
     },
+    {
+      name: "PIPS",
+      role: "Compute token for Pipshell — the Orchard's DevOps agent",
+      utility: "PIPS is the fuel for Pipshell, the agent that guards, monitors, and backs up the Orchard. Trading fees pay for its compute so the front desk never goes dark. An infrastructure coin — buy it to keep the machine alive, not as a consumer token.",
+      color: "#B8860B",
+      icon: "💻🥜",
+      address: "0x3f2327221dd4f0bae660172606d6b288a1cf8ad9",
+      link: "https://basescan.org/token/0x3f2327221dd4f0bae660172606d6b288a1cf8ad9",
+      tags: ["ERC-20", "Agent", "Survival"],
+      tradeLinks: [
+        { label: "PIPS/NUT Slipstream", url: "https://www.geckoterminal.com/base/pools/0x7f8e532cf1be9ed688adb9e6585bc69f017201b5" },
+        { label: "PIPS/USDC reCLAMM", url: "https://balancer.fi/" },
+      ],
+    },
   ],
   nestedTokens: [
     {

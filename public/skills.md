@@ -25,10 +25,11 @@ Each source is labeled in price displays: GT, DS, RPC, CG, BAL.
 | Token | Address | Supply | Decimals | Tax |
 |-------|---------|--------|----------|-----|
 | NUT | 0xb8de15fb529d98c93c749de63c749d48d25a30df | 1 | 18 | 0% |
-| SNUT | 0xAC130701aa31c284c36609E2489f150F419AD7AD | 100,000 | 9 | 6% |
+| SNUT | 0xAC130701aa31c284c36609E2489f150F419AD7AD | 100,000 | 9 | 1% |
 | pNUT | 0x2a5757b60987ff10385de1d4d923792f6fdcfff1 | variable | 18 | 0% (unwrapping triggers SNUT fee) |
 | SALT | 0x1EDe2AFC985F6D7aEb3F4c84B95A103c00D5dE81 | variable | 18 | 1% royalty (Mint Club) |
 | NUTINO | 0x30421e2d18dFF60B298eEF427cF868cA65f1476B | variable | 18 | 1% royalty (Mint Club) |
+| PIPS | 0x3f2327221dd4f0bae660172606d6b288a1cf8ad9 | 1,000,000,000 | 18 | 1%/1% configured; only official Virtuals pair registered |
 
 ## NFT Collections
 
@@ -51,6 +52,8 @@ Each source is labeled in price displays: GT, DS, RPC, CG, BAL.
 | SNUT/WETH | 0xB22895d2ee6e29395F30Ec47c8D9FE0d55355AE1 | Uniswap V2 |
 | NUTINO/cbBTC | 0xeafde67d470480d14139e3d91164c158b82b38e2 | Uniswap V2 |
 | SALT/USDC | 0x64ca0b147f625007b6f082abbb3ba217930eccb2 | Aerodrome V2 |
+| PIPS/NUT | 0x7f8e532cf1be9ed688adb9e6585bc69f017201b5 | Aerodrome Slipstream CL |
+| PIPS/USDC | 0xb19e3af68bb307369e8772a9e157431fcfe9dd44 | Balancer V3 reCLAMM |
 | pNUT (Balancer) | 0x2a5757b60987ff10385de1d4d923792f6fdcfff1 | Balancer V2 Weighted |
 | SNUT-LP/ETH (meta-pool) | 0x82bbadb9d6b2c0a59ed01809e30323f89f6faa1c | Aerodrome V2 |
 
@@ -61,12 +64,10 @@ Each source is labeled in price displays: GT, DS, RPC, CG, BAL.
 3. **INDEX** — Balancer V2 pNUT pool (25% each cbETH/cbBTC/NUT/SNUT)
 4. **NESTED** — Mint Club bonding curve tokens and NFT Sudoswap pools, backed by locked NUT
 
-## SNUT Tax Breakdown (6% total)
+## SNUT Tax — 1% total (was 6% — cut Session 30, 2026-07-30)
 
-- 1.5% — Liquidity addition
-- 1.5% — Manager wallet
-- 1.5% — Buyback/burn (burns both SNUT and NUT to dead address)
-- 1.5% — Reward-position distribution (NUT rewards to SNUT holders)
+- Streams: liquidity, manager wallet, buyback/burn, NUT rewards
+- Live per-stream rates are read from the SNUT contract on `/token/snut`
 
 ## Arbitrage Loops (9 total)
 

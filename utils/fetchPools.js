@@ -286,6 +286,31 @@ export function fetchPools() {
       status: "Bonding",
       icon: "🌰⚔️🌱",
     },
+    {
+      name: "PIPS/NUT",
+      tvl: null,
+      flavor: "Machine Meets Kernel",
+      platform: "Aerodrome Slipstream CL",
+      category: ["TKNs", "PIPS"],
+      url: "https://basescan.org/address/0x7f8e532cf1be9ed688adb9e6585bc69f017201b5",
+      checkPoolUrl: "https://www.geckoterminal.com/base/pools/0x7f8e532cf1be9ed688adb9e6585bc69f017201b5",
+      dexscreenerUrl: "https://dexscreener.com/base/0x7f8e532cf1be9ed688adb9e6585bc69f017201b5",
+      status: "Concentrated",
+      icon: "💻🥜🌰",
+    },
+    {
+      name: "PIPS/USDC",
+      tvl: null,
+      flavor: "Stable Machine Fuel",
+      platform: "Balancer reCLAMM",
+      category: ["TKNs", "PIPS"],
+      url: "https://basescan.org/address/0xb19e3af68bb307369e8772a9e157431fcfe9dd44",
+      checkPoolUrl: "https://balancer.fi/",
+      dexscreenerUrl: "https://dexscreener.com/base/0xb19e3af68bb307369e8772a9e157431fcfe9dd44",
+      status: "Experimental",
+      icon: "💻🥜💵",
+      note: "Partial LP — needs ~$120 USDC to complete the PIPS side",
+    },
   ];
 
   // Add a stable id by slugifying name + platform

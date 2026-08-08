@@ -18,6 +18,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Homepage SSR via getServerSideProps for instant data rendering
 - 404 error page with 4 random peanut character illustrations
 - 500 error page with peanut character
+- PIPS token profile + PIPS/NUT (Aerodrome Slipstream CL) + PIPS/USDC (Balancer V3 reCLAMM) in all registries, token/pool pages, arb-bot machine spec, skills.md
 
 ### Changed
 - NFT supply numbers corrected to on-chain values (251/424/6238/5013)
@@ -29,6 +30,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - SNUT casing standardized (not sNUT)
 - Palm tree emoji for meta-pool
 - _app.js title: "Liquidity App" → "BASED NUT Liquidity Portal"
+- SNUT tax 6% → 1% across token/pool/FAQ/arb-bot/skills (Session 30 cut)
+- NFT token descriptions refreshed with on-chain facts (supply, airdrop, Sudoswap venues)
+- PIPS tax claims corrected to on-chain truth: 1%/1% configured, only official Virtuals pair registered; external pools untaxed today
 
 ### Fixed
 - 23 critical bugs from full site audit (chat prompts, warmachine factions, FAQ address/supply, pool colors, 404/500 Layout+Head)
@@ -37,6 +41,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Warmachine.js: 6 faction ability bugs (3 missing, 3 mismatched)
 - FAQ: P-NUTS address corrected, NFT supply fixed
 - Error pages: beige background, tight spacing, large images
+- Stale "6% Tax Breakdown" heading + 1.5% four-way split in arb-bot
 
 ## [1.0.0] - 2024-06-27
 

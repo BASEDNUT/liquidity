@@ -14,6 +14,8 @@ const POOL_CONFIG = [
   { id: 'snut-weth-uniswap-v2', pairAddress: '0xb22895d2ee6e29395f30ec47c8d9fe0d55355ae1', type: 'dex', dexScreenerTokenAddress: '0xAC130701aa31c284c36809E2489f150F419AD7AD' },
   { id: 'nutino-cbbtc-uniswap-v2', pairAddress: '0xeafde67d470480d14139e3d91164c158b82b38e2', type: 'dex', dexScreenerTokenAddress: '0x30421e2d18dFF60B298eEF427cF868cA65f1476B' },
   { id: 'salt-usdc-aerodrome', pairAddress: '0x64ca0b147f625007b6f082abbb3ba217930eccb2', type: 'dex' },
+  { id: 'pips-nut-aerodrome-slipstream-cl', pairAddress: '0x7f8e532cf1be9ed688adb9e6585bc69f017201b5', type: 'dex' },
+  { id: 'pips-usdc-balancer-reclamm', pairAddress: '0xb19e3af68bb307369e8772a9e157431fcfe9dd44', type: 'dex' },
   // === MintClub Bonding Curve Pools (2 main) ===
   { id: 'nutino-nut-mintclub', tokenAddress: '0x30421e2d18dFF60B298eEF427cF868cA65f1476B', type: 'mintclub', label: 'NUTINO/NUT' },
   { id: 'nut-salt-mintclub', tokenAddress: '0x1ede2afc985f6d7aeb3f4c84b95a103c00d5de81', type: 'mintclub', label: 'NUT/SALT' },

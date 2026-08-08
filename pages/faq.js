@@ -65,19 +65,19 @@ const FAQ_DATA = [
   {
     cat: 'tokens',
     q: 'What is NUT?',
-    a: 'NUT is the unity token. Supply = 1 (one indivisible token), ERC-20 capped at 1. No transaction tax, no team allocation. Stealth-launched on Uniswap V3 with zero ETH paired. NUT is the anchor asset — all Mint Club tokens (SALT, NUTINO) are backed by NUT. TRUE Price = TRUE Market Cap. Held in 4 liquidity venues: Uniswap V3 (NUT/WETH), Uniswap V2 (NUT/WETH), Aerodrome (NUT/AERO), Aerodrome (NUT/cbBTC). Cross-venue price differences create arbitrage.',
+    a: 'NUT is the unity token. Supply = 1 (one whole token, ERC-20 capped at 1), with 18 decimals — so it is fully divisible down to 0.000000000000000001 NUT. No transaction tax, no team allocation. Stealth-launched on Uniswap V3 with zero ETH paired. NUT is the anchor asset — all Mint Club tokens (SALT, NUTINO) are backed by NUT. TRUE Price = TRUE Market Cap. Held in 4 liquidity venues: Uniswap V3 (NUT/WETH), Uniswap V2 (NUT/WETH), Aerodrome (NUT/AERO), Aerodrome (NUT/cbBTC). Cross-venue price differences create arbitrage.',
     links: [{ text: 'View NUT profile', href: '/token/nut' }]
   },
   {
     cat: 'tokens',
     q: 'What is SNUT?',
-    a: 'SNUT is a deflationary reward-position token. Supply = 100,000, decimals = 9. SNUT has a 6% tax on every transaction. Holding SNUT automatically earns NUT rewards via non-escrow reward-position — no locking required. SNUT buyback/burn mechanism permanently reduces both SNUT and NUT supply.',
+    a: 'SNUT is a deflationary reward-position token. Supply = 100,000, decimals = 9. SNUT has a 1% tax on every transaction (cut from 6% — Session 30). Holding SNUT automatically earns NUT rewards via non-escrow reward-position — no locking required. SNUT buyback/burn mechanism permanently reduces both SNUT and NUT supply.',
     links: [{ text: 'View SNUT page', href: '/token/snut' }]
   },
   {
     cat: 'tokens',
     q: 'What is the SNUT transaction tax?',
-    a: 'SNUT has a 6% tax on every transaction, split equally: 1.5% adds liquidity, 1.5% goes to manager wallet, 1.5% funds buyback/burn (burns both SNUT and NUT), 1.5% distributes reward-position rewards. Holding SNUT automatically earns NUT rewards via non-escrow reward-position — no locking required.'
+    a: 'SNUT has a 1% tax on every transaction, split among liquidity, manager wallet, buyback/burn, and reward-position rewards (live per-stream rates on /token/snut). Holding SNUT automatically earns NUT rewards via non-escrow reward-position — no locking required.'
   },
   {
     cat: 'tokens',
@@ -88,7 +88,7 @@ const FAQ_DATA = [
   {
     cat: 'tokens',
     q: 'What is the difference between NUT, SNUT, and pNUT?',
-    a: 'NUT: anchor token, supply=1, no tax. SNUT: deflationary reward-position token, supply=100,000, 6% tax, hold to earn NUT via non-escrow reward-position. pNUT: Balancer V2 index basket holding 25% each of cbETH, cbBTC, NUT, SNUT — inflationary counterbalance to SNUT.'
+    a: 'NUT: anchor token, supply=1, no tax. SNUT: deflationary reward-position token, supply=100,000, 1% tax, hold to earn NUT via non-escrow reward-position. pNUT: Balancer V2 index basket holding 25% each of cbETH, cbBTC, NUT, SNUT — inflationary counterbalance to SNUT.'
   },
   {
     cat: 'tokens',
@@ -115,7 +115,7 @@ const FAQ_DATA = [
   {
     cat: 'tokens',
     q: 'Why does NUT have a supply of 1?',
-    a: 'NUT is a unity token — indivisible, ERC-20 capped at 1. TRUE Price = TRUE Market Cap. Standard APIs (CoinGecko, DexScreener) often miscalculate because they expect normal supply. Always check on-chain via Base RPC for accurate pricing.'
+    a: 'NUT is a unity token — ERC-20 capped at 1 whole token, 18 decimals, so it is divisible down to 1e-18 NUT. TRUE Price = TRUE Market Cap. Standard APIs (CoinGecko, DexScreener) often miscalculate because they expect normal supply. Always check on-chain via Base RPC for accurate pricing.'
   },
   {
     cat: 'tokens',
@@ -164,17 +164,17 @@ const FAQ_DATA = [
   {
     cat: 'liquidity',
     q: 'Are there transaction taxes?',
-    a: 'NUT: no tax. SNUT: 6% fee (1.5% liquidity + 1.5% manager + 1.5% buyback/burn + 1.5% reward-position). pNUT: no explicit tax but unwrapping triggers SNUT fee since SNUT is a component. Mint Club tokens: 1% royalty on mint/burn.'
+    a: 'NUT: no tax. SNUT: 1% fee split among liquidity, manager, buyback/burn, and reward-position. pNUT: no explicit tax but unwrapping triggers SNUT fee since SNUT is a component. Mint Club tokens: 1% royalty on mint/burn.'
   },
   {
     cat: 'liquidity',
     q: 'What deflationary or inflationary forces exist?',
-    a: 'NUT: supply fixed at 1, cannot expand. SNUT: deflationary — 6% transaction tax funds buyback/burn at dead address (0x000000000000000000000000000000000000dEaD), permanently reducing supply. pNUT: inflationary — can be freely minted, but growth tempered by NUT and SNUT deflation. This creates a balanced deflationary/inflationary system.'
+    a: 'NUT: supply fixed at 1, cannot expand. SNUT: deflationary — 1% transaction tax funds buyback/burn at dead address (0x000000000000000000000000000000000000dEaD), permanently reducing supply. pNUT: inflationary — can be freely minted, but growth tempered by NUT and SNUT deflation. This creates a balanced deflationary/inflationary system.'
   },
   {
     cat: 'liquidity',
     q: 'Where are burned SNUT tokens sent?',
-    a: 'Burned SNUT tokens are sent to the dead address 0x000000000000000000000000000000000000dEaD — permanently removed from circulation. The SNUT buyback/burn mechanism (funded by 1.5% of the 6% transaction tax) burns both SNUT and NUT at this address, reducing both supplies.',
+    a: 'Burned SNUT tokens are sent to the dead address 0x000000000000000000000000000000000000dEaD — permanently removed from circulation. The SNUT buyback/burn mechanism (funded by a share of the 1% transaction tax) burns both SNUT and NUT at this address, reducing both supplies.',
     links: [{ text: 'View burn transactions on Basescan', href: 'https://basescan.org/address/0x000000000000000000000000000000000000dEaD' }]
   },
   {
@@ -249,7 +249,7 @@ const FAQ_DATA = [
   {
     cat: 'tokens',
     q: 'How does the SNUT recursive burn flywheel work?',
-    a: 'The SNUT burn flywheel is recursive and self-accelerating: (1) Every SNUT transaction has a 6% tax. (2) 1.5% funds buyback/burn — buying SNUT from the market and burning it to the dead address, plus burning an equivalent value of NUT. (3) Burning NUT (supply=1) increases NUT price. (4) Higher NUT price means the 1.5% buyback portion buys more SNUT to burn. (5) Less SNUT supply = higher SNUT price = more value for reward-position holders. (6) The cycle accelerates as supply decreases — a deflationary flywheel that compounds over time.',
+    a: 'The SNUT burn flywheel is recursive and self-accelerating: (1) Every SNUT transaction has a 1% tax. (2) Part of it funds buyback/burn — buying SNUT from the market and burning it to the dead address, plus burning an equivalent value of NUT. (3) Burning NUT (supply=1) increases NUT price. (4) Higher NUT price means the buyback portion buys more SNUT to burn. (5) Less SNUT supply = higher SNUT price = more value for reward-position holders. (6) The cycle accelerates as supply decreases — a deflationary flywheel that compounds over time.',
     links: [{ text: 'View SNUT page', href: '/token/snut' }]
   },
   {
