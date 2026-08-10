@@ -73,7 +73,7 @@ const NAV_SECTIONS = [
           { label: "All Tokens", href: "/tokens" },
         ],
       },
-      { label: "Arb Bot", href: "/arb-bot" },
+      { label: "Pools", href: "/pools" },
       { label: "TVL", href: "/tvl" },
       { label: "Staking", href: "/staking" },
     ],
@@ -97,6 +97,7 @@ const NAV_SECTIONS = [
     title: "🤖 AI Agents",
     items: [
       { label: "Agents", href: "/agents" },
+      { label: "Arb Bot", href: "/arb-bot" },
       { label: "Chat", href: "/chat" },
       { label: "Images", href: "/images" },
     ],

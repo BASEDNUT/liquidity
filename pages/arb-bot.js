@@ -430,7 +430,7 @@ const ARB_LOOPS = [
     howToUse: '1. Poll all 4 venues every block (Base block time ~2s). 2. Normalize all prices to USD using CoinGecko for quote tokens. 3. Calculate spread between every pair. 4. If spread > threshold, execute buy on cheap venue + sell on expensive venue in same block or next. 5. Use multicall or flashbots to atomic-execute both legs.',
     whenToUse: 'After large directional trades on one venue. During volatility spikes. When new liquidity is added/removed from one pool. When AERO or cbBTC prices move sharply vs ETH.',
     difficulty: 'Intermediate',
-    frequency: 'Event-driven. Occurs when cross-venue prices diverge enough to clear fees + gas + route tax. No fixed cadence — poll venues, measure the live spread, and execute only when it is positive after all costs.'
+    frequency: 'Event-driven. Occurs when cross-venue prices diverge enough to clear fees + gas + route tax. No fixed cadence — poll venues, measure the live spread, and execute only when it is positive after all costs.',
     capitalNeeded: '$500+ recommended. Gas is cheap on Base (~$0.10-0.20 per tx) but slippage on small sizes eats profit.',
     prerequisites: 'Base RPC access, USD price feeds for ETH/AERO/cbBTC, understanding of Uniswap V3 slot0 vs V2 getReserves, wallet funded with ETH for gas.',
         tokens: ['NUT', 'WETH', 'AERO', 'cbBTC'],
@@ -592,7 +592,7 @@ const ARB_LOOPS = [
     howToUse: '1. Get SNUT/WETH price from UniV2 (getReserves). 2. Get SNUT/NUT price from Aerodrome (getReserves). 3. Get SNUT implied price from pNUT basket (NAV component). 4. Normalize all to USD. 5. Buy low, sell high across venues. 6. CRITICAL: account for 1% SNUT transfer tax on non-exempt addresses. 7. Verify which addresses are tax-exempt (pool-to-pool may be exempt).',
     whenToUse: 'During SNUT volatility, after large buys/sells on one venue, when NUT price moves but SNUT lags on one venue. The 1% tax matters only on taxable routes.',
     difficulty: 'Advanced',
-    frequency: 'Event-driven. Occurs when SNUT diverges across its 3 venues enough to clear fees + gas + tax. No fixed cadence — measure the live spread across venues and execute only when positive after all costs. Tax-exempt routes are the key to profitability.'
+    frequency: 'Event-driven. Occurs when SNUT diverges across its 3 venues enough to clear fees + gas + tax. No fixed cadence — measure the live spread across venues and execute only when positive after all costs. Tax-exempt routes are the key to profitability.',
     capitalNeeded: '$1,000+ recommended. Tax-exempt routes need less capital but require verification.',
     prerequisites: 'Base RPC for 3-venue price monitoring, SNUT tax-exempt address list, understanding of 9 decimals (NOT 18), NUT price feed for USD normalization, Balancer API for pNUT component.',
         tokens: ['SNUT', 'NUT', 'WETH', 'pNUT'],
