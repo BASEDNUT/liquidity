@@ -80,7 +80,6 @@ const NAV_SECTIONS = [
           { label: "NUT/SALT · Mint Club", href: "/pool/nut-salt-mintclub" },
           { label: "SNUT/NUT · Aerodrome", href: "/pool/snut-nut-aerodrome" },
           { label: "SALT/USDC · Aerodrome", href: "/pool/salt-usdc-aerodrome" },
-          { label: "pNUT · Balancer", href: "/pool/pnut-balancer" },
           { label: "PIPS/USDC · reCLAMM", href: "/pool/pips-usdc-balancer-reclamm" },
         ],
       },
