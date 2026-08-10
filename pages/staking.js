@@ -25,6 +25,12 @@ const StakingPage = () => {
     wordWrap: 'break-word',
   };
 
+  const completedCardStyle = {
+    ...cardStyle,
+    border: '2px solid rgba(93,64,55,0.25)',
+    background: 'linear-gradient(to bottom, rgba(93,64,55,0.04), #fff)',
+  };
+
   const activeBadge = {
     display: 'inline-block',
     padding: '0.25rem 0.75rem',
@@ -36,6 +42,18 @@ const StakingPage = () => {
     marginLeft: '0.75rem',
     verticalAlign: 'middle',
     boxShadow: '0 2px 8px rgba(205,127,50,0.3)',
+  };
+
+  const completedBadge = {
+    display: 'inline-block',
+    padding: '0.25rem 0.75rem',
+    fontSize: '0.75rem',
+    fontWeight: 700,
+    color: '#fff',
+    background: 'rgba(93,64,55,0.5)',
+    borderRadius: '9999px',
+    marginLeft: '0.75rem',
+    verticalAlign: 'middle',
   };
 
   const btnStyle = {
@@ -54,12 +72,17 @@ const StakingPage = () => {
     boxSizing: 'border-box',
   };
 
+  const btnSecondary = {
+    ...btnStyle,
+    backgroundColor: 'rgba(93,64,55,0.35)',
+  };
+
   return (
     <Layout>
       <div style={{ minHeight: '100vh', backgroundColor: '#F7F3ED', fontFamily: 'Arial, sans-serif' }}>
         <Head>
           <title>Staking & Rewards | BASED NUT</title>
-          <meta name="description" content="Stake NUT and MT on Mint Club to earn SALT, plus SALT airdrop history from the Great Nut War." />
+          <meta name="description" content="Stake MT or NUT on Mint Club to earn SALT. Plus SALT airdrop history from the Great Nut War." />
         </Head>
 
         <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '8rem 1.5rem 2rem' }}>
@@ -79,11 +102,11 @@ const StakingPage = () => {
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
 
-            {/* Stake MT — Earn SALT */}
+            {/* Stake MT — Earn SALT (LIVE) */}
             <div style={cardStyle}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037', flex: '1', marginRight: '1rem' }}>
-                  Stake MT
+                  Stake MT, Earn SALT
                   <span style={activeBadge}>ACTIVE</span>
                 </h3>
                 <div style={{ width: '3rem', height: '3rem', backgroundColor: '#CD7F32', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem' }}>
@@ -91,7 +114,7 @@ const StakingPage = () => {
                 </div>
               </div>
               <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
-                Stake your MT and earn SALT as a reward. A live staking vault on Mint Club.
+                Stake MT and earn SALT as your reward. A live staking vault on Mint Club.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
@@ -112,19 +135,27 @@ const StakingPage = () => {
               </a>
             </div>
 
-            {/* Stake NUT — Earn SALT */}
-            <div style={cardStyle}>
+          </div>
+
+          {/* COMPLETED VAULTS */}
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'rgba(93,64,55,0.7)', textAlign: 'center', marginBottom: '1rem' }}>
+            📜 Completed Vaults
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
+
+            {/* Stake NUT — Earn SALT (COMPLETED) */}
+            <div style={completedCardStyle}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037', flex: '1', marginRight: '1rem' }}>
-                  Stake NUT
-                  <span style={activeBadge}>ACTIVE</span>
+                  Stake NUT, Earn SALT
+                  <span style={completedBadge}>COMPLETED</span>
                 </h3>
-                <div style={{ width: '3rem', height: '3rem', backgroundColor: '#A67C52', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem' }}>
+                <div style={{ width: '3rem', height: '3rem', backgroundColor: 'rgba(93,64,55,0.5)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem' }}>
                   🌰
                 </div>
               </div>
               <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
-                Stake your NUT and earn SALT as a reward. A live staking vault on Mint Club.
+                The first Orchard staking vault on Mint Club. Concluded — all rewards have been distributed.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
@@ -139,9 +170,13 @@ const StakingPage = () => {
                   <span style={{ color: 'rgba(93,64,55,0.7)' }}>Reward</span>
                   <span style={{ fontWeight: 'bold', color: '#A67C52' }}>SALT</span>
                 </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                  <span style={{ color: 'rgba(93,64,55,0.7)' }}>Status</span>
+                  <span style={{ fontWeight: 'bold', color: 'rgba(93,64,55,0.6)' }}>Completed</span>
+                </div>
               </div>
-              <a href="https://mint.club/staking/base/69" target="_blank" rel="noopener noreferrer" className="button-effect" style={btnStyle}>
-                Stake NUT on Mint Club
+              <a href="https://mint.club/staking/base/69" target="_blank" rel="noopener noreferrer" className="button-effect" style={btnSecondary}>
+                View Vault on Mint Club
               </a>
             </div>
 
@@ -164,8 +199,8 @@ const StakingPage = () => {
               SALT has been airdropped before — <strong>+1 million SALT tokens were distributed to all NFT holders</strong> as part of the Based Nut War event:
             </p>
             <ul style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.7', paddingLeft: '1.25rem' }}>
-              <li><strong>Generals</strong> got <strong>200 SALT</strong> per NFT</li>
-              <li><strong>Soldiers</strong> got <strong>80 SALT</strong> per NFT</li>
+              <li><strong>Generals got 200 SALT per NFT</strong></li>
+              <li><strong>Soldiers got 80 SALT per NFT</strong></li>
             </ul>
             <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
               This is how the Based Nut War armies were distributed. All of these on-chain events are part of the Great Nut War lore.
