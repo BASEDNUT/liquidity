@@ -74,6 +74,9 @@ const pNUT_POOL_ID = '0x2a5757b60987ff10385de1d4d923792f6fdcfff10001000000000000
 // ═══════════════════════════════════════════════════════════════
 // FUNCTION SIGNATURES — HEX SELECTORS
 // ═══════════════════════════════════════════════════════════════
+// READ-PATH SUBSET — these are the calls every arb bot needs to PRICE tokens. This is NOT the full contract ABI:
+// execution selectors (approve, transfer, swap, mint, burn, joinExit) are intentionally omitted.
+// Each contract still needs its ABI for executing trades — use these reads to decide WHEN.
 const FUNCTION_SIGS = [
   { sig: '0x3850c7bd', name: 'slot0()', desc: 'Uniswap V3 — Returns sqrtPriceX96, tick, protocolFee. Use for V3 price derivation.', returns: 'uint160 sqrtPriceX96, int24 tick, ...' },
   { sig: '0x0902f1ac', name: 'getReserves()', desc: 'Uniswap V2 / Aerodrome — Returns reserve0, reserve1. Use for V2 price derivation.', returns: 'uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast' },
@@ -421,13 +424,13 @@ const ARB_LOOPS = [
     ],
     profitCondition: 'Spread between any 2 venues > 2 × gas + slippage + quote token conversion cost',
     risks: 'Different quote tokens complicate comparison. Price moves during cross-venue execution. Liquidity depth varies. V3 pool has deepest liquidity.',
-    verdict: 'VIABLE — This is the most realistic arb. Spreads of 0.5-2% have been observed. Requires fast execution and USD normalization across quote tokens.',
+    verdict: 'VIABLE in principle — profitability depends on the LIVE spread clearing fees + gas + route tax. Past observed spreads are not guarantees; measure the current spread and execute only when it is positive after all costs. Requires fast execution and USD normalization across quote tokens.',
     verdictColor: 'success',
     whatIsIt: 'Classic cross-venue price arbitrage. NUT trades on 4 different DEXs with different quote tokens. When the same token has different prices on different venues, you buy low and sell high.',
     howToUse: '1. Poll all 4 venues every block (Base block time ~2s). 2. Normalize all prices to USD using CoinGecko for quote tokens. 3. Calculate spread between every pair. 4. If spread > threshold, execute buy on cheap venue + sell on expensive venue in same block or next. 5. Use multicall or flashbots to atomic-execute both legs.',
     whenToUse: 'After large directional trades on one venue. During volatility spikes. When new liquidity is added/removed from one pool. When AERO or cbBTC prices move sharply vs ETH.',
     difficulty: 'Intermediate',
-    frequency: 'Multiple times per day during active markets. Spreads of 0.5-2% observed historically.',
+    frequency: 'Event-driven. Occurs when cross-venue prices diverge enough to clear fees + gas + route tax. No fixed cadence — poll venues, measure the live spread, and execute only when it is positive after all costs.'
     capitalNeeded: '$500+ recommended. Gas is cheap on Base (~$0.10-0.20 per tx) but slippage on small sizes eats profit.',
     prerequisites: 'Base RPC access, USD price feeds for ETH/AERO/cbBTC, understanding of Uniswap V3 slot0 vs V2 getReserves, wallet funded with ETH for gas.',
         tokens: ['NUT', 'WETH', 'AERO', 'cbBTC'],
@@ -589,7 +592,7 @@ const ARB_LOOPS = [
     howToUse: '1. Get SNUT/WETH price from UniV2 (getReserves). 2. Get SNUT/NUT price from Aerodrome (getReserves). 3. Get SNUT implied price from pNUT basket (NAV component). 4. Normalize all to USD. 5. Buy low, sell high across venues. 6. CRITICAL: account for 1% SNUT transfer tax on non-exempt addresses. 7. Verify which addresses are tax-exempt (pool-to-pool may be exempt).',
     whenToUse: 'During SNUT volatility, after large buys/sells on one venue, when NUT price moves but SNUT lags on one venue. The 1% tax matters only on taxable routes.',
     difficulty: 'Advanced',
-    frequency: 'Multiple times per day during active SNUT trading. Spreads of 2%+ observed during volatility. Tax-exempt routes are the key to profitability.',
+    frequency: 'Event-driven. Occurs when SNUT diverges across its 3 venues enough to clear fees + gas + tax. No fixed cadence — measure the live spread across venues and execute only when positive after all costs. Tax-exempt routes are the key to profitability.'
     capitalNeeded: '$1,000+ recommended. Tax-exempt routes need less capital but require verification.',
     prerequisites: 'Base RPC for 3-venue price monitoring, SNUT tax-exempt address list, understanding of 9 decimals (NOT 18), NUT price feed for USD normalization, Balancer API for pNUT component.',
         tokens: ['SNUT', 'NUT', 'WETH', 'pNUT'],
@@ -671,7 +674,7 @@ const MINT_CLUB_FACTS = [
 // VENUE INTEL — WITH API ENDPOINTS
 // ═══════════════════════════════════════════════════════════════
 const VENUES = [
-  { name: 'Uniswap V3', type: 'Concentrated AMM', pairs: 'NUT/WETH', fee: '0.3%', notes: 'Primary NUT venue. Use slot0() for price. DEX Screener CANNOT see this pool — must use Base RPC.', api: 'Base RPC: eth_call slot0() → 0x3850c7bd' },
+  { name: 'Uniswap V3', type: 'Concentrated AMM', pairs: 'NUT/WETH', fee: '1.0%', notes: 'Primary NUT venue. Use slot0() for price. DEX Screener CANNOT see this pool — must use Base RPC.', api: 'Base RPC: eth_call slot0() → 0x3850c7bd' },
   { name: 'Uniswap V2', type: 'XYK AMM', pairs: 'NUT/WETH, SNUT/WETH, NUTINO/cbBTC', fee: '0.3%', notes: 'Secondary venues. Use getReserves() for price.', api: 'Base RPC: eth_call getReserves() → 0x0902f1ac' },
   { name: 'Aerodrome', type: 've(3,3) AMM', pairs: 'NUT/AERO, NUT/cbBTC, SALT/USDC, SNUT/NUT', fee: 'Variable', notes: 'Base native DEX. SALT primary venue. SNUT primary venue. Same interface as UniV2.', api: 'Base RPC: getReserves() + token0() for ordering' },
   { name: 'Mint Club', type: 'Bonding Curve', pairs: 'SALT (backed by NUT), NUTINO (backed by NUT)', fee: '1% royalty', notes: 'Mint/burn only. Buy ≠ Sell. Price = NUT_locked / supply. Use SDK or browser for prices.', api: 'SDK: npm i mint.club-v2-sdk | UI: https://mint.club/token/base/{TOKEN}' },
@@ -939,15 +942,21 @@ export default function ArbBotPage() {
   return (
     <Layout>
       <Head>
-        <title>Arb Bot Builder | BASED NUT</title>
-        <meta name="description" content="Static reference for building arbitrage bots in the BASED NUT ecosystem. Verified addresses, RPC code, function signatures, arb loops, and machine-readable spec." />
+        <title>Arb Bot Builder Helper | BASED NUT</title>
+        <meta name="description" content="Instant arb-bot building context for agents on BASED NUT: how to trade, how to think about the tokens, verified addresses, RPC code, arb loops, and machine-readable spec — no research required." />
       </Head>
 
       <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto', overflowWrap: 'break-word', wordBreak: 'break-word' }}>
         {/* ══ HEADER ══ */}
         <Box sx={{ mb: 2, p: { xs: 2, md: 3 }, borderRadius: 3, background: 'linear-gradient(135deg, #4A2F1A 0%, #6B3D20 50%, #8B5A2B 100%)', color: '#FAF3E6' }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 0.5 }}>⚔️ Arb Bot Builder</Typography>
-          <Typography sx={{ opacity: 0.85, fontSize: '0.95rem' }}>Static reference for AI agents building arbitrage bots across the BASED NUT ecosystem on Base. All addresses verified on-chain. All code is copy-pasteable Python.</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 0.5 }}>⚔️ Arb Bot Builder Helper</Typography>
+          <Typography sx={{ opacity: 0.85, fontSize: '0.9rem', mb: 1 }}>Instant build context for agents and developers trading the BASED NUT ecosystem on Base — how to think about the tokens and what to do, without doing the research. All code is copy-pasteable Python. Addresses are snapshot-verified; re-verify live before executing.</Typography>
+          <Box sx={{ mt: 1, p: 1.5, borderRadius: 2, background: 'rgba(255,252,245,0.12)', border: '1px solid rgba(255,252,245,0.2)' }}>
+            <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#FAF3E6', mb: 0.5 }}>📌 Build order — what each section gives you</Typography>
+            <Typography sx={{ fontSize: '0.78rem', color: 'rgba(250,243,230,0.9)', lineHeight: 1.5 }}>
+              📍 Addresses = which contracts to call · 🔧 Sigs = the read calls to price them (a subset, not the full ABI) · 🐍 RPC Code = working Python to copy · ⚔️ Arb Loops = which trades exist and when they work · 🏭 Mint Club = bonding-curve pricing quirks (buy ≠ sell) · 🧺 pNUT = how to price the index basket · 🏠 Venues = where each token trades + which API · 🖼️ NFT = fractionalization · ⚙️ Spec = one machine-readable JSON of everything · 🚀 Start = the order to build.
+            </Typography>
+          </Box>
         </Box>
 
         {/* ══ RISK DISCLAIMER ══ */}
@@ -1020,7 +1029,7 @@ export default function ArbBotPage() {
         {/* ══ VERIFIED ADDRESSES ══ */}
         <Box id="addresses" sx={{ mb: 4, scrollMarginTop: 60 }}>
           <Typography variant="h5" sx={{ mb: 2, color: '#5B3A29', fontWeight: 'bold' }}>📍 Verified Address Registry</Typography>
-          <Typography sx={{ fontSize: '0.8rem', color: 'rgba(40,40,60,0.5)', mb: 2 }}>All addresses verified on-chain via Base RPC on 2026-07-03. Every contract has been confirmed to exist and return expected data.</Typography>
+          <Typography sx={{ fontSize: '0.8rem', color: 'rgba(40,40,60,0.5)', mb: 2 }}>Addresses below are snapshot-verified on-chain via Base RPC; the registry evolves as venues are added (e.g. newer pools are listed too). Re-verify any contract against its latest state before executing against it.</Typography>
 
           {/* Tokens */}
           <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#8B5A2B', mb: 1 }}>Tokens</Typography>
