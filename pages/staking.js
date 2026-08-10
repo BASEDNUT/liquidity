@@ -25,16 +25,17 @@ const StakingPage = () => {
     wordWrap: 'break-word',
   };
 
-  const concludedBadge = {
+  const activeBadge = {
     display: 'inline-block',
     padding: '0.25rem 0.75rem',
     fontSize: '0.75rem',
     fontWeight: 700,
     color: '#fff',
-    background: 'rgba(93,64,55,0.5)',
+    background: 'linear-gradient(90deg, #CD7F32, #A67C52)',
     borderRadius: '9999px',
     marginLeft: '0.75rem',
     verticalAlign: 'middle',
+    boxShadow: '0 2px 8px rgba(205,127,50,0.3)',
   };
 
   const btnStyle = {
@@ -49,80 +50,81 @@ const StakingPage = () => {
     transition: 'background-color 0.3s ease',
     fontWeight: 700,
     fontSize: '1rem',
-  };
-
-  const btnConcluded = {
-    ...btnStyle,
-    backgroundColor: 'rgba(93,64,55,0.3)',
-    cursor: 'default',
+    width: '100%',
+    boxSizing: 'border-box',
   };
 
   return (
     <Layout>
       <div style={{ minHeight: '100vh', backgroundColor: '#F7F3ED', fontFamily: 'Arial, sans-serif' }}>
         <Head>
-          <title>Staking & Vault | BASED NUT</title>
-          <meta name="description" content="SALT Forge, concluded staking vault, and NFT airdrop history for the NUT ecosystem." />
+          <title>Staking & Rewards | BASED NUT</title>
+          <meta name="description" content="Stake NUT and MT on Mint Club to earn SALT, plus SALT airdrop history from the Great Nut War." />
         </Head>
 
         <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '8rem 1.5rem 2rem' }}>
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#5D4037', marginBottom: '0.5rem' }}>
-              🏰 Staking & Vault
+              🏰 Staking & Rewards
             </h1>
-            <p style={{ fontSize: '1.1rem', color: 'rgba(93,64,55,0.8)', maxWidth: '600px', margin: '0 auto' }}>
-              Mint SALT, review concluded vaults, and track airdrop history in the NUT ecosystem.
+            <p style={{ fontSize: '1.1rem', color: 'rgba(93,64,55,0.8)', maxWidth: '640px', margin: '0 auto', lineHeight: '1.6' }}>
+              Stake your NUT or MT on Mint Club and earn SALT. Hold Orchard NFTs and taste the spoils of the Great Nut War.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
+          {/* ACTIVE STAKES */}
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#5D4037', textAlign: 'center', marginBottom: '1rem' }}>
+            🌱 Active Stakes
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
 
-            {/* SALT Forge */}
+            {/* Stake MT — Earn SALT */}
             <div style={cardStyle}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037', flex: '1', marginRight: '1rem' }}>
-                  SALT Forge
+                  Stake MT
+                  <span style={activeBadge}>ACTIVE</span>
                 </h3>
                 <div style={{ width: '3rem', height: '3rem', backgroundColor: '#CD7F32', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem' }}>
-                  🌋
+                  🥜
                 </div>
               </div>
-              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1rem', lineHeight: '1.5' }}>
-                Forge SALT via the Mint Club bonding curve on Base. SALT is the savory seasoning token of the NUT ecosystem.
+              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+                Stake your MT and earn SALT as a reward. A live staking vault on Mint Club.
               </p>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <span style={{ fontSize: '0.75rem', color: 'rgba(93,64,55,0.6)', display: 'block', marginBottom: '0.25rem' }}>Contract Address</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <code style={{ fontSize: '0.75rem', color: '#5D4037', background: 'rgba(205,127,50,0.08)', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {saltAddress}
-                  </code>
-                  <button
-                    onClick={() => copyToClipboard(saltAddress, 'salt')}
-                    style={{ cursor: 'pointer', border: '1px solid rgba(205,127,50,0.3)', background: 'rgba(205,127,50,0.05)', borderRadius: '0.25rem', padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: '#5D4037' }}
-                  >
-                    {copied === 'salt' ? '✓' : 'Copy'}
-                  </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                  <span style={{ color: 'rgba(93,64,55,0.7)' }}>Platform</span>
+                  <span style={{ fontWeight: 'bold', color: '#5D4037' }}>Mint Club</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                  <span style={{ color: 'rgba(93,64,55,0.7)' }}>Vault ID</span>
+                  <span style={{ fontWeight: 'bold', color: '#5D4037' }}>217</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
+                  <span style={{ color: 'rgba(93,64,55,0.7)' }}>Reward</span>
+                  <span style={{ fontWeight: 'bold', color: '#A67C52' }}>SALT</span>
                 </div>
               </div>
-              <a href="https://mint.club/token/base/SALT" target="_blank" rel="noopener noreferrer" className="button-effect" style={btnStyle}>
-                Mint SALT on Mint Club
+              <a href="https://mint.club/staking/base/217" target="_blank" rel="noopener noreferrer" className="button-effect" style={btnStyle}>
+                Stake MT on Mint Club
               </a>
             </div>
 
-            {/* First Staking Vault — CONCLUDED */}
-            <div style={{ ...cardStyle, border: '2px solid rgba(93,64,55,0.3)', background: 'linear-gradient(to bottom, rgba(93,64,55,0.05), #fff)' }}>
+            {/* Stake NUT — Earn SALT */}
+            <div style={cardStyle}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037', flex: '1', marginRight: '1rem' }}>
-                  First Staking Vault
-                  <span style={concludedBadge}>CONCLUDED</span>
+                  Stake NUT
+                  <span style={activeBadge}>ACTIVE</span>
                 </h3>
-                <div style={{ width: '3rem', height: '3rem', backgroundColor: 'rgba(93,64,55,0.5)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem' }}>
-                  🏦
+                <div style={{ width: '3rem', height: '3rem', backgroundColor: '#A67C52', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem' }}>
+                  🌰
                 </div>
               </div>
-              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                The first Mint Club staking vault for the NUT ecosystem. This vault has concluded — all rewards have been distributed.
+              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+                Stake your NUT and earn SALT as a reward. A live staking vault on Mint Club.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
@@ -134,45 +136,64 @@ const StakingPage = () => {
                   <span style={{ fontWeight: 'bold', color: '#5D4037' }}>69</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                  <span style={{ color: 'rgba(93,64,55,0.7)' }}>Status</span>
-                  <span style={{ fontWeight: 'bold', color: 'rgba(93,64,55,0.6)' }}>Concluded</span>
+                  <span style={{ color: 'rgba(93,64,55,0.7)' }}>Reward</span>
+                  <span style={{ fontWeight: 'bold', color: '#A67C52' }}>SALT</span>
                 </div>
               </div>
               <a href="https://mint.club/staking/base/69" target="_blank" rel="noopener noreferrer" className="button-effect" style={btnStyle}>
-                View Vault on Mint Club
+                Stake NUT on Mint Club
               </a>
             </div>
 
-            {/* NFT Airdrop — CONCLUDED */}
-            <div style={{ ...cardStyle, border: '2px solid rgba(139,69,19,0.2)', background: 'linear-gradient(to bottom, rgba(139,69,19,0.05), #fff)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037', flex: '1', marginRight: '1rem' }}>
-                  NFT Airdrop
-                  <span style={concludedBadge}>CONCLUDED</span>
-                </h3>
-                <div style={{ width: '3rem', height: '3rem', backgroundColor: 'rgba(139,69,19,0.5)', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem' }}>
-                  🪂
-                </div>
-              </div>
-              <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-                NFT holders received airdropped tokens as rewards. This distribution has concluded — all eligible holders have been served.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                  <span style={{ color: 'rgba(93,64,55,0.7)' }}>Recipients</span>
-                  <span style={{ fontWeight: 'bold', color: '#5D4037' }}>NFT Holders</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                  <span style={{ color: 'rgba(93,64,55,0.7)' }}>Collections</span>
-                  <span style={{ fontWeight: 'bold', color: '#5D4037' }}>PNUTS, ALMD, SALMD, PNUTRMY</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                  <span style={{ color: 'rgba(93,64,55,0.7)' }}>Status</span>
-                  <span style={{ fontWeight: 'bold', color: 'rgba(93,64,55,0.6)' }}>Concluded</span>
-                </div>
+          </div>
+
+          {/* SALT AIRDROP LORE */}
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#5D4037', textAlign: 'center', marginBottom: '1rem' }}>
+            🪂 Airdrop History
+          </h2>
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5D4037', flex: '1', marginRight: '1rem' }}>
+                Based Nut War init NFT Airdrop
+              </h3>
+              <div style={{ width: '3rem', height: '3rem', backgroundColor: '#8B4513', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem' }}>
+                ⚔️
               </div>
             </div>
+            <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1rem', lineHeight: '1.7' }}>
+              SALT has been airdropped before — <strong>+1 million SALT tokens were distributed to all NFT holders</strong> as part of the Based Nut War event:
+            </p>
+            <ul style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.7', paddingLeft: '1.25rem' }}>
+              <li><strong>Generals</strong> got <strong>200 SALT</strong> per NFT</li>
+              <li><strong>Soldiers</strong> got <strong>80 SALT</strong> per NFT</li>
+            </ul>
+            <p style={{ fontSize: '0.875rem', color: 'rgba(93,64,55,0.9)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+              This is how the Based Nut War armies were distributed. All of these on-chain events are part of the Great Nut War lore.
+            </p>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <span style={{ fontSize: '0.75rem', color: 'rgba(93,64,55,0.6)', display: 'block', marginBottom: '0.25rem' }}>SALT Contract Address</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <code style={{ fontSize: '0.75rem', color: '#5D4037', background: 'rgba(205,127,50,0.08)', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {saltAddress}
+                </code>
+                <button
+                  onClick={() => copyToClipboard(saltAddress, 'salt')}
+                  style={{ cursor: 'pointer', border: '1px solid rgba(205,127,50,0.3)', background: 'rgba(205,127,50,0.05)', borderRadius: '0.25rem', padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: '#5D4037' }}
+                >
+                  {copied === 'salt' ? '✓' : 'Copy'}
+                </button>
+              </div>
+            </div>
+            <Link href="/great-nut-war" className="button-effect" style={{ ...btnStyle, backgroundColor: '#8B4513' }}>
+              ⚔️ Relive the Great Nut War
+            </Link>
+          </div>
 
+          {/* SNUT NOTE */}
+          <div style={{ marginTop: '2rem', padding: '1.25rem 1.5rem', background: 'rgba(205,127,50,0.06)', borderRadius: '1rem', border: '1px solid rgba(205,127,50,0.2)', textAlign: 'center' }}>
+            <p style={{ fontSize: '0.9rem', color: 'rgba(93,64,55,0.85)', lineHeight: '1.6' }}>
+              🧂 Looking for the staked yield token? Learn everything about <Link href="/token/snut" style={{ color: '#A67C52', fontWeight: 'bold' }}>SNUT</Link>.
+            </p>
           </div>
 
           {/* Back to War */}
