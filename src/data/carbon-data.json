@@ -1,6 +1,6 @@
 {
-  "pricePerT": 82.01,
-  "priceAsOf": "2026-08-14",
+  "pricePerT": 88,
+  "priceAsOf": "2026-Q1",
   "emitters": [
     {
       "ticker": "2222.SR",
@@ -26,7 +26,9 @@
           "label": "Aramco 2023 Annual Report",
           "url": "https://www.aramco.com/en/investors/investors/reports-and-presentations"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "XOM",
@@ -34,8 +36,8 @@
       "exchange": "NYSE",
       "sector": "Oil & Gas",
       "hqCountry": "USA",
-      "reportingYear": 2023,
-      "scope1T": 103000000,
+      "reportingYear": 2025,
+      "scope1T": 102000000,
       "scope2T": 9000000,
       "scope3T": 730000000,
       "revenueUsd": 344600000000,
@@ -52,7 +54,14 @@
           "label": "ExxonMobil 10-K 2023 (SEC)",
           "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000034088&type=10-K"
         }
-      ]
+      ],
+      "boundary": "equity share",
+      "scope2Method": "market-based",
+      "dataNote": "Refreshed to 2025 equity-basis disclosure (111 Mt S1+2). Operated-assets figure is 97 Mt.",
+      "greenCapexUsd": 5000000000,
+      "greenCapexYear": 2025,
+      "greenCapexNote": "Up to $30B lower-emissions investments 2025-2030 (~$5B/yr); CCS, hydrogen, lithium.",
+      "greenCapexSource": "ExxonMobil Dec 2024 plans-to-2030 announcement"
     },
     {
       "ticker": "SHEL",
@@ -78,7 +87,11 @@
           "label": "Shell Annual Report 2023",
           "url": "https://reports.shell.com/annual-report/2023/"
         }
-      ]
+      ],
+      "greenCapexUsd": 4000000000,
+      "greenCapexYear": 2024,
+      "greenCapexNote": "$10-15B low-carbon solutions 2023-2025 (~$3.5-5B/yr); hydrogen, renewables, CCS.",
+      "greenCapexSource": "Shell energy transition disclosures (Yahoo/Nasdaq)"
     },
     {
       "ticker": "CVX",
@@ -104,7 +117,11 @@
           "label": "Chevron 10-K 2023 (SEC)",
           "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000093410&type=10-K"
         }
-      ]
+      ],
+      "greenCapexUsd": 1000000000,
+      "greenCapexYear": 2026,
+      "greenCapexNote": "~$1.0B of $18-19B 2026 capex dedicated to lowering carbon intensity.",
+      "greenCapexSource": "Chevron 2026 capex budget announcement"
     },
     {
       "ticker": "TTE",
@@ -130,7 +147,11 @@
           "label": "TotalEnergies Universal Registration 2023",
           "url": "https://totalenergies.com/investors/publications-and-regulated-information"
         }
-      ]
+      ],
+      "greenCapexUsd": 5880000000,
+      "greenCapexYear": 2023,
+      "greenCapexNote": "$5.88B renewables + low-carbon capex out of $16.8B total (2023).",
+      "greenCapexSource": "Statista oil-company low-carbon capex 2023"
     },
     {
       "ticker": "BP",
@@ -152,7 +173,11 @@
           "label": "BP Sustainability Report 2023",
           "url": "https://www.bp.com/en/global/corporate/sustainability/reports-and-downloads.html"
         }
-      ]
+      ],
+      "greenCapexUsd": 1750000000,
+      "greenCapexYear": 2025,
+      "greenCapexNote": "2025 low-carbon guidance $1.75B, cut from $6.45B prior guidance.",
+      "greenCapexSource": "FT / BP 2025 guidance"
     },
     {
       "ticker": "COP",
@@ -174,7 +199,9 @@
           "label": "ConocoPhillips Sustainability Report 2023",
           "url": "https://www.conocophillips.com/sustainability/sustainability-reports/"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "MPC",
@@ -195,7 +222,9 @@
           "label": "Marathon Petroleum Sustainability Report 2023",
           "url": "https://www.marathonpetroleum.com/Sustainability/"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "PSX",
@@ -216,7 +245,9 @@
           "label": "Phillips 66 Sustainability Report 2023",
           "url": "https://www.phillips66.com/sustainability/reporting/"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "VLO",
@@ -237,7 +268,9 @@
           "label": "Valero Stewardship & Responsibility Report 2023",
           "url": "https://www.valero.com/sustainability"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "DUK",
@@ -258,7 +291,9 @@
           "label": "Duke Energy Climate Report 2024",
           "url": "https://www.duke-energy.com/our-company/environment/climate-report"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "SO",
@@ -279,7 +314,9 @@
           "label": "Southern Company Planet Report 2023",
           "url": "https://www.southerncompany.com/sustainability/reports.html"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "NEE",
@@ -300,7 +337,9 @@
           "label": "NextEra Zero Carbon Blueprint",
           "url": "https://www.nexteraenergy.com/sustainability/zero-carbon-blueprint.html"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "AEP",
@@ -321,7 +360,9 @@
           "label": "AEP Corporate Sustainability Report 2023",
           "url": "https://www.aep.com/about/sustainability"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "ENGI",
@@ -342,7 +383,9 @@
           "label": "ENGIE Integrated Report 2023",
           "url": "https://www.engie.com/en/finance/results"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "UAL",
@@ -363,7 +406,9 @@
           "label": "United ESG Report 2023",
           "url": "https://crreport.united.com/"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "DAL",
@@ -384,7 +429,9 @@
           "label": "Delta ESG Report 2023",
           "url": "https://www.delta.com/us/en/about-delta/sustainability"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "AAL",
@@ -405,7 +452,9 @@
           "label": "American Airlines ESG Report 2023",
           "url": "https://www.aa.com/i18n/customer-service/about-us/corporate-responsibility.jsp"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "LUV",
@@ -426,7 +475,9 @@
           "label": "Southwest One Report 2023",
           "url": "https://www.southwestonereport.com/2023"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "IAG",
@@ -447,7 +498,9 @@
           "label": "IAG Sustainability Report 2023",
           "url": "https://www.iairgroup.com/sustainability/"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "MAERSK-B.CO",
@@ -469,7 +522,9 @@
           "label": "Maersk Sustainability Report 2023",
           "url": "https://www.maersk.com/sustainability/reports-and-resources"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "FDX",
@@ -490,7 +545,9 @@
           "label": "FedEx ESG Report 2024",
           "url": "https://www.fedex.com/en-us/about/sustainability.html"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "UPS",
@@ -511,7 +568,9 @@
           "label": "UPS Sustainability Progress Report 2023",
           "url": "https://about.ups.com/us/en/social-impact/environment.html"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "UNP",
@@ -532,7 +591,9 @@
           "label": "Union Pacific Climate Action Plan 2023",
           "url": "https://www.up.com/aboutup/esg/index.htm"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "MT",
@@ -553,7 +614,9 @@
           "label": "ArcelorMittal Climate Action Report 2023",
           "url": "https://corporate.arcelormittal.com/climate-action"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "NUE",
@@ -574,7 +637,9 @@
           "label": "Nucor Sustainability Report 2023",
           "url": "https://nucor.com/sustainability"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "CLF",
@@ -595,7 +660,9 @@
           "label": "Cleveland-Cliffs Sustainability Report 2023",
           "url": "https://www.clevelandcliffs.com/sustainability"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "BHP",
@@ -617,7 +684,9 @@
           "label": "BHP Climate Transition Action Plan 2024",
           "url": "https://www.bhp.com/sustainability/climate"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "RIO",
@@ -639,7 +708,9 @@
           "label": "Rio Tinto Climate Change Report 2023",
           "url": "https://www.riotinto.com/en/sustainability/climate-change"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "HOLN",
@@ -661,7 +732,11 @@
           "url": "https://www.holcim.com/investors/reports"
         }
       ],
-      "dataNote": "Corrected to CDP 2023 market-based Scope 2 disclosure (79.67 Mt total); prior 111 Mt used location-based Scope 2."
+      "dataNote": "Corrected to CDP 2023 market-based Scope 2 disclosure (79.67 Mt total); prior 111 Mt used location-based Scope 2.",
+      "boundary": "operational control",
+      "scope2Method": "market-based",
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "CRH",
@@ -682,7 +757,9 @@
           "label": "CRH Sustainability Performance Report 2023",
           "url": "https://www.crh.com/sustainability"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "DOW",
@@ -703,7 +780,9 @@
           "label": "Dow INtersections ESG Report 2023",
           "url": "https://corporate.dow.com/en-us/science-and-sustainability/reporting-and-scorecard.html"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "LYB",
@@ -724,7 +803,9 @@
           "label": "LyondellBasell Sustainability Report 2023",
           "url": "https://www.lyondellbasell.com/en/sustainability/"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "BAS",
@@ -745,7 +826,9 @@
           "label": "BASF Report 2023",
           "url": "https://report.basf.com/2023/en/"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "TM",
@@ -767,7 +850,9 @@
           "label": "Toyota Sustainability Data Book 2023",
           "url": "https://global.toyota/en/sustainability/report/"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "F",
@@ -789,7 +874,9 @@
           "label": "Ford Integrated Sustainability Report 2024",
           "url": "https://corporate.ford.com/microsites/integrated-sustainability-and-financial-report-2024/index.html"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "TSLA",
@@ -811,7 +898,9 @@
           "label": "Tesla Impact Report 2023",
           "url": "https://www.tesla.com/impact"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "WMT",
@@ -833,7 +922,9 @@
           "label": "Walmart ESG Highlights FY24",
           "url": "https://corporate.walmart.com/purpose/esgreport/"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "AMZN",
@@ -855,7 +946,9 @@
           "label": "Amazon Sustainability Report 2023",
           "url": "https://sustainability.aboutamazon.com/reporting"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "MSFT",
@@ -877,7 +970,9 @@
           "label": "Microsoft Environmental Sustainability Report 2024",
           "url": "https://www.microsoft.com/en-us/corporate-responsibility/sustainability/report"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "GOOGL",
@@ -899,7 +994,9 @@
           "label": "Google Environmental Report 2024",
           "url": "https://sustainability.google/reports/"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     },
     {
       "ticker": "AAPL",
@@ -921,10 +1018,12 @@
           "label": "Apple Environmental Progress Report 2024",
           "url": "https://www.apple.com/environment/"
         }
-      ]
+      ],
+      "greenCapexUsd": null,
+      "greenCapexNote": "Not disclosed / not yet sourced"
     }
   ],
-  "priceCurrency": "EUR",
-  "priceSource": "TradingEconomics EU Carbon Permits (\u20ac82.01/t)",
-  "priceNote": "Reference price, not live. EUA futures traded ~\u20ac81-83/t in Aug 2026. Emissions figures are FY2023 self-reported disclosures (typically published 2024)."
+  "priceCurrency": "USD",
+  "priceSource": "Official Q1 2026 CBAM carbon price \u20ac75.4/t = $88/t (Niskanen Center); EUA spot ~\u20ac82/t Aug 2026",
+  "priceNote": "Fixed reference benchmark, not a live spot. No company pays this on all emissions. Emissions are FY2023 disclosure baseline unless a row is refreshed to a later year."
 }
