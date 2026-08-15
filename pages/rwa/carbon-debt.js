@@ -101,7 +101,7 @@ export default function CarbonExposurePage() {
   const totals = useMemo(() => {
     const annualT = EMITTERS.reduce((s, e) => s + totalScope12(e), 0);
     const annualDebt = annualT * PRICE_PER_T;
-    const disclosed = EMITTERS.filter((e) => e.greenCapexUsd != null && e.greenCapexUsd > 0);
+    const disclosed = EMITTERS.filter((e) => e.greenCapexUsd != null && e.greenCapexUsd > 0 && e.greenCapexTag === "ACTUAL");
     const reinvest = disclosed.reduce((s, e) => s + e.greenCapexUsd, 0);
     const disclosedDebt = disclosed.reduce((s, e) => s + totalScope12(e) * PRICE_PER_T, 0);
     return {
@@ -128,7 +128,7 @@ export default function CarbonExposurePage() {
   return (
     <Layout>
       <Head>
-        <title>Carbon Balance Sheet — RWA | BASED NUT</title>
+        <title>Environmental Balance Sheet — RWA | BASED NUT</title>
         <meta name="description" content="A transparent two-sided model: 42 companies' disclosed emissions priced at a reference carbon price, against their disclosed environmental reinvestment." />
       </Head>
       <Box sx={{ maxWidth: 1200, mx: "auto", px: 2, py: 5 }}>
@@ -136,21 +136,30 @@ export default function CarbonExposurePage() {
           🏦 Real-World Assets
         </Typography>
         <Typography variant="h3" sx={{ color: BARK, fontWeight: 900, letterSpacing: -1, mb: 1, fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" } }}>
-          Carbon balance sheet
+          Environmental balance sheet
         </Typography>
-        <Typography sx={{ color: "#423B31", fontSize: "1.1rem", maxWidth: 860, mb: 4 }}>
-          A thought experiment in two columns. One side: what each company's disclosed
-          Scope 1+2 emissions would cost at a reference carbon price. The other: what the
-          same company discloses spending on decarbonization. The gap between them is the
-          open question.
+        <Typography sx={{ color: "#423B31", fontSize: "1.1rem", maxWidth: 860, mb: 2 }}>
+          Economic activity creates measurable environmental externalities. Carbon is one
+          slice we can price consistently. This page puts two disclosed numbers side by
+          side: the environmental pressure companies create, and the capital they direct
+          toward reducing it. The gap between them is the open question.
         </Typography>
+        <Paper elevation={0} sx={{ p: 3, bgcolor: CREAM, borderLeft: "4px solid #C68B36", borderRadius: 2, mb: 4 }}>
+          <Typography sx={{ fontWeight: 800, color: BARK, mb: 1 }}>🌍 Carbon is not the environment</Typography>
+          <Typography sx={{ color: "#51483C", fontSize: "0.95rem" }}>
+            This balance sheet measures Scope 1+2 greenhouse-gas emissions — one
+            externality that is consistently measurable across companies. Water use, land
+            disturbance, biodiversity loss, extraction, waste and pollution matter too.
+            Carbon is the first measurable layer, not the whole picture.
+          </Typography>
+        </Paper>
 
         {/* Hero: 4-KPI priority architecture */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} md={6}>
             <Paper elevation={0} sx={{ p: 3, bgcolor: BARK, color: "#FFF7E7", borderRadius: 3,  }}>
               <Typography sx={{ color: OCHRE, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
-                Modeled carbon debt
+                Modeled carbon burden
               </Typography>
               <Typography sx={{ fontWeight: 900, fontSize: { xs: "1.7rem", sm: "2.4rem" }, letterSpacing: -1, my: 0.5 }}>
                 {fmtUsdB(totals.annualDebt)} <span style={{ fontSize: "1rem", fontWeight: 700, color: "#D9CDBB" }}>/ year</span>
@@ -163,39 +172,39 @@ export default function CarbonExposurePage() {
           <Grid item xs={12} md={6}>
             <Paper elevation={0} sx={{ p: 3, bgcolor: MOSS, color: "#F2F7EE", borderRadius: 3,  }}>
               <Typography sx={{ color: "#CDE6C3", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
-                Earth reinvestment (disclosed)
+                Environmental response investment (disclosed)
               </Typography>
               <Typography sx={{ fontWeight: 900, fontSize: { xs: "1.7rem", sm: "2.4rem" }, letterSpacing: -1, my: 0.5 }}>
                 {fmtUsdB(totals.reinvest)} <span style={{ fontSize: "1rem", fontWeight: 700, color: "#CDE6C3" }}>/ year</span>
               </Typography>
               <Typography sx={{ color: "#CDE6C3", fontSize: "0.85rem" }}>
-                Low-carbon capex, {totals.disclosedCount} of {EMITTERS.length} companies disclose it
+                ACTUAL annual low-carbon capex, {totals.disclosedCount} of {EMITTERS.length} companies disclose a comparable figure
               </Typography>
             </Paper>
           </Grid>
           <Grid item xs={12} md={6}>
             <Paper elevation={0} sx={{ p: 3, bgcolor: PARCHMENT, border: "1px solid #D9CFBF", borderRadius: 3,  }}>
               <Typography sx={{ color: OAT, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
-                Repayment ratio
+                Reinvestment ratio
               </Typography>
               <Typography sx={{ fontWeight: 900, fontSize: { xs: "1.7rem", sm: "2.4rem" }, letterSpacing: -1, my: 0.5, color: BARK }}>
                 {fmtPct(totals.repaymentRatio)}
               </Typography>
               <Typography sx={{ color: "#6B6254", fontSize: "0.85rem" }}>
-                Reinvestment ÷ debt, over the {totals.disclosedCount} disclosing companies only
+                ACTUAL low-carbon investment ÷ modeled burden, over {totals.disclosedCount} companies with comparable annual figures
               </Typography>
             </Paper>
           </Grid>
           <Grid item xs={12} md={6}>
             <Paper elevation={0} sx={{ p: 3, bgcolor: CREAM, borderLeft: "4px solid #B3542E", borderRadius: 3,  }}>
               <Typography sx={{ color: RUST, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
-                Unpaid balance (gross)
+                Unmatched modeled carbon cost
               </Typography>
               <Typography sx={{ fontWeight: 900, fontSize: { xs: "1.7rem", sm: "2.4rem" }, letterSpacing: -1, my: 0.5, color: RUST }}>
                 {fmtUsdB(totals.unpaid)} <span style={{ fontSize: "1rem", fontWeight: 700, color: OAT }}>/ year</span>
               </Typography>
               <Typography sx={{ color: "#6B6254", fontSize: "0.85rem" }}>
-                Debt minus disclosed reinvestment — a floor, not a true net, since 37 companies don't disclose
+                Modeled burden minus captured ACTUAL investment only. Incomplete disclosure means this is not a true net figure.
               </Typography>
             </Paper>
           </Grid>
@@ -205,7 +214,7 @@ export default function CarbonExposurePage() {
         <Paper elevation={0} sx={{ p: 2.5, bgcolor: BARK, color: "#FFF7E7", borderRadius: 2, mb: 4 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
-              <Typography sx={{ color: OCHRE, fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 800 }}>Modeled YTD debt</Typography>
+              <Typography sx={{ color: OCHRE, fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 800 }}>Modeled YTD burden</Typography>
               <Typography sx={{ fontWeight: 900, fontSize: "1.5rem" }}>{fmtUsd(totals.ytdDebt)}</Typography>
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -223,8 +232,8 @@ export default function CarbonExposurePage() {
         <Paper elevation={0} sx={{ p: 3, bgcolor: CREAM, borderLeft: "4px solid #C68B36", borderRadius: 2, mb: 4 }}>
           <Typography sx={{ fontWeight: 800, color: BARK, mb: 1 }}>⚖️ Two sides, one question</Typography>
           <Typography sx={{ color: "#51483C", fontSize: "0.95rem", mb: 2 }}>
-            Emissions are one side of a ledger; decarbonization spending is the other. CDP's
-            aggregate data shows the gap between the two sides across the whole economy:
+            Intent is abundant. Reinvestment is scarcer. CDP's aggregate data shows the gap
+            between awareness and capital allocation across the whole economy:
           </Typography>
           <Grid container spacing={2}>
             {CDP_CONTEXT.map((c) => (
@@ -253,13 +262,13 @@ export default function CarbonExposurePage() {
                 <TableCell sx={{ fontWeight: 800, color: BARK }}>Company</TableCell>
                 <TableCell sx={{ fontWeight: 800, color: BARK }}>Sector</TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
-                  <TableSortLabel active={sort === "debt"} direction={sortDir} onClick={() => handleSort("debt")}>Carbon debt</TableSortLabel>
+                  <TableSortLabel active={sort === "debt"} direction={sortDir} onClick={() => handleSort("debt")}>Carbon burden</TableSortLabel>
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
                   <TableSortLabel active={sort === "reinvest"} direction={sortDir} onClick={() => handleSort("reinvest")}>Reinvest</TableSortLabel>
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
-                  <TableSortLabel active={sort === "repayment"} direction={sortDir} onClick={() => handleSort("repayment")}>Repay %</TableSortLabel>
+                  <TableSortLabel active={sort === "repayment"} direction={sortDir} onClick={() => handleSort("repayment")}>Reinvest %</TableSortLabel>
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>Source yr</TableCell>
               </TableRow>
@@ -277,10 +286,10 @@ export default function CarbonExposurePage() {
                       <TableCell sx={{ color: "#51483C", fontSize: "0.85rem" }}>{r.sector}</TableCell>
                       <TableCell align="right" sx={{ color: OAT, fontWeight: 700 }}>{fmtUsd(r.annualDebt)}</TableCell>
                       <TableCell align="right" sx={{ color: r.greenCapex > 0 ? MOSS : "#9A8B7A", fontWeight: 700 }}>
-                        {r.greenCapex > 0 ? fmtUsd(r.greenCapex) : "n/d"}
+                        {r.greenCapex > 0 ? <Box><span>{fmtUsd(r.greenCapex)}</span><span style={{ color: "#9A8B7A", fontSize: "0.7rem", display: "block" }}>{r.greenCapexTag}</span></Box> : "n/d"}
                       </TableCell>
                       <TableCell align="right" sx={{ color: r.repayment > 0.5 ? MOSS : RUST, fontWeight: 700 }}>
-                        {r.greenCapex > 0 ? fmtPct(r.repayment) : "—"}
+                        {r.greenCapex > 0 && r.greenCapexTag === "ACTUAL" ? fmtPct(r.repayment) : "—"}
                       </TableCell>
                       <TableCell align="right" sx={{ color: "#51483C", fontSize: "0.85rem" }}>{r.reportingYear}</TableCell>
                     </TableRow>
@@ -300,9 +309,9 @@ export default function CarbonExposurePage() {
                                 <Typography sx={{ color: "#51483C", fontSize: "0.85rem" }}>Scope 1 · direct: {fmtT(r.scope1T)}</Typography>
                                 <Typography sx={{ color: "#51483C", fontSize: "0.85rem" }}>Scope 2 · purchased energy: {fmtT(r.scope2T)}</Typography>
                                 <Typography sx={{ color: "#51483C", fontSize: "0.85rem" }}>Scope 3 · value chain: {fmtT(r.scope3T)} (excluded from model)</Typography>
-                                <Typography sx={{ color: OAT, fontWeight: 700, fontSize: "0.85rem", mt: 1 }}>Modeled carbon debt: {fmtUsd(r.annualDebt)}</Typography>
+                                <Typography sx={{ color: OAT, fontWeight: 700, fontSize: "0.85rem", mt: 1 }}>Modeled carbon burden: {fmtUsd(r.annualDebt)}</Typography>
                                 <Typography sx={{ color: MOSS, fontWeight: 700, fontSize: "0.85rem" }}>
-                                  Earth reinvestment: {r.greenCapex > 0 ? fmtUsd(r.greenCapex) + " (" + r.greenCapexYear + ")" : "not disclosed"}
+                                  Response investment: {r.greenCapex > 0 ? fmtUsd(r.greenCapex) + " (" + r.greenCapexYear + ")" : "not disclosed"}
                                 </Typography>
                                 {r.greenCapex > 0 && (
                                   <Typography sx={{ color: "#51483C", fontSize: "0.82rem" }}>{r.greenCapexNote} — {r.greenCapexSource}</Typography>
@@ -343,15 +352,16 @@ export default function CarbonExposurePage() {
 
           <Typography sx={{ color: OCHRE, fontWeight: 800, mb: 0.5 }}>1. It is a model, not a measurement.</Typography>
           <Typography sx={{ color: "#D9CDBB", fontSize: "0.95rem", mb: 2 }}>
-            The YTD clock does not measure 2026 emissions. It takes each company's most
-            recent disclosed annual Scope 1+2 figure and divides it evenly across the year —
-            an annualized rate, not a live sensor. Real emissions change year to year.
+            The YTD clock does not measure this year's emissions. It takes each company's
+            most recent disclosed annual Scope 1+2 figure and divides it evenly across the
+            year — an annualized rate, not a live sensor. Real emissions change year to year.
           </Typography>
 
-          <Typography sx={{ color: OCHRE, fontWeight: 800, mb: 0.5 }}>2. The price is a fixed benchmark, not a live spot.</Typography>
+          <Typography sx={{ color: OCHRE, fontWeight: 800, mb: 0.5 }}>2. The price is a benchmark, not a damage estimate.</Typography>
           <Typography sx={{ color: "#D9CDBB", fontSize: "0.95rem", mb: 2 }}>
-            We use ${PRICE_PER_T}/t as a reference carbon price ({PRICE_SOURCE}). {PRICE_NOTE}
-            The number answers a hypothetical: <i>what if every tonne faced this price?</i>
+            We are not claiming one tonne causes ${PRICE_PER_T} of harm. ${PRICE_PER_T}/t is a
+            fixed reference benchmark ({PRICE_SOURCE}) used to translate emissions onto a
+            comparable financial scale. It is explicitly a fixed baseline, not a live price.
           </Typography>
 
           <Typography sx={{ color: OCHRE, fontWeight: 800, mb: 0.5 }}>3. Emissions are self-reported and imperfect.</Typography>
@@ -364,25 +374,23 @@ export default function CarbonExposurePage() {
             is flagged in the row.
           </Typography>
 
-          <Typography sx={{ color: OCHRE, fontWeight: 800, mb: 0.5 }}>4. The reinvestment side is incomplete — and that is the point.</Typography>
+          <Typography sx={{ color: OCHRE, fontWeight: 800, mb: 0.5 }}>4. The unmatched figure is an upper bound, not a floor.</Typography>
           <Typography sx={{ color: "#D9CDBB", fontSize: "0.95rem", mb: 2 }}>
-            Only {totals.disclosedCount} of {EMITTERS.length} companies disclose a clean,
-            attributable annual low-carbon capex figure. The repayment ratio is therefore
-            computed over those {totals.disclosedCount} only — it is not extrapolated to the
-            rest. The "unpaid balance" is a floor, not a true net. The missing data is
-            itself the finding: if we want a real environmental balance sheet, disclosure
-            must become as routine as the income statement.
+            Only {totals.disclosedCount} of {EMITTERS.length} companies disclose comparable
+            ACTUAL annual low-carbon investment. If the rest invested undisclosed sums, the
+            true gap would shrink. The "unmatched" number is therefore the maximum observable
+            gap given available data — not a floor, and not an estimate of any true net balance.
           </Typography>
 
-          <Typography sx={{ color: OCHRE, fontWeight: 800, mb: 0.5 }}>5. The open question a carbon-credit regime must answer.</Typography>
+          <Typography sx={{ color: OCHRE, fontWeight: 800, mb: 0.5 }}>5. Where does the reinvestment go?</Typography>
           <Typography sx={{ color: "#D9CDBB", fontSize: "0.95rem" }}>
-            If emissions are one side of a ledger and reinvestment is the other, the gap is
-            where a credit could live. But a credit is only meaningful if it is
-            <b> additional</b> — a reduction that would not have happened anyway — and
-            <b> verified</b>, not self-declared. CDP shows 72% of companies disclose
-            initiatives, but only 11% align capex with their own targets. The precedent
-            this page points toward is not "polluters owe money" — it is "make the net
-            direction visible, verifiable, and priced."
+            Measuring the gap is only useful if capital can be directed toward measurable
+            environmental outcomes. Renewable infrastructure, efficiency, ecosystem
+            restoration, carbon removal, regenerative agriculture — these are different ways
+            of turning investment into physical change. The harder problem is proving what
+            happened: where the money went, what changed, how much impact was produced, and
+            whether it would have occurred anyway. A verified environmental sink is one
+            mechanism for closing that loop — it converts capital into measurable recovery.
           </Typography>
         </Paper>
 
@@ -390,11 +398,14 @@ export default function CarbonExposurePage() {
         <Paper elevation={0} sx={{ mt: 4, p: 3, bgcolor: CREAM, borderLeft: "4px solid #C68B36", borderRadius: 2 }}>
           <Typography sx={{ fontWeight: 800, color: BARK, mb: 1 }}>🧾 Methodology & provenance</Typography>
           <Typography sx={{ color: "#51483C", fontSize: "0.93rem", mb: 1 }}>
-            Modeled carbon debt = Scope 1+2 (tCO₂e) × ${PRICE_PER_T}/t reference price.
-            Earth reinvestment = disclosed annual low-carbon capex (renewables, CCS,
-            hydrogen, efficiency) where the company reports a clean attributable figure.
-            Repayment ratio = reinvestment ÷ debt, over disclosing companies only.
-            "Unpaid balance" = total debt − disclosed reinvestment (a floor).
+            Modeled carbon burden = Scope 1+2 (tCO₂e) × ${PRICE_PER_T}/t fixed reference
+            benchmark. Environmental response investment = disclosed low-carbon capex
+            (renewables, CCS, hydrogen, efficiency), shown with a tag: ACTUAL, BUDGET,
+            TARGET, or MULTI-YEAR. Only ACTUAL annual figures enter the aggregates and the
+            reinvestment ratio; budgeted and multi-year figures are shown in the table but
+            never combined into the same total. "Unmatched modeled carbon cost" = total
+            burden − captured ACTUAL investment — an upper bound given incomplete
+            disclosure, not a true net estimate.
           </Typography>
           <Typography sx={{ color: "#51483C", fontSize: "0.93rem", mb: 1 }}>
             Sources per company: CDP Climate Change disclosures, TCFD-aligned

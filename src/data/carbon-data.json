@@ -28,7 +28,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "XOM",
@@ -58,10 +59,11 @@
       "boundary": "equity share",
       "scope2Method": "market-based",
       "dataNote": "Refreshed to 2025 equity-basis disclosure (111 Mt S1+2). Operated-assets figure is 97 Mt.",
-      "greenCapexUsd": 5000000000,
-      "greenCapexYear": 2025,
-      "greenCapexNote": "Up to $30B lower-emissions investments 2025-2030 (~$5B/yr); CCS, hydrogen, lithium.",
-      "greenCapexSource": "ExxonMobil Dec 2024 plans-to-2030 announcement"
+      "greenCapexUsd": 20000000000,
+      "greenCapexYear": "2025-2030",
+      "greenCapexNote": "~$20B lower-emission investment planned across 2025-2030 \u2014 a 6-year plan, not an annual figure.",
+      "greenCapexSource": "ExxonMobil 2030 plan announcement",
+      "greenCapexTag": "MULTI-YEAR"
     },
     {
       "ticker": "SHEL",
@@ -88,10 +90,11 @@
           "url": "https://reports.shell.com/annual-report/2023/"
         }
       ],
-      "greenCapexUsd": 4000000000,
-      "greenCapexYear": 2024,
-      "greenCapexNote": "$10-15B low-carbon solutions 2023-2025 (~$3.5-5B/yr); hydrogen, renewables, CCS.",
-      "greenCapexSource": "Shell energy transition disclosures (Yahoo/Nasdaq)"
+      "greenCapexUsd": 5600000000,
+      "greenCapexYear": 2023,
+      "greenCapexNote": "$5.6B low-carbon energy solutions (2023), >23% of capital spending.",
+      "greenCapexSource": "Shell Energy Transition Strategy 2024",
+      "greenCapexTag": "ACTUAL"
     },
     {
       "ticker": "CVX",
@@ -118,10 +121,11 @@
           "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000093410&type=10-K"
         }
       ],
-      "greenCapexUsd": 1000000000,
-      "greenCapexYear": 2026,
-      "greenCapexNote": "~$1.0B of $18-19B 2026 capex dedicated to lowering carbon intensity.",
-      "greenCapexSource": "Chevron 2026 capex budget announcement"
+      "greenCapexUsd": 2000000000,
+      "greenCapexYear": 2023,
+      "greenCapexNote": "~$2B lower-carbon capex (2023 capital program); ~$1B of it renewable fuels.",
+      "greenCapexSource": "Chevron 2023 Capital Program press release",
+      "greenCapexTag": "BUDGET"
     },
     {
       "ticker": "TTE",
@@ -150,8 +154,9 @@
       ],
       "greenCapexUsd": 5880000000,
       "greenCapexYear": 2023,
-      "greenCapexNote": "$5.88B renewables + low-carbon capex out of $16.8B total (2023).",
-      "greenCapexSource": "Statista oil-company low-carbon capex 2023"
+      "greenCapexNote": "$5.88B low-carbon capex out of $16.8B total (2023).",
+      "greenCapexSource": "TotalEnergies Shareholder Journal #73",
+      "greenCapexTag": "ACTUAL"
     },
     {
       "ticker": "BP",
@@ -174,10 +179,11 @@
           "url": "https://www.bp.com/en/global/corporate/sustainability/reports-and-downloads.html"
         }
       ],
-      "greenCapexUsd": 1750000000,
-      "greenCapexYear": 2025,
-      "greenCapexNote": "2025 low-carbon guidance $1.75B, cut from $6.45B prior guidance.",
-      "greenCapexSource": "FT / BP 2025 guidance"
+      "greenCapexUsd": null,
+      "greenCapexYear": null,
+      "greenCapexNote": "Removed \u2014 prior $1.75B figure unverified (conflicted with share-buyback disclosure).",
+      "greenCapexSource": "BP 4Q 2023 results",
+      "greenCapexTag": null
     },
     {
       "ticker": "COP",
@@ -201,7 +207,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "MPC",
@@ -224,7 +231,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "PSX",
@@ -247,7 +255,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "VLO",
@@ -270,7 +279,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "DUK",
@@ -293,7 +303,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "SO",
@@ -316,7 +327,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "NEE",
@@ -339,7 +351,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "AEP",
@@ -362,7 +375,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "ENGI",
@@ -385,7 +399,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "UAL",
@@ -408,7 +423,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "DAL",
@@ -431,7 +447,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "AAL",
@@ -454,7 +471,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "LUV",
@@ -477,7 +495,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "IAG",
@@ -500,7 +519,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "MAERSK-B.CO",
@@ -524,7 +544,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "FDX",
@@ -547,7 +568,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "UPS",
@@ -570,7 +592,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "UNP",
@@ -593,7 +616,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "MT",
@@ -616,7 +640,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "NUE",
@@ -639,7 +664,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "CLF",
@@ -662,7 +688,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "BHP",
@@ -686,7 +713,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "RIO",
@@ -710,7 +738,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "HOLN",
@@ -736,7 +765,8 @@
       "boundary": "operational control",
       "scope2Method": "market-based",
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "CRH",
@@ -759,7 +789,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "DOW",
@@ -782,7 +813,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "LYB",
@@ -805,7 +837,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "BAS",
@@ -828,7 +861,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "TM",
@@ -852,7 +886,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "F",
@@ -876,7 +911,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "TSLA",
@@ -900,7 +936,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "WMT",
@@ -924,7 +961,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "AMZN",
@@ -948,7 +986,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "MSFT",
@@ -972,7 +1011,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "GOOGL",
@@ -996,7 +1036,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     },
     {
       "ticker": "AAPL",
@@ -1020,7 +1061,8 @@
         }
       ],
       "greenCapexUsd": null,
-      "greenCapexNote": "Not disclosed / not yet sourced"
+      "greenCapexNote": "Not disclosed / not yet sourced",
+      "greenCapexTag": null
     }
   ],
   "priceCurrency": "USD",
