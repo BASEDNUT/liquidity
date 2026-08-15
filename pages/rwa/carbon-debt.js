@@ -148,7 +148,7 @@ export default function CarbonExposurePage() {
         {/* Hero: 4-KPI priority architecture */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} md={6}>
-            <Paper elevation={0} sx={{ p: 3, bgcolor: BARK, color: "#FFF7E7", borderRadius: 3, height: "100%" }}>
+            <Paper elevation={0} sx={{ p: 3, bgcolor: BARK, color: "#FFF7E7", borderRadius: 3,  }}>
               <Typography sx={{ color: OCHRE, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
                 Modeled carbon debt
               </Typography>
@@ -161,7 +161,7 @@ export default function CarbonExposurePage() {
             </Paper>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Paper elevation={0} sx={{ p: 3, bgcolor: MOSS, color: "#F2F7EE", borderRadius: 3, height: "100%" }}>
+            <Paper elevation={0} sx={{ p: 3, bgcolor: MOSS, color: "#F2F7EE", borderRadius: 3,  }}>
               <Typography sx={{ color: "#CDE6C3", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
                 Earth reinvestment (disclosed)
               </Typography>
@@ -174,7 +174,7 @@ export default function CarbonExposurePage() {
             </Paper>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Paper elevation={0} sx={{ p: 3, bgcolor: PARCHMENT, border: "1px solid #D9CFBF", borderRadius: 3, height: "100%" }}>
+            <Paper elevation={0} sx={{ p: 3, bgcolor: PARCHMENT, border: "1px solid #D9CFBF", borderRadius: 3,  }}>
               <Typography sx={{ color: OAT, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
                 Repayment ratio
               </Typography>
@@ -187,7 +187,7 @@ export default function CarbonExposurePage() {
             </Paper>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Paper elevation={0} sx={{ p: 3, bgcolor: CREAM, borderLeft: "4px solid #B3542E", borderRadius: 3, height: "100%" }}>
+            <Paper elevation={0} sx={{ p: 3, bgcolor: CREAM, borderLeft: "4px solid #B3542E", borderRadius: 3,  }}>
               <Typography sx={{ color: RUST, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
                 Unpaid balance (gross)
               </Typography>
