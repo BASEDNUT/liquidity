@@ -112,6 +112,13 @@ const NAV_SECTIONS = [
     ],
   },
   {
+    title: "🏦 RWA",
+    items: [
+      { label: "Carbon Debt Ledger", href: "/rwa/carbon-debt" },
+      { label: "America Runs on Nuts", href: "/rwa/nuts-production" },
+    ],
+  },
+  {
     title: "📚 Learn",
     items: [
       { label: "FAQ", href: "/faq" },
