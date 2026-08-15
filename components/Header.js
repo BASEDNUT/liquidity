@@ -114,7 +114,7 @@ const NAV_SECTIONS = [
   {
     title: "🏦 RWA",
     items: [
-      { label: "Carbon Debt Ledger", href: "/rwa/carbon-debt" },
+      { label: "Carbon Pricing Exposure", href: "/rwa/carbon-debt" },
       { label: "US Nut Economy", href: "/rwa/nuts-production" },
     ],
   },
