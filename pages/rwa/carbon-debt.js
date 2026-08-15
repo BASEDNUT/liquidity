@@ -135,7 +135,7 @@ export default function CarbonExposurePage() {
         <Typography variant="overline" sx={{ color: HONEY, fontWeight: 800, letterSpacing: 2 }}>
           🏦 Real-World Assets
         </Typography>
-        <Typography variant="h3" sx={{ color: BARK, fontWeight: 900, letterSpacing: -1, mb: 1 }}>
+        <Typography variant="h3" sx={{ color: BARK, fontWeight: 900, letterSpacing: -1, mb: 1, fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" } }}>
           Carbon balance sheet
         </Typography>
         <Typography sx={{ color: "#423B31", fontSize: "1.1rem", maxWidth: 860, mb: 4 }}>
@@ -152,7 +152,7 @@ export default function CarbonExposurePage() {
               <Typography sx={{ color: OCHRE, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
                 Modeled carbon debt
               </Typography>
-              <Typography sx={{ fontWeight: 900, fontSize: "2.4rem", letterSpacing: -1, my: 0.5 }}>
+              <Typography sx={{ fontWeight: 900, fontSize: { xs: "1.7rem", sm: "2.4rem" }, letterSpacing: -1, my: 0.5 }}>
                 {fmtUsdB(totals.annualDebt)} <span style={{ fontSize: "1rem", fontWeight: 700, color: "#D9CDBB" }}>/ year</span>
               </Typography>
               <Typography sx={{ color: "#D9CDBB", fontSize: "0.85rem" }}>
@@ -165,7 +165,7 @@ export default function CarbonExposurePage() {
               <Typography sx={{ color: "#CDE6C3", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
                 Earth reinvestment (disclosed)
               </Typography>
-              <Typography sx={{ fontWeight: 900, fontSize: "2.4rem", letterSpacing: -1, my: 0.5 }}>
+              <Typography sx={{ fontWeight: 900, fontSize: { xs: "1.7rem", sm: "2.4rem" }, letterSpacing: -1, my: 0.5 }}>
                 {fmtUsdB(totals.reinvest)} <span style={{ fontSize: "1rem", fontWeight: 700, color: "#CDE6C3" }}>/ year</span>
               </Typography>
               <Typography sx={{ color: "#CDE6C3", fontSize: "0.85rem" }}>
@@ -178,7 +178,7 @@ export default function CarbonExposurePage() {
               <Typography sx={{ color: OAT, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
                 Repayment ratio
               </Typography>
-              <Typography sx={{ fontWeight: 900, fontSize: "2.4rem", letterSpacing: -1, my: 0.5, color: BARK }}>
+              <Typography sx={{ fontWeight: 900, fontSize: { xs: "1.7rem", sm: "2.4rem" }, letterSpacing: -1, my: 0.5, color: BARK }}>
                 {fmtPct(totals.repaymentRatio)}
               </Typography>
               <Typography sx={{ color: "#6B6254", fontSize: "0.85rem" }}>
@@ -191,7 +191,7 @@ export default function CarbonExposurePage() {
               <Typography sx={{ color: RUST, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
                 Unpaid balance (gross)
               </Typography>
-              <Typography sx={{ fontWeight: 900, fontSize: "2.4rem", letterSpacing: -1, my: 0.5, color: RUST }}>
+              <Typography sx={{ fontWeight: 900, fontSize: { xs: "1.7rem", sm: "2.4rem" }, letterSpacing: -1, my: 0.5, color: RUST }}>
                 {fmtUsdB(totals.unpaid)} <span style={{ fontSize: "1rem", fontWeight: 700, color: OAT }}>/ year</span>
               </Typography>
               <Typography sx={{ color: "#6B6254", fontSize: "0.85rem" }}>
@@ -244,8 +244,8 @@ export default function CarbonExposurePage() {
         </Stack>
 
         {/* Table */}
-        <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #D9CFBF", borderRadius: 3, overflow: "hidden" }}>
-          <Table size="small">
+        <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #D9CFBF", borderRadius: 3, overflowX: "auto" }}>
+          <Table size="small" sx={{ minWidth: 720 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: CREAM }}>
                 <TableCell sx={{ fontWeight: 800, color: BARK }}>Company</TableCell>
