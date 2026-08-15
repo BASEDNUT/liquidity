@@ -202,19 +202,21 @@ export default function CarbonExposurePage() {
         </Grid>
 
         {/* Live rate strip */}
-        <Paper elevation={0} sx={{ p: 2.5, bgcolor: BARK, color: "#FFF7E7", borderRadius: 2, mb: 4, display: "flex", flexWrap: "wrap", gap: 3, alignItems: "baseline" }}>
-          <Box>
-            <Typography sx={{ color: OCHRE, fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 800 }}>Modeled YTD debt</Typography>
-            <Typography sx={{ fontWeight: 900, fontSize: "1.5rem" }}>{fmtUsd(totals.ytdDebt)}</Typography>
-          </Box>
-          <Box>
-            <Typography sx={{ color: OCHRE, fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 800 }}>Annualized rate</Typography>
-            <Typography sx={{ fontWeight: 900, fontSize: "1.5rem" }}>{fmtUsd(totals.ratePerSec)}/s</Typography>
-          </Box>
-          <Box>
-            <Typography sx={{ color: OCHRE, fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 800 }}>Modeled YTD emissions</Typography>
-            <Typography sx={{ fontWeight: 900, fontSize: "1.5rem" }}>{fmtT(totals.ytdT)}</Typography>
-          </Box>
+        <Paper elevation={0} sx={{ p: 2.5, bgcolor: BARK, color: "#FFF7E7", borderRadius: 2, mb: 4 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <Typography sx={{ color: OCHRE, fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 800 }}>Modeled YTD debt</Typography>
+              <Typography sx={{ fontWeight: 900, fontSize: "1.5rem" }}>{fmtUsd(totals.ytdDebt)}</Typography>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Typography sx={{ color: OCHRE, fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 800 }}>Annualized rate</Typography>
+              <Typography sx={{ fontWeight: 900, fontSize: "1.5rem" }}>{fmtUsd(totals.ratePerSec)}/s</Typography>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Typography sx={{ color: OCHRE, fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 800 }}>Modeled YTD emissions</Typography>
+              <Typography sx={{ fontWeight: 900, fontSize: "1.5rem" }}>{fmtT(totals.ytdT)}</Typography>
+            </Grid>
+          </Grid>
         </Paper>
 
         {/* Two-sided context */}
