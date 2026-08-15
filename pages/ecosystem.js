@@ -1,67 +1,186 @@
-import Head from 'next/head';
-import { Box, Typography, Paper, Divider } from '@mui/material';
-import Layout from '../components/Layout';
+import Head from "next/head";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Layout from "../components/Layout";
+import { Box, Typography, Paper, Select, MenuItem, IconButton, Chip } from "@mui/material";
+import chartsData from "../src/data/ecosystem-charts.json";
 
-const CHARTS = [
-  { src: '/img/ecosystem/orchard-taxonomy.png', title: 'Orchard Taxonomy', note: 'One root, many layers — how NUT anchors every token, pool, NFT, and agent.' },
-  { src: '/img/ecosystem/liquidity-network.png', title: 'Liquidity Network', note: 'Where the conserved supply lives — every node holds a slice of the same 10^18 units.' },
-  { src: '/img/ecosystem/radial-tree.png', title: 'Radial Tree', note: 'The singleton graph from the root outward — a living tree of redistributed state.' },
-  { src: '/img/ecosystem/tvl-treemap.png', title: 'TVL Treemap', note: 'Real value locked per venue, sized by what the Orchard actually holds.' },
-  { src: '/img/ecosystem/arb-paths.png', title: 'Arbitrage Paths', note: 'Structural gaps between different AMM maths — arbitrageurs are the nervous system that closes them.' },
-  { src: '/img/ecosystem/pnut-composition.png', title: 'pNUT Composition', note: 'The 25/25/25/25 index basket — a synthetic claim on the core.' },
-  { src: '/img/ecosystem/pool-communities.png', title: 'Pool Communities', note: 'Which venues cluster in the liquidity graph — where value pools together.' },
-  { src: '/img/ecosystem/nut-flow-sankey.png', title: 'NUT Flow', note: 'One conserved river split into streams — NUT moves root to periphery to root.' },
-  { src: '/img/ecosystem/bonding-curves.png', title: 'Bonding Curves', note: 'Periphery tokens lock NUT to mint — the child strengthens the parent.' },
-  { src: '/img/ecosystem/flywheel.png', title: 'Reward Flywheel', note: 'Trade to fees to rewards to buybacks — the recursive loop that compounds.' },
-  { src: '/img/ecosystem/v3-depth.png', title: 'V3 Liquidity Depth', note: 'Concentrated liquidity tick by tick — capital efficiency as a graph.' },
-  { src: '/img/ecosystem/burn-cycle.png', title: 'Recursive Burn Cycle', note: 'The gravity well — dead-held SNUT keeps earning NUT, tightening the loop forever.' },
-  { src: '/img/ecosystem/pool-correlation.png', title: 'Pool Correlation', note: 'Where prices move together — and where arb pressure lives.' },
-];
+const BARK = "#5D3A1A";
+const CREAM = "#F5E9DA";
+const PARCHMENT = "#FFFDF7";
 
-function GridSection({ charts }) {
-  return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-      {charts.map((c) => (
-        <Paper key={c.src} sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid rgba(139,90,43,0.15)', background: '#FFFDF7' }}>
-          <Box sx={{ p: 1.5, borderBottom: '1px solid rgba(139,90,43,0.1)' }}>
-            <Typography sx={{ fontWeight: 700, color: '#5B3A29' }}>{c.title}</Typography>
-            <Typography sx={{ fontSize: '0.8rem', color: 'rgba(40,40,60,0.6)', mt: 0.25 }}>{c.note}</Typography>
-          </Box>
-          <Box sx={{ p: 1, bgcolor: '#FBF6EA' }}>
-            <img src={c.src} alt={c.title} style={{ width: '100%', height: 'auto', borderRadius: 12, display: 'block' }} loading='lazy' />
-          </Box>
-        </Paper>
-      ))}
-    </Box>
-  );
+const IMAGE_FILES = {
+  "TVL Treemap": "/img/ecosystem/tvl-treemap.png",
+  "NUT Flow": "/img/ecosystem/nut-flow-sankey.png",
+  "Bonding Curves": "/img/ecosystem/bonding-curves.png",
+  "V3 Liquidity Depth": "/img/ecosystem/v3-depth.png",
+  "Pool Correlation": "/img/ecosystem/pool-correlation.png",
+};
+
+const CHARTS = chartsData.charts;
+
+let mermaidPromise = null;
+function loadMermaid() {
+  if (mermaidPromise) return mermaidPromise;
+  mermaidPromise = new Promise((resolve, reject) => {
+    if (window.mermaid) return resolve(window.mermaid);
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.min.js";
+    s.onload = () => {
+      window.mermaid.initialize({
+        startOnLoad: false,
+        theme: "base",
+        themeVariables: {
+          fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+          fontSize: "15px",
+          primaryColor: "#ffffff",
+          primaryTextColor: "#171717",
+          lineColor: "#5f5b55",
+          clusterBkg: "#fcfbf8",
+          clusterBorder: "#ded8cf",
+        },
+      });
+      resolve(window.mermaid);
+    };
+    s.onerror = () => reject(new Error("mermaid load failed"));
+    document.head.appendChild(s);
+  });
+  return mermaidPromise;
 }
 
 export default function EcosystemPage() {
+  const [selected, setSelected] = useState(0);
+  const [svg, setSvg] = useState("");
+  const [scale, setScale] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const renderId = useRef(0);
+
+  const chart = CHARTS[selected];
+
+  const categories = useMemo(() => {
+    const map = {};
+    CHARTS.forEach((c) => {
+      if (!map[c.category]) map[c.category] = [];
+      map[c.category].push(c);
+    });
+    return map;
+  }, []);
+
+  useEffect(() => {
+    const id = ++renderId.current;
+    if (chart.type === "image") {
+      setSvg("");
+      setScale(1);
+      setError("");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    loadMermaid()
+      .then(async (mermaid) => {
+        if (id !== renderId.current) return;
+        const { svg: out } = await mermaid.render("ecosystem-chart", chart.code);
+        if (id === renderId.current) {
+          setSvg(out);
+          setScale(1);
+          setLoading(false);
+        }
+      })
+      .catch((e) => {
+        if (id === renderId.current) {
+          setError(e.message || "render failed");
+          setLoading(false);
+        }
+      });
+  }, [selected, chart]);
+
+  const zoom = (factor) => setScale((s) => Math.min(4, Math.max(0.25, s * factor)));
+
   return (
     <Layout>
       <Head>
         <title>Ecosystem Graphs | BASED NUT</title>
-        <meta name='description' content='The BASED NUT ecosystem drawn from live on-chain state — pools, flows, curves, and arbitrage paths.' />
+        <meta name="description" content="The BASED NUT ecosystem drawn from live on-chain state — pools, flows, curves, and arbitrage paths." />
       </Head>
-      <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1200, mx: 'auto' }}>
-        <Typography variant='h4' sx={{ color: '#5B3A29', fontWeight: 'bold', mb: 0.5 }}>
+      <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: 1200, mx: "auto" }}>
+        <Typography variant="h4" sx={{ color: BARK, fontWeight: 900, letterSpacing: -1, mb: 0.5 }}>
           🧭 The Conserved Orchard
         </Typography>
-        <Typography sx={{ color: 'rgba(40,40,60,0.7)', mb: 2 }}>
-          The Orchard drawn from live on-chain state — every graph below traces real pools, flows, curves, and arbitrage paths. Where NUT liquidity lives, how it moves, what closes the spreads. (The conserved-singleton physics of the root token lives on the NUT token page.)
+        <Typography sx={{ color: "rgba(40,40,60,0.7)", mb: 3 }}>
+          {CHARTS.length} graphs — taxonomy, token mechanics, liquidity topology, and live data.
+          Pick a chart, then drag and scroll to zoom.
         </Typography>
 
-        <GridSection charts={CHARTS} />
+        <Paper elevation={0} sx={{ border: "1px solid rgba(139,90,43,0.15)", borderRadius: 3, overflow: "hidden", background: PARCHMENT }}>
+          {/* Top bar: category picker + zoom controls */}
+          <Box sx={{ p: 2, borderBottom: "1px solid rgba(139,90,43,0.1)", display: "flex", flexWrap: "wrap", gap: 1.5, alignItems: "center" }}>
+            <Select
+              value={selected}
+              onChange={(e) => setSelected(Number(e.target.value))}
+              size="small"
+              sx={{ minWidth: 280, bgcolor: "#fff", "& .MuiOutlinedInput-notchedOutline": { borderColor: "#D1B48C" } }}
+            >
+              {Object.entries(categories).map(([cat, charts]) => [
+                <MenuItem key={cat} disabled sx={{ fontWeight: 800, color: BARK, fontSize: "0.75rem", opacity: 1 }}>
+                  {cat}
+                </MenuItem>,
+                ...charts.map((c) => (
+                  <MenuItem key={c.title} value={CHARTS.indexOf(c)} sx={{ pl: 3 }}>
+                    {c.title}
+                  </MenuItem>
+                )),
+              ])}
+            </Select>
+            <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
+              <IconButton onClick={() => zoom(1.15)} size="small" sx={{ border: "1px solid #D1B48C", color: BARK }}>+</IconButton>
+              <IconButton onClick={() => zoom(1 / 1.15)} size="small" sx={{ border: "1px solid #D1B48C", color: BARK }}>−</IconButton>
+              <Chip label={`${Math.round(scale * 100)}%`} size="small" onClick={() => setScale(1)} sx={{ bgcolor: CREAM, color: BARK, fontWeight: 700 }} />
+            </Box>
+            <Typography sx={{ color: "rgba(40,40,60,0.5)", fontSize: "0.75rem", ml: "auto" }}>
+              drag · wheel to zoom
+            </Typography>
+          </Box>
 
-        <Divider sx={{ my: 4 }} />
+          {/* Title + description */}
+          <Box sx={{ px: 2.5, py: 1.5 }}>
+            <Typography sx={{ fontWeight: 800, color: BARK, fontSize: "1.15rem" }}>{chart.title}</Typography>
+            {chart.description && (
+              <Typography sx={{ color: "rgba(40,40,60,0.6)", fontSize: "0.85rem", mt: 0.25 }}>{chart.description}</Typography>
+            )}
+          </Box>
 
-        <Paper sx={{ p: 3, borderRadius: 3, border: '1px solid rgba(139,90,43,0.15)', background: 'linear-gradient(135deg, #FAF3E6 0%, #F5E6C8 100%)' }}>
-          <Typography variant='h6' sx={{ color: '#5B3A29', fontWeight: 'bold', mb: 1 }}>
-            🌱 The Open Layer
-          </Typography>
-          <Typography sx={{ color: 'rgba(40,40,60,0.8)', fontSize: '0.95rem' }}>
-            The Orchard shows its work. Addresses, venues, flows, mechanics — all public, all verifiable on-chain. The graph is the mirror: what you see here is what the chain says, and the chain is the only authority.
-          </Typography>
+          {/* Render area */}
+          <Box
+            sx={{
+              p: 2,
+              bgcolor: "#FBF6EA",
+              minHeight: 420,
+              overflow: "auto",
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "center",
+            }}
+            onWheel={(e) => {
+              if (e.deltaY < 0) zoom(1.12);
+              else zoom(1 / 1.12);
+            }}
+          >
+            {loading && <Typography sx={{ color: "rgba(40,40,60,0.5)", py: 8 }}>Rendering…</Typography>}
+            {error && <Typography sx={{ color: "#B00020", py: 8 }}>Render failed: {error}</Typography>}
+            {!loading && !error && chart.type === "image" && (
+              <img
+                src={IMAGE_FILES[chart.title]}
+                alt={chart.title}
+                style={{ maxWidth: "100%", height: "auto", transform: `scale(${scale})`, transformOrigin: "top left", borderRadius: 12 }}
+              />
+            )}
+            {!loading && !error && chart.type === "mermaid" && svg && (
+              <Box
+                sx={{ transform: `scale(${scale})`, transformOrigin: "top left", "& svg": { maxWidth: "100%", height: "auto" } }}
+                dangerouslySetInnerHTML={{ __html: svg }}
+              />
+            )}
+          </Box>
         </Paper>
       </Box>
     </Layout>

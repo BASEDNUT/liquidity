@@ -1,15 +1,11 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useEffect } from "react";
 import Layout from "../../components/Layout";
 import {
-  Box,
-  Typography,
-  Paper,
-  Chip,
-  Stack,
-  Divider,
-  Grid,
+  Box, Typography, Paper, Chip, Stack, Divider, Grid,
 } from "@mui/material";
+import nutsMap from "../../src/data/nuts-map.json";
 
 // Orchard theme tokens
 const BARK = "#5D3A1A";
@@ -28,17 +24,17 @@ const HERO_STATS = [
 ];
 
 const CROPS = [
-  { region: "California", crop: "Almonds", value: "$6.87B", production: "2.715B lb shelled", coproduct: "Hulls → dairy feed. Shells → bedding and soil uses. Trees → whole-orchard recycling and biomass." },
-  { region: "California", crop: "Pistachios", value: "$3.92B", production: "1.58B lb in-shell", coproduct: "Shells → farm-road surfacing. Hulls, leaves and branches → compost at some processors. Higher-value uses remain R&D." },
-  { region: "California", crop: "Walnuts", value: "$1.30B", production: "809,000 tons", coproduct: "Shells are a concentrated processing stream. USDA is developing shell-based activated carbon." },
-  { region: "Georgia + Southeast", crop: "Peanuts", value: "$1.78B", production: "7.18B lb across 11 USDA states", coproduct: "Shelling creates shells; blanching creates skins; crushing creates oil and meal." },
-  { region: "Oregon", crop: "Hazelnuts", value: "$340M", production: "121,500 tons", coproduct: "Processors make oil, flour, meal, paste and praline. Shell-to-heat and biochar systems are being engineered." },
-  { region: "Southwest + Georgia", crop: "Pecans", value: "$596M", production: "284.3M lb across five USDA states", coproduct: "Commercial plants handle shell and fiber streams. USDA studies composted shells and better shelling." },
-  { region: "Hawaii", crop: "Macadamias", value: "$31.8M", production: "30.6M lb in-shell", coproduct: "Shells → process energy, mulch and other material uses. Culled kernels → specialty oil." },
+  { region: "California · Central Valley", crop: "Almonds", value: "$5.9B", production: "2.4B lb · $2.46/lb · 1.38M acres", coproduct: "Hulls → dairy feed; shells → mulch, bedding, energy; wood → soil or biochar." },
+  { region: "California · Central Valley", crop: "Pistachios", value: "$3.1B", production: "1.1B lb · $2.82/lb · 520K acres", coproduct: "Hulls → feed; shells → biochar, abrasives, construction fill." },
+  { region: "California · Central Valley", crop: "Walnuts", value: "$1.1B", production: "720M lb · $1.53/lb · 385K acres", coproduct: "Shells → abrasives, filtration media, biochar; husks → compost." },
+  { region: "Georgia + Southeast", crop: "Peanuts", value: "$1.5B", production: "6.2B lb · $0.24/lb · 1.6M acres", coproduct: "Shells → biomass; skins → ingredients; crushing → oil + protein meal." },
+  { region: "New Mexico + Southwest", crop: "Pecans", value: "$560M", production: "290M lb · $1.93/lb · 210K acres", coproduct: "Shells, husks, wood → mulch, compost, biochar, energy, biomaterials." },
+  { region: "Oregon · Willamette Valley", crop: "Hazelnuts", value: "$130M", production: "110M lb · $1.18/lb · 85K acres", coproduct: "Shells → long-lived mulch, heat and biochar research." },
+  { region: "Hawaii · Tropical orchards", crop: "Macadamias", value: "$32M", production: "30.6M lb · $1.04/lb · 16.3K acres", coproduct: "Shells → fuel or mulch; husks → compost; culled kernels → oil; press cake → feed." },
 ];
 
 const COPRODUCTS = [
-  { emoji: "🌾", title: "Almond hulls → feed", stage: "In use", body: "A large existing dairy-feed market. UC ANR estimates roughly $160M–$230M/year in hull value." },
+  { emoji: "🐄", title: "Hulls → dairy feed", stage: "In use", body: "A large existing dairy-feed market. UC ANR estimates roughly $160M–$230M/year in hull value." },
   { emoji: "🥜", title: "Shells → soil + bedding", stage: "In use + expanding", body: "Almond shells have established bedding uses; UC is evaluating direct orchard return as a potassium amendment and mulch." },
   { emoji: "🔥", title: "Shells → factory energy", stage: "In use", body: "Real in Hawaii: Mauna Loa has used macadamia shells and waste as biofuel at Keaʻau." },
   { emoji: "🧪", title: "Peanut skins → ingredients", stage: "R&D", body: "USDA estimates 40M–70M lb of skins removed each year, developing food/feed uses around nutrients and bioactives." },
@@ -55,15 +51,31 @@ const REGIONS = [
 ];
 
 export default function NutsProduction() {
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.stateData = nutsMap.stateData;
+    window.stateNames = nutsMap.stateNames;
+    window.cropEvidence = nutsMap.cropEvidence;
+    try {
+      // eslint-disable-next-line no-new-func
+      const fn = new Function(nutsMap.script);
+      fn();
+    } catch (e) {
+      console.error("nut map init failed", e);
+    }
+  }, []);
+
   return (
     <Layout>
       <Head>
-        <title>America Runs on Nuts — RWA | BASED NUT</title>
+        <title>US Nut Economy — RWA | BASED NUT</title>
         <meta
           name="description"
           content="The geography, farm value, production and coproduct economy of American almonds, pistachios, walnuts, peanuts, pecans, hazelnuts and macadamias — verified USDA data."
         />
       </Head>
+
+      <style dangerouslySetInnerHTML={{ __html: nutsMap.css }} />
 
       <Box sx={{ maxWidth: 1060, mx: "auto", px: 2, py: 5 }}>
         <Typography variant="overline" sx={{ color: HONEY, fontWeight: 800, letterSpacing: 2 }}>
@@ -81,15 +93,7 @@ export default function NutsProduction() {
         <Grid container spacing={2} sx={{ mb: 5 }}>
           {HERO_STATS.map((s) => (
             <Grid item xs={12} sm={6} key={s.label}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2.5,
-                  bgcolor: PARCHMENT,
-                  border: "1px solid #D9CFBF",
-                  borderRadius: 3,
-                }}
-              >
+              <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #D9CFBF", borderRadius: 3 }}>
                 <Typography sx={{ color: BARK, fontWeight: 900, fontSize: "2rem", letterSpacing: -1 }}>
                   {s.value}
                 </Typography>
@@ -101,6 +105,15 @@ export default function NutsProduction() {
           ))}
         </Grid>
 
+        <Typography variant="h5" sx={{ color: BARK, fontWeight: 800, mb: 1 }}>
+          The American nut map
+        </Typography>
+        <Typography sx={{ color: "#4B4338", mb: 3 }}>
+          Choose a crop, then click a state. Values are 2025 USDA farm-production estimates.
+          Gray means no current estimate in the series used here, not zero production.
+        </Typography>
+        <Box sx={{ mb: 5 }} dangerouslySetInnerHTML={{ __html: nutsMap.mapHtml }} />
+
         <Typography variant="h5" sx={{ color: BARK, fontWeight: 800, mb: 2 }}>
           A crop can define a state
         </Typography>
@@ -111,16 +124,7 @@ export default function NutsProduction() {
         <Grid container spacing={2} sx={{ mb: 5 }}>
           {CROPS.map((c) => (
             <Grid item xs={12} sm={6} md={4} key={c.crop}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2.5,
-                  bgcolor: CREAM,
-                  border: "1px solid #D9CFBF",
-                  borderRadius: 3,
-                  height: "100%",
-                }}
-              >
+              <Paper elevation={0} sx={{ p: 2.5, bgcolor: CREAM, border: "1px solid #D9CFBF", borderRadius: 3, height: "100%" }}>
                 <Typography sx={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800, color: MOSS }}>
                   {c.region}
                 </Typography>
@@ -152,16 +156,7 @@ export default function NutsProduction() {
         <Grid container spacing={2} sx={{ mb: 5 }}>
           {COPRODUCTS.map((b) => (
             <Grid item xs={12} sm={6} md={4} key={b.title}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2.5,
-                  bgcolor: PARCHMENT,
-                  border: "1px solid #D9CFBF",
-                  borderRadius: 3,
-                  height: "100%",
-                }}
-              >
+              <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #D9CFBF", borderRadius: 3, height: "100%" }}>
                 <Typography sx={{ fontSize: "2rem", lineHeight: 1, mb: 1 }}>{b.emoji}</Typography>
                 <Typography sx={{ color: BARK, fontWeight: 800, mb: 0.5 }}>{b.title}</Typography>
                 <Typography sx={{ color: "#51483C", fontSize: "0.9rem", mb: 1.5 }}>{b.body}</Typography>
@@ -191,16 +186,7 @@ export default function NutsProduction() {
         </Typography>
         <Stack spacing={2}>
           {REGIONS.map((r) => (
-            <Paper
-              key={r.title}
-              elevation={0}
-              sx={{
-                p: 3,
-                bgcolor: BARK,
-                color: "#FFF7E7",
-                borderRadius: 3,
-              }}
-            >
+            <Paper key={r.title} elevation={0} sx={{ p: 3, bgcolor: BARK, color: "#FFF7E7", borderRadius: 3 }}>
               <Typography sx={{ color: OCHRE, fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 800 }}>
                 {r.region}
               </Typography>
@@ -217,16 +203,7 @@ export default function NutsProduction() {
           ))}
         </Stack>
 
-        <Paper
-          elevation={0}
-          sx={{
-            mt: 5,
-            p: 3,
-            bgcolor: CREAM,
-            borderLeft: "4px solid #C68B36",
-            borderRadius: 2,
-          }}
-        >
+        <Paper elevation={0} sx={{ mt: 5, p: 3, bgcolor: CREAM, borderLeft: "4px solid #C68B36", borderRadius: 2 }}>
           <Typography sx={{ fontWeight: 800, color: BARK, mb: 1 }}>
             🧾 Evidence rule
           </Typography>
@@ -240,18 +217,10 @@ export default function NutsProduction() {
 
         <Box sx={{ mt: 5, display: "flex", gap: 2, flexWrap: "wrap" }}>
           <Link href="/rwa/carbon-debt" passHref style={{ textDecoration: "none" }}>
-            <Chip
-              clickable
-              label="🌍 Carbon Debt Ledger"
-              sx={{ bgcolor: OAT, color: "#FFF", fontWeight: 700 }}
-            />
+            <Chip clickable label="🌍 Carbon Debt Ledger" sx={{ bgcolor: OAT, color: "#FFF", fontWeight: 700 }} />
           </Link>
           <Link href="/tree" passHref style={{ textDecoration: "none" }}>
-            <Chip
-              clickable
-              label="🌳 Back to the Tree"
-              sx={{ bgcolor: CREAM, color: BARK, fontWeight: 700, border: "1px solid #D1B48C" }}
-            />
+            <Chip clickable label="🌳 Back to the Tree" sx={{ bgcolor: CREAM, color: BARK, fontWeight: 700, border: "1px solid #D1B48C" }} />
           </Link>
         </Box>
       </Box>
