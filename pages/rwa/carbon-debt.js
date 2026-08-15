@@ -154,9 +154,9 @@ export default function CarbonExposurePage() {
         </Box>
 
                 {/* Hero: coherent dashboard */}
-        <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid item xs={12} md={4}>
-            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderLeft: "4px solid #5D3A1A", borderRadius: 2, height: "100%" }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" }, gap: 2, mb: 2 }}>
+          <Box>
+            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderLeft: "4px solid #5D3A1A", borderRadius: 2, width: "100%", minHeight: 166 }}>
               <Typography sx={{ color: BARK, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: 1.4, fontWeight: 800, mb: 1 }}>
                 Modeled burden
               </Typography>
@@ -168,9 +168,9 @@ export default function CarbonExposurePage() {
                 {fmtT(totals.annualT)} Scope 1+2 × ${PRICE_PER_T}/t
               </Typography>
             </Paper>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderLeft: "4px solid #496A49", borderRadius: 2, height: "100%" }}>
+          </Box>
+          <Box>
+            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderLeft: "4px solid #496A49", borderRadius: 2, width: "100%", minHeight: 166 }}>
               <Typography sx={{ color: MOSS, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: 1.4, fontWeight: 800, mb: 1 }}>
                 Response investment
               </Typography>
@@ -182,9 +182,9 @@ export default function CarbonExposurePage() {
                 ACTUAL annual low-carbon capex
               </Typography>
             </Paper>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderLeft: "4px solid #A67C52", borderRadius: 2, height: "100%" }}>
+          </Box>
+          <Box>
+            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderLeft: "4px solid #A67C52", borderRadius: 2, width: "100%", minHeight: 166 }}>
               <Typography sx={{ color: OAT, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: 1.4, fontWeight: 800, mb: 1 }}>
                 Disclosure coverage
               </Typography>
@@ -196,13 +196,13 @@ export default function CarbonExposurePage() {
                 with comparable annual figures
               </Typography>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {/* Secondary row — quieter metrics, one unified panel */}
         <Paper elevation={0} sx={{ mb: 3, p: 2.5, bgcolor: "#FBF6EA", border: "1px solid #E3D9C8", borderRadius: 2 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" } }}>
+            <Box sx={{ px: { xs: 0, md: 2 }, py: { xs: 1.5, md: 0 }, borderBottom: { xs: "1px solid #E3D9C8", md: "none" }, borderRight: { md: "1px solid #E3D9C8" }, "&:first-of-type": { pl: { md: 0 } }, "&:last-child": { borderRight: "none", borderBottom: "none", pr: { md: 0 } } }}>
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>
                 Comparable-company ratio
               </Typography>
@@ -212,8 +212,8 @@ export default function CarbonExposurePage() {
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.78rem" }}>
                 among the {totals.disclosedCount} disclosing companies only
               </Typography>
-            </Grid>
-            <Grid item xs={12} sm={4}>
+            </Box>
+            <Box sx={{ px: { xs: 0, md: 2 }, py: { xs: 1.5, md: 0 }, borderBottom: { xs: "1px solid #E3D9C8", md: "none" }, borderRight: { md: "1px solid #E3D9C8" }, "&:first-of-type": { pl: { md: 0 } }, "&:last-child": { borderRight: "none", borderBottom: "none", pr: { md: 0 } } }}>
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>
                 Unmatched modeled cost
               </Typography>
@@ -223,8 +223,8 @@ export default function CarbonExposurePage() {
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.78rem" }}>
                 upper bound — incomplete disclosure
               </Typography>
-            </Grid>
-            <Grid item xs={12} sm={4}>
+            </Box>
+            <Box sx={{ px: { xs: 0, md: 2 }, py: { xs: 1.5, md: 0 }, borderBottom: { xs: "1px solid #E3D9C8", md: "none" }, borderRight: { md: "1px solid #E3D9C8" }, "&:first-of-type": { pl: { md: 0 } }, "&:last-child": { borderRight: "none", borderBottom: "none", pr: { md: 0 } } }}>
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>
                 Benchmark
               </Typography>
@@ -234,37 +234,37 @@ export default function CarbonExposurePage() {
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.78rem" }}>
                 fixed reference, not a damage estimate
               </Typography>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Paper>
 
         {/* Annualized strip — three equal cards */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={4}>
-            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 2, height: "100%" }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" }, gap: 2, mb: 3 }}>
+          <Box>
+            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 2, width: "100%", minHeight: 104 }}>
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700, mb: 1 }}>
                 Modeled YTD burden
               </Typography>
               <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", color: BARK }}>{fmtUsd(totals.ytdDebt)}</Typography>
             </Paper>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 2, height: "100%" }}>
+          </Box>
+          <Box>
+            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 2, width: "100%", minHeight: 104 }}>
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700, mb: 1 }}>
                 Annualized rate
               </Typography>
               <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", color: BARK }}>{fmtUsd(totals.ratePerSec)}/s</Typography>
             </Paper>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 2, height: "100%" }}>
+          </Box>
+          <Box>
+            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 2, width: "100%", minHeight: 104 }}>
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700, mb: 1 }}>
                 Modeled YTD emissions
               </Typography>
               <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", color: BARK }}>{fmtT(totals.ytdT)}</Typography>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {/* Two-sided context */}
         <Paper elevation={0} sx={{ mb: 3, p: 3, bgcolor: "#FBF6EA", border: "1px solid #E3D9C8", borderRadius: 2 }}>
@@ -273,15 +273,15 @@ export default function CarbonExposurePage() {
             Intent is abundant. Reinvestment is scarcer. CDP's aggregate data shows the gap
             between awareness and capital allocation across the whole economy:
           </Typography>
-          <Grid container spacing={2}>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" }, gap: { xs: 2, md: 3 } }}>
             {CDP_CONTEXT.map((c) => (
-              <Grid item xs={12} sm={4} key={c.label}>
+              <Box key={c.label}>
                 <Typography sx={{ color: BARK, fontWeight: 900, fontSize: "1.4rem" }}>{c.value}</Typography>
                 <Typography sx={{ color: "#6B6254", fontSize: "0.85rem", fontWeight: 700 }}>{c.label}</Typography>
                 <Typography sx={{ color: "#8A7D6B", fontSize: "0.8rem" }}>{c.note}</Typography>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
+          </Box>
         </Paper>
 
 {/* Sector filter */}
@@ -383,35 +383,35 @@ export default function CarbonExposurePage() {
         </TableContainer>
 
                         {/* Deep discussion */}
-        <Paper elevation={0} sx={{ mt: 4, p: { xs: 3, md: 5 }, bgcolor: BARK, color: "#FFF7E7", borderRadius: 3 }}>
-          <Typography sx={{ fontWeight: 900, fontSize: "1.5rem", color: "#FFF7E7", mb: 1 }}>
+        <Paper elevation={0} sx={{ mt: 4, p: { xs: 3, md: 5 }, bgcolor: PARCHMENT, color: "#423B31", border: "1px solid #E3D9C8", borderRadius: 2 }}>
+          <Typography sx={{ fontWeight: 900, fontSize: "1.5rem", color: BARK, mb: 1 }}>
             🧠 What these numbers do — and don't — mean
           </Typography>
-          <Typography sx={{ color: "#D9CDBB", fontSize: "0.9rem", mb: 3.5 }}>
+          <Typography sx={{ color: "#51483C", fontSize: "0.9rem", mb: 3.5 }}>
             Five caveats that keep this page honest.
           </Typography>
 
-          <Box sx={{ mb: 3.5 }}>
-            <Typography sx={{ color: OCHRE, fontWeight: 800, fontSize: "1rem", mb: 1 }}>1. It is a model, not a measurement.</Typography>
-            <Typography sx={{ color: "#D9CDBB", fontSize: "0.95rem", lineHeight: 1.75 }}>
+          <Box sx={{ mb: 3.5, pb: 3.5, borderBottom: "1px solid #E3D9C8" }}>
+            <Typography sx={{ color: BARK, fontWeight: 800, fontSize: "1rem", mb: 1 }}>1. It is a model, not a measurement.</Typography>
+            <Typography sx={{ color: "#51483C", fontSize: "0.95rem", lineHeight: 1.8 }}>
               The YTD clock does not measure this year's emissions. It takes each company's
               most recent disclosed annual Scope 1+2 figure and divides it evenly across the
               year — an annualized rate, not a live sensor. Real emissions change year to year.
             </Typography>
           </Box>
 
-          <Box sx={{ mb: 3.5 }}>
-            <Typography sx={{ color: OCHRE, fontWeight: 800, fontSize: "1rem", mb: 1 }}>2. The price is a benchmark, not a damage estimate.</Typography>
-            <Typography sx={{ color: "#D9CDBB", fontSize: "0.95rem", lineHeight: 1.75 }}>
+          <Box sx={{ mb: 3.5, pb: 3.5, borderBottom: "1px solid #E3D9C8" }}>
+            <Typography sx={{ color: BARK, fontWeight: 800, fontSize: "1rem", mb: 1 }}>2. The price is a benchmark, not a damage estimate.</Typography>
+            <Typography sx={{ color: "#51483C", fontSize: "0.95rem", lineHeight: 1.8 }}>
               We are not claiming one tonne causes ${PRICE_PER_T} of harm. ${PRICE_PER_T}/t is a
               fixed reference benchmark ({PRICE_SOURCE}) used to translate emissions onto a
               comparable financial scale. It is explicitly a fixed baseline, not a live price.
             </Typography>
           </Box>
 
-          <Box sx={{ mb: 3.5 }}>
-            <Typography sx={{ color: OCHRE, fontWeight: 800, fontSize: "1rem", mb: 1 }}>3. Emissions are self-reported and imperfect.</Typography>
-            <Typography sx={{ color: "#D9CDBB", fontSize: "0.95rem", lineHeight: 1.75 }}>
+          <Box sx={{ mb: 3.5, pb: 3.5, borderBottom: "1px solid #E3D9C8" }}>
+            <Typography sx={{ color: BARK, fontWeight: 800, fontSize: "1rem", mb: 1 }}>3. Emissions are self-reported and imperfect.</Typography>
+            <Typography sx={{ color: "#51483C", fontSize: "0.95rem", lineHeight: 1.8 }}>
               Every figure comes from the company's own disclosure (CDP, TCFD, or
               sustainability reports). Scope 2 has two legitimate methods — location-based and
               market-based — that give different numbers. Organizational boundary (equity vs
@@ -421,9 +421,9 @@ export default function CarbonExposurePage() {
             </Typography>
           </Box>
 
-          <Box sx={{ mb: 3.5 }}>
-            <Typography sx={{ color: OCHRE, fontWeight: 800, fontSize: "1rem", mb: 1 }}>4. The unmatched figure is an upper bound, not a floor.</Typography>
-            <Typography sx={{ color: "#D9CDBB", fontSize: "0.95rem", lineHeight: 1.75 }}>
+          <Box sx={{ mb: 3.5, pb: 3.5, borderBottom: "1px solid #E3D9C8" }}>
+            <Typography sx={{ color: BARK, fontWeight: 800, fontSize: "1rem", mb: 1 }}>4. The unmatched figure is an upper bound, not a floor.</Typography>
+            <Typography sx={{ color: "#51483C", fontSize: "0.95rem", lineHeight: 1.8 }}>
               Only {totals.disclosedCount} of {EMITTERS.length} companies disclose comparable
               ACTUAL annual low-carbon investment. If the rest invested undisclosed sums, the
               true gap would shrink. The "unmatched" number is therefore the maximum observable
@@ -432,8 +432,8 @@ export default function CarbonExposurePage() {
           </Box>
 
           <Box>
-            <Typography sx={{ color: OCHRE, fontWeight: 800, fontSize: "1rem", mb: 1 }}>5. Where does the reinvestment go?</Typography>
-            <Typography sx={{ color: "#D9CDBB", fontSize: "0.95rem", lineHeight: 1.75 }}>
+            <Typography sx={{ color: BARK, fontWeight: 800, fontSize: "1rem", mb: 1 }}>5. Where does the reinvestment go?</Typography>
+            <Typography sx={{ color: "#51483C", fontSize: "0.95rem", lineHeight: 1.8 }}>
               Measuring the gap is only useful if capital can be directed toward measurable
               environmental outcomes. Renewable infrastructure, efficiency, ecosystem
               restoration, carbon removal, regenerative agriculture — these are different ways
