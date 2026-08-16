@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Layout from "../../components/Layout";
 import {
   Box, Typography, Paper, Chip, Stack, Grid, Table, TableBody,
@@ -43,7 +43,7 @@ const CDP_CONTEXT = [
 ];
 
 export default function CarbonExposurePage() {
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(null);
   const [quotes, setQuotes] = useState({});
   const [sort, setSort] = useState("debt");
   const [sortDir, setSortDir] = useState("desc");
@@ -51,6 +51,7 @@ export default function CarbonExposurePage() {
   const [open, setOpen] = useState({});
 
   useEffect(() => {
+    setNow(Date.now());
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
@@ -67,6 +68,7 @@ export default function CarbonExposurePage() {
   }, []);
 
   const ytd = useMemo(() => {
+    if (now === null) return 0;
     const y = new Date().getUTCFullYear();
     return (now - Date.UTC(y, 0, 1)) / 1000 / yearSeconds();
   }, [now]);
@@ -132,26 +134,28 @@ export default function CarbonExposurePage() {
         <meta name="description" content="A transparent two-sided model: 42 companies' disclosed emissions priced at a reference carbon price, against their disclosed environmental reinvestment." />
       </Head>
       <Box sx={{ maxWidth: 1200, mx: "auto", px: 2, py: 5 }}>
-        <Typography variant="overline" sx={{ color: HONEY, fontWeight: 800, letterSpacing: 2 }}>
-          🏦 Real-World Assets
-        </Typography>
-        <Typography variant="h3" sx={{ color: BARK, fontWeight: 900, letterSpacing: -1, mb: 1, fontSize: { xs: "1.8rem", sm: "2.4rem", md: "3rem" } }}>
-          Environmental balance sheet
-        </Typography>
-        <Typography sx={{ color: "#423B31", fontSize: "1.1rem", maxWidth: 860, mb: 2 }}>
-          Economic activity creates measurable environmental externalities. Carbon is one
-          slice we can price consistently. This page puts two disclosed numbers side by
-          side: the environmental pressure companies create, and the capital they direct
-          toward reducing it. The gap between them is the open question.
-        </Typography>
-        <Box sx={{ mb: 4, px: 1 }}>
-          <Typography sx={{ color: "#6B6254", fontSize: "0.9rem", lineHeight: 1.6 }}>
-            <b style={{ color: BARK }}>🌍 Carbon is not the environment.</b> This balance sheet
-            measures Scope 1+2 greenhouse-gas emissions — one consistently measurable
-            externality. Water, land, biodiversity, waste and pollution matter too. Carbon
-            is the first layer, not the whole picture.
-          </Typography>
-        </Box>
+        <Paper elevation={0} sx={{ mb: 4, overflow: "hidden", bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 3 }}>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "104px minmax(0, 1fr)" }, gap: { xs: 2, md: 3 }, p: { xs: 3, md: 4 }, alignItems: "center" }}>
+            <Box sx={{ width: 76, height: 76, borderRadius: "50%", bgcolor: CREAM, border: "1px solid #D1B48C", display: "grid", placeItems: "center", fontSize: "2.6rem", transform: { md: "rotate(-8deg)" } }}>🌰</Box>
+            <Box>
+              <Typography variant="overline" sx={{ color: HONEY, fontWeight: 800, letterSpacing: 2 }}>
+                🏦 Real-World Assets · The Orchard Ledger
+              </Typography>
+              <Typography variant="h3" sx={{ color: BARK, fontWeight: 900, letterSpacing: -1, mb: 1, fontSize: { xs: "1.9rem", sm: "2.5rem", md: "3.15rem" }, lineHeight: 1.05 }}>
+                Environmental balance sheet
+              </Typography>
+              <Typography sx={{ color: "#423B31", fontSize: { xs: "1rem", md: "1.1rem" }, maxWidth: 820, lineHeight: 1.6 }}>
+                Every industrial system leaves a mark. This ledger places one measurable mark beside one disclosed response: operational emissions, translated at a fixed carbon-market benchmark, and capital directed toward lower-carbon infrastructure.
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ px: { xs: 3, md: 4 }, py: 2, bgcolor: "#FBF6EA", borderTop: "1px solid #E3D9C8", display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr auto" }, gap: 2, alignItems: "center" }}>
+            <Typography sx={{ color: "#51483C", fontSize: "0.92rem", lineHeight: 1.55 }}>
+              <b style={{ color: BARK }}>How to read it:</b> Scope 1+2 emissions × a fixed ${PRICE_PER_T}/t benchmark = modeled burden. That is compared with disclosed environmental response capital. It is a common financial scale — not a damage invoice or an offset claim.
+            </Typography>
+            <Typography sx={{ color: MOSS, fontSize: "0.82rem", fontWeight: 800, whiteSpace: { md: "nowrap" } }}>🌱 pressure → capital → outcome</Typography>
+          </Box>
+        </Paper>
 
                 {/* Hero: coherent dashboard */}
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" }, gap: 2, mb: 2 }}>
@@ -316,7 +320,7 @@ export default function CarbonExposurePage() {
                 const q = quotes[r.ticker];
                 const isOpen = !!open[r.ticker];
                 return (
-                  <>
+                  <Fragment key={r.ticker}>
                     <TableRow key={r.ticker} hover onClick={() => toggle(r.ticker)} sx={{ cursor: "pointer", "&:hover": { bgcolor: "#FBF6EA" } }}>
                       <TableCell sx={{ fontWeight: 700, color: BARK }}>
                         {r.name} <span style={{ color: "#9A8B7A", fontSize: "0.75rem" }}>({r.ticker})</span>
@@ -375,109 +379,60 @@ export default function CarbonExposurePage() {
                         </Collapse>
                       </TableCell>
                     </TableRow>
-                  </>
+                  </Fragment>
                 );
               })}
             </TableBody>
           </Table>
         </TableContainer>
 
-                        {/* Deep discussion */}
-        <Paper elevation={0} sx={{ mt: 4, p: { xs: 3, md: 5 }, bgcolor: PARCHMENT, color: "#423B31", border: "1px solid #E3D9C8", borderRadius: 2 }}>
-          <Typography sx={{ fontWeight: 900, fontSize: "1.5rem", color: BARK, mb: 1 }}>
-            🧠 What these numbers do — and don't — mean
+        {/* After the table: interpretation */}
+        <Paper elevation={0} sx={{ mt: 5, p: { xs: 3, md: 4 }, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 3 }}>
+          <Typography variant="overline" sx={{ color: HONEY, fontWeight: 800, letterSpacing: 1.6 }}>After the ledger</Typography>
+          <Typography sx={{ color: BARK, fontWeight: 900, fontSize: { xs: "1.45rem", md: "1.85rem" }, lineHeight: 1.15, mb: 1 }}>
+            The number is a signal. The outcome is the question.
           </Typography>
-          <Typography sx={{ color: "#51483C", fontSize: "0.9rem", mb: 3.5 }}>
-            Five caveats that keep this page honest.
+          <Typography sx={{ color: "#51483C", fontSize: "1rem", lineHeight: 1.7, maxWidth: 900, mb: 3.5 }}>
+            This page does not rank the world&apos;s most damaging companies, and it does not say capital spending repairs past emissions dollar-for-dollar. It compares one consistently reported layer of operational pressure with what companies disclose about their response. The missing link is physical proof: what changed because the money moved?
           </Typography>
-
-          <Box sx={{ mb: 3.5, pb: 3.5, borderBottom: "1px solid #E3D9C8" }}>
-            <Typography sx={{ color: BARK, fontWeight: 800, fontSize: "1rem", mb: 1 }}>1. It is a model, not a measurement.</Typography>
-            <Typography sx={{ color: "#51483C", fontSize: "0.95rem", lineHeight: 1.8 }}>
-              The YTD clock does not measure this year's emissions. It takes each company's
-              most recent disclosed annual Scope 1+2 figure and divides it evenly across the
-              year — an annualized rate, not a live sensor. Real emissions change year to year.
-            </Typography>
-          </Box>
-
-          <Box sx={{ mb: 3.5, pb: 3.5, borderBottom: "1px solid #E3D9C8" }}>
-            <Typography sx={{ color: BARK, fontWeight: 800, fontSize: "1rem", mb: 1 }}>2. The price is a benchmark, not a damage estimate.</Typography>
-            <Typography sx={{ color: "#51483C", fontSize: "0.95rem", lineHeight: 1.8 }}>
-              We are not claiming one tonne causes ${PRICE_PER_T} of harm. ${PRICE_PER_T}/t is a
-              fixed reference benchmark ({PRICE_SOURCE}) used to translate emissions onto a
-              comparable financial scale. It is explicitly a fixed baseline, not a live price.
-            </Typography>
-          </Box>
-
-          <Box sx={{ mb: 3.5, pb: 3.5, borderBottom: "1px solid #E3D9C8" }}>
-            <Typography sx={{ color: BARK, fontWeight: 800, fontSize: "1rem", mb: 1 }}>3. Emissions are self-reported and imperfect.</Typography>
-            <Typography sx={{ color: "#51483C", fontSize: "0.95rem", lineHeight: 1.8 }}>
-              Every figure comes from the company's own disclosure (CDP, TCFD, or
-              sustainability reports). Scope 2 has two legitimate methods — location-based and
-              market-based — that give different numbers. Organizational boundary (equity vs
-              operated) also changes the total. Scope 3 is shown but excluded because
-              accounting varies too much to compare fairly. Where we corrected an error, it
-              is flagged in the row.
-            </Typography>
-          </Box>
-
-          <Box sx={{ mb: 3.5, pb: 3.5, borderBottom: "1px solid #E3D9C8" }}>
-            <Typography sx={{ color: BARK, fontWeight: 800, fontSize: "1rem", mb: 1 }}>4. The unmatched figure is an upper bound, not a floor.</Typography>
-            <Typography sx={{ color: "#51483C", fontSize: "0.95rem", lineHeight: 1.8 }}>
-              Only {totals.disclosedCount} of {EMITTERS.length} companies disclose comparable
-              ACTUAL annual low-carbon investment. If the rest invested undisclosed sums, the
-              true gap would shrink. The "unmatched" number is therefore the maximum observable
-              gap given available data — not a floor, and not an estimate of any true net balance.
-            </Typography>
-          </Box>
-
-          <Box>
-            <Typography sx={{ color: BARK, fontWeight: 800, fontSize: "1rem", mb: 1 }}>5. Where does the reinvestment go?</Typography>
-            <Typography sx={{ color: "#51483C", fontSize: "0.95rem", lineHeight: 1.8 }}>
-              Measuring the gap is only useful if capital can be directed toward measurable
-              environmental outcomes. Renewable infrastructure, efficiency, ecosystem
-              restoration, carbon removal, regenerative agriculture — these are different ways
-              of turning investment into physical change. The harder problem is proving what
-              happened: where the money went, what changed, how much impact was produced, and
-              whether it would have occurred anyway. A verified environmental sink is one
-              mechanism for closing that loop — it converts capital into measurable recovery.
-            </Typography>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" }, gap: 2 }}>
+            <Box sx={{ pr: { md: 2 }, borderRight: { md: "1px solid #E3D9C8" } }}>
+              <Typography sx={{ fontSize: "1.5rem", mb: 0.5 }}>🏭</Typography>
+              <Typography sx={{ color: BARK, fontWeight: 800, mb: 0.75 }}>1. Environmental pressure</Typography>
+              <Typography sx={{ color: "#51483C", fontSize: "0.9rem", lineHeight: 1.65 }}>The burden column is disclosed Scope 1+2 emissions translated onto the same fixed ${PRICE_PER_T}/t reference scale. It excludes Scope 3, water, land, waste and biodiversity.</Typography>
+            </Box>
+            <Box sx={{ px: { md: 2 }, borderRight: { md: "1px solid #E3D9C8" } }}>
+              <Typography sx={{ fontSize: "1.5rem", mb: 0.5 }}>🌱</Typography>
+              <Typography sx={{ color: MOSS, fontWeight: 800, mb: 0.75 }}>2. Response capital</Typography>
+              <Typography sx={{ color: "#51483C", fontSize: "0.9rem", lineHeight: 1.65 }}>The investment column records what a company discloses for transition, prevention, abatement or restoration. ACTUAL figures enter totals; BUDGET, TARGET and MULTI-YEAR figures remain visible but separate.</Typography>
+            </Box>
+            <Box sx={{ pl: { md: 2 } }}>
+              <Typography sx={{ fontSize: "1.5rem", mb: 0.5 }}>🌳</Typography>
+              <Typography sx={{ color: BARK, fontWeight: 800, mb: 0.75 }}>3. Verified outcome</Typography>
+              <Typography sx={{ color: "#51483C", fontSize: "0.9rem", lineHeight: 1.65 }}>Spending is not restitution. The durable question is where the dollar went, what changed in the physical world, and whether the result can be measured and verified.</Typography>
+            </Box>
           </Box>
         </Paper>
 
-{/* Methodology */}
-        <Paper elevation={0} sx={{ mt: 4, p: 3, bgcolor: CREAM, borderLeft: "4px solid #C68B36", borderRadius: 2 }}>
-          <Typography sx={{ fontWeight: 800, color: BARK, mb: 1 }}>🧾 Methodology & provenance</Typography>
-          <Typography sx={{ color: "#51483C", fontSize: "0.93rem", mb: 1 }}>
-            Modeled carbon burden = Scope 1+2 (tCO₂e) × ${PRICE_PER_T}/t fixed reference
-            benchmark. Environmental response investment = disclosed low-carbon capex
-            (renewables, CCS, hydrogen, efficiency), shown with a tag: ACTUAL, BUDGET,
-            TARGET, or MULTI-YEAR. Only ACTUAL annual figures enter the aggregates and the
-            reinvestment ratio; budgeted and multi-year figures are shown in the table but
-            never combined into the same total. "Unmatched modeled carbon cost" = total
-            burden − captured ACTUAL investment — an upper bound given incomplete
-            disclosure, not a true net estimate.
-          </Typography>
-          <Typography sx={{ color: "#51483C", fontSize: "0.93rem", mb: 1 }}>
-            Sources per company: CDP Climate Change disclosures, TCFD-aligned
-            sustainability reports, and SEC / national-regulator filings. Each row links to
-            its primary document. Reporting year, organizational boundary, and Scope 2
-            method are shown per row where stated.
-          </Typography>
-          <Typography sx={{ color: "#51483C", fontSize: "0.93rem" }}>
-            Not investment advice. Not an accounting of any real obligation. A transparent
-            thought experiment with its limitations stated openly.
-          </Typography>
+        {/* Compact methodology */}
+        <Paper elevation={0} sx={{ mt: 3, p: { xs: 3, md: 4 }, bgcolor: CREAM, borderLeft: "4px solid #C68B36", borderRadius: 2 }}>
+          <Typography sx={{ fontWeight: 900, color: BARK, fontSize: "1.2rem", mb: 0.5 }}>🧾 The short methodology</Typography>
+          <Typography sx={{ color: "#6B6254", fontSize: "0.9rem", mb: 2.5 }}>Three rules keep the ledger useful — and honest.</Typography>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" }, gap: 2 }}>
+            <Box sx={{ pr: { md: 2 }, borderRight: { md: "1px solid #D9CFBF" } }}>
+              <Typography sx={{ color: BARK, fontWeight: 800, mb: 0.5 }}>Fixed benchmark</Typography>
+              <Typography sx={{ color: "#51483C", fontSize: "0.88rem", lineHeight: 1.6 }}>${PRICE_PER_T}/t is a fixed carbon-market reference from {PRICE_SOURCE}. It is not a claim that each tonne causes ${PRICE_PER_T} of damage.</Typography>
+            </Box>
+            <Box sx={{ px: { md: 2 }, borderRight: { md: "1px solid #D9CFBF" } }}>
+              <Typography sx={{ color: BARK, fontWeight: 800, mb: 0.5 }}>Comparable disclosures</Typography>
+              <Typography sx={{ color: "#51483C", fontSize: "0.88rem", lineHeight: 1.6 }}>Rows use company disclosures and link to their primary sources. Scope 1+2 is comparable enough to begin; Scope 3 is shown in details but excluded from totals.</Typography>
+            </Box>
+            <Box sx={{ pl: { md: 2 } }}>
+              <Typography sx={{ color: BARK, fontWeight: 800, mb: 0.5 }}>Incomplete capital data</Typography>
+              <Typography sx={{ color: "#51483C", fontSize: "0.88rem", lineHeight: 1.6 }}>Only ACTUAL annual response capital enters aggregates. Missing disclosure can shrink the observable gap; none of these figures is a legal obligation or investment advice.</Typography>
+            </Box>
+          </Box>
         </Paper>
-
-        <Box sx={{ mt: 4, display: "flex", gap: 2, flexWrap: "wrap" }}>
-          <Link href="/rwa/nuts-production" passHref style={{ textDecoration: "none" }}>
-            <Chip clickable label="🌰 US Nut Economy" sx={{ bgcolor: OAT, color: "#FFF", fontWeight: 700 }} />
-          </Link>
-          <Link href="/tree" passHref style={{ textDecoration: "none" }}>
-            <Chip clickable label="🌳 Back to the Tree" sx={{ bgcolor: CREAM, color: BARK, fontWeight: 700, border: "1px solid #D1B48C" }} />
-          </Link>
-        </Box>
       </Box>
     </Layout>
   );
