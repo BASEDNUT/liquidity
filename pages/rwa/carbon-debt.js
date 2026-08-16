@@ -7,6 +7,7 @@ import {
   TableCell, TableContainer, TableHead, TableRow, TableSortLabel, Collapse,
 } from "@mui/material";
 import carbonData from "../../src/data/carbon-data.json";
+import { deriveCarbonMetrics } from "../../src/utils/carbonMetrics.mjs";
 
 const BARK = "#5D3A1A";
 const OAT = "#7D5A50";
@@ -26,7 +27,14 @@ const EMITTERS = carbonData.emitters;
 const fmt = new Intl.NumberFormat("en-US");
 const fmtUsd = (n) => "$" + fmt.format(Math.round(n));
 const fmtUsdB = (n) => "$" + (n / 1e9).toFixed(1) + "B";
-const fmtT = (n) => fmt.format(Math.round(n)) + " t";
+const fmtMoneyCompact = (n) => {
+  if (!Number.isFinite(n)) return "n/d";
+  if (Math.abs(n) >= 1e9) return "$" + (n / 1e9).toFixed(1) + "B";
+  if (Math.abs(n) >= 1e6) return "$" + (n / 1e6).toFixed(1) + "M";
+  return fmtUsd(n);
+};
+const fmtT = (n) => Number.isFinite(n) ? fmt.format(Math.round(n)) + " t" : "n/d";
+const fmtRatio = (n) => Number.isFinite(n) ? fmtPct(n) : "n/d";
 const fmtPct = (n) => (n * 100).toFixed(1) + "%";
 
 function totalScope12(e) { return e.scope1T + e.scope2T; }
@@ -75,13 +83,15 @@ export default function CarbonExposurePage() {
 
   const rows = useMemo(() => {
     const enriched = EMITTERS.map((e) => {
-      const scope12T = totalScope12(e);
-      const annualDebt = scope12T * PRICE_PER_T;
+      const metrics = deriveCarbonMetrics(e, PRICE_PER_T);
+      const scope12T = metrics.scope12T;
+      const annualDebt = metrics.annualBurdenUsd;
       const greenCapex = e.greenCapexUsd || 0;
       const repayment = annualDebt > 0 ? greenCapex / annualDebt : 0;
-      const coverage = e.marketCapUsd > 0 ? annualDebt / e.marketCapUsd : 0;
-      const ratePerSec = annualDebt / yearSeconds();
-      return { ...e, scope12T, annualDebt, greenCapex, repayment, coverage, ratePerSec };
+      const coverage = metrics.burdenToMarketCap;
+      const burdenToRevenue = metrics.burdenToRevenue;
+      const ratePerSec = annualDebt != null ? annualDebt / yearSeconds() : null;
+      return { ...e, ...metrics, scope12T, annualDebt, greenCapex, repayment, coverage, burdenToRevenue, ratePerSec };
     });
     const filtered = sector === "All" ? enriched : enriched.filter((r) => r.sector === sector);
     const dir = sortDir === "asc" ? 1 : -1;
@@ -92,7 +102,10 @@ export default function CarbonExposurePage() {
         case "intensity": return (a.scope12T - b.scope12T) * dir;
         case "reinvest": return (a.greenCapex - b.greenCapex) * dir;
         case "repayment": return (a.repayment - b.repayment) * dir;
-        case "coverage": return (a.coverage - b.coverage) * dir;
+        case "coverage": return ((a.coverage ?? -Infinity) - (b.coverage ?? -Infinity)) * dir;
+        case "revenue": return ((a.revenueUsd ?? -Infinity) - (b.revenueUsd ?? -Infinity)) * dir;
+        case "marketCap": return ((a.marketCapUsd ?? -Infinity) - (b.marketCapUsd ?? -Infinity)) * dir;
+        case "burdenRevenue": return ((a.burdenToRevenue ?? -Infinity) - (b.burdenToRevenue ?? -Infinity)) * dir;
         case "name": return a.name.localeCompare(b.name) * dir;
         default: return 0;
       }
@@ -288,7 +301,14 @@ export default function CarbonExposurePage() {
           </Box>
         </Paper>
 
-{/* Sector filter */}
+        <Paper elevation={0} sx={{ mb: 2.5, p: { xs: 2, md: 2.5 }, bgcolor: "#FBF6EA", border: "1px solid #E3D9C8", borderRadius: 2 }}>
+          <Typography sx={{ color: BARK, fontWeight: 800, mb: 0.5 }}>📊 Put the burden in scale</Typography>
+          <Typography sx={{ color: "#51483C", fontSize: "0.9rem", lineHeight: 1.65 }}>
+            The table adds physical tonnes and economic context. Revenue is the company&apos;s reported fiscal-year revenue. Market cap is a rounded research snapshot, not a live valuation. Burden / revenue and burden / market cap show scale only; neither is a liability, forecast, or investment signal. Click a company for disclosure sources and reporting context.
+          </Typography>
+        </Paper>
+
+        {/* Sector filter */}
         <Stack direction="row" spacing={1} sx={{ mb: 3, flexWrap: "wrap", gap: 1 }}>
           <Chip label="All sectors" onClick={() => setSector("All")} sx={{ bgcolor: sector === "All" ? BARK : CREAM, color: sector === "All" ? "#FFF" : BARK, fontWeight: 700 }} />
           {sectors.map((s) => (
@@ -298,19 +318,31 @@ export default function CarbonExposurePage() {
 
         {/* Table */}
         <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #D9CFBF", borderRadius: 3, overflowX: "auto" }}>
-          <Table size="small" sx={{ minWidth: 720 }}>
+          <Table size="small" sx={{ minWidth: 1240 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: CREAM }}>
                 <TableCell sx={{ fontWeight: 800, color: BARK }}>Company</TableCell>
                 <TableCell sx={{ fontWeight: 800, color: BARK }}>Sector</TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
-                  <TableSortLabel active={sort === "debt"} direction={sortDir} onClick={() => handleSort("debt")}>Carbon burden</TableSortLabel>
+                  <TableSortLabel active={sort === "intensity"} direction={sortDir} onClick={() => handleSort("intensity")}>Scope 1+2</TableSortLabel>
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
-                  <TableSortLabel active={sort === "reinvest"} direction={sortDir} onClick={() => handleSort("reinvest")}>Reinvest</TableSortLabel>
+                  <TableSortLabel active={sort === "debt"} direction={sortDir} onClick={() => handleSort("debt")}>Modeled burden</TableSortLabel>
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
-                  <TableSortLabel active={sort === "repayment"} direction={sortDir} onClick={() => handleSort("repayment")}>Reinvest %</TableSortLabel>
+                  <TableSortLabel active={sort === "revenue"} direction={sortDir} onClick={() => handleSort("revenue")}>Revenue (FY)</TableSortLabel>
+                </TableCell>
+                <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
+                  <TableSortLabel active={sort === "burdenRevenue"} direction={sortDir} onClick={() => handleSort("burdenRevenue")}>Burden / rev.</TableSortLabel>
+                </TableCell>
+                <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
+                  <TableSortLabel active={sort === "marketCap"} direction={sortDir} onClick={() => handleSort("marketCap")}>Market cap*</TableSortLabel>
+                </TableCell>
+                <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
+                  <TableSortLabel active={sort === "coverage"} direction={sortDir} onClick={() => handleSort("coverage")}>Burden / cap</TableSortLabel>
+                </TableCell>
+                <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
+                  <TableSortLabel active={sort === "reinvest"} direction={sortDir} onClick={() => handleSort("reinvest")}>Response capital</TableSortLabel>
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>Source yr</TableCell>
               </TableRow>
@@ -326,17 +358,19 @@ export default function CarbonExposurePage() {
                         {r.name} <span style={{ color: "#9A8B7A", fontSize: "0.75rem" }}>({r.ticker})</span>
                       </TableCell>
                       <TableCell sx={{ color: "#51483C", fontSize: "0.85rem" }}>{r.sector}</TableCell>
-                      <TableCell align="right" sx={{ color: OAT, fontWeight: 700 }}>{fmtUsd(r.annualDebt)}</TableCell>
-                      <TableCell align="right" sx={{ color: r.greenCapex > 0 ? MOSS : "#9A8B7A", fontWeight: 700 }}>
-                        {r.greenCapex > 0 ? <Box><span>{fmtUsd(r.greenCapex)}</span><span style={{ color: "#9A8B7A", fontSize: "0.7rem", display: "block" }}>{r.greenCapexTag}</span></Box> : "n/d"}
-                      </TableCell>
-                      <TableCell align="right" sx={{ color: r.repayment > 0.5 ? MOSS : RUST, fontWeight: 700 }}>
-                        {r.greenCapex > 0 && r.greenCapexTag === "ACTUAL" ? fmtPct(r.repayment) : "—"}
+                      <TableCell align="right" sx={{ color: "#51483C", fontWeight: 700, whiteSpace: "nowrap" }}>{fmtT(r.scope12T)}</TableCell>
+                      <TableCell align="right" sx={{ color: OAT, fontWeight: 700, whiteSpace: "nowrap" }}>{fmtMoneyCompact(r.annualDebt)}</TableCell>
+                      <TableCell align="right" sx={{ color: "#51483C", whiteSpace: "nowrap" }}>{fmtMoneyCompact(r.revenueUsd)}</TableCell>
+                      <TableCell align="right" sx={{ color: OAT, fontWeight: 700 }}>{fmtRatio(r.burdenToRevenue)}</TableCell>
+                      <TableCell align="right" sx={{ color: "#51483C", whiteSpace: "nowrap" }}>{fmtMoneyCompact(r.marketCapUsd)}</TableCell>
+                      <TableCell align="right" sx={{ color: OAT, fontWeight: 700 }}>{fmtRatio(r.coverage)}</TableCell>
+                      <TableCell align="right" sx={{ color: r.greenCapex > 0 ? MOSS : "#9A8B7A", fontWeight: 700, whiteSpace: "nowrap" }}>
+                        {r.greenCapex > 0 ? <Box><span>{fmtMoneyCompact(r.greenCapex)}</span><span style={{ color: "#9A8B7A", fontSize: "0.7rem", display: "block" }}>{r.greenCapexTag}</span></Box> : "n/d"}
                       </TableCell>
                       <TableCell align="right" sx={{ color: "#51483C", fontSize: "0.85rem" }}>{r.reportingYear}</TableCell>
                     </TableRow>
                     <TableRow key={r.ticker + "-detail"}>
-                      <TableCell colSpan={6} sx={{ p: 0, border: 0 }}>
+                      <TableCell colSpan={10} sx={{ p: 0, border: 0 }}>
                         <Collapse in={isOpen} timeout="auto" unmountOnExit>
                           <Box sx={{ p: 3, bgcolor: PARCHMENT }}>
                             <Typography sx={{ fontWeight: 800, color: BARK, mb: 1 }}>{r.name} — disclosure detail</Typography>
@@ -361,7 +395,9 @@ export default function CarbonExposurePage() {
                                 <Typography sx={{ color: "#51483C", fontSize: "0.85rem", mt: 0.5 }}>
                                   Boundary: {r.boundary || "not stated"} · Scope 2: {r.scope2Method || "not stated"}
                                 </Typography>
-                                <Typography sx={{ color: "#51483C", fontSize: "0.85rem" }}>Market cap: {fmtUsd(r.marketCapUsd)} · Revenue: {fmtUsd(r.revenueUsd)}</Typography>
+                                <Typography sx={{ color: "#51483C", fontSize: "0.85rem", mt: 1 }}>Economic scale (FY{r.reportingYear} snapshot): Revenue {fmtMoneyCompact(r.revenueUsd)} · Market cap {fmtMoneyCompact(r.marketCapUsd)}</Typography>
+                                <Typography sx={{ color: "#51483C", fontSize: "0.85rem" }}>Modeled burden / revenue: {fmtRatio(r.burdenToRevenue)} · burden / market cap: {fmtRatio(r.coverage)}</Typography>
+                                <Typography sx={{ color: "#8A7D6B", fontSize: "0.78rem", lineHeight: 1.5, mt: 0.5 }}>Revenue is the issuer&apos;s reported fiscal-year figure. Market cap is a rounded research snapshot; it is not live and is used only as scale context.</Typography>
                                 <Typography sx={{ color: "#51483C", fontSize: "0.85rem" }}>HQ: {r.hqCountry} · Exchange: {r.exchange}</Typography>
                                 {r.dataNote && <Typography sx={{ color: "#B00020", fontSize: "0.8rem", mt: 0.5 }}>⚠ {r.dataNote}</Typography>}
                                 <Box sx={{ mt: 1.5 }}>
@@ -385,6 +421,10 @@ export default function CarbonExposurePage() {
             </TableBody>
           </Table>
         </TableContainer>
+
+        <Typography sx={{ color: "#8A7D6B", fontSize: "0.76rem", lineHeight: 1.5, mt: 1.25 }}>
+          * Market cap is a rounded research snapshot. Financial ratios use the USD fiscal-year and market-cap snapshots only. Live stock data is withheld until a source returns reliable cross-exchange coverage.
+        </Typography>
 
         {/* After the table: interpretation */}
         <Paper elevation={0} sx={{ mt: 5, p: { xs: 3, md: 4 }, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 3 }}>
