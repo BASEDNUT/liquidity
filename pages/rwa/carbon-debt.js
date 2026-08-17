@@ -1,10 +1,10 @@
 import Head from "next/head";
 import Link from "next/link";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import Layout from "../../components/Layout";
 import {
   Box, Typography, Paper, Chip, Stack, Grid, Table, TableBody,
-  TableCell, TableContainer, TableHead, TableRow, TableSortLabel, Collapse,
+  TableCell, TableContainer, TableHead, TableRow, TableSortLabel, Collapse, Tooltip,
 } from "@mui/material";
 import carbonData from "../../src/data/carbon-data.json";
 import { deriveCarbonMetrics } from "../../src/utils/carbonMetrics.mjs";
@@ -38,9 +38,14 @@ const fmtRatio = (n) => Number.isFinite(n) ? fmtPct(n) : "n/d";
 const fmtPct = (n) => (n * 100).toFixed(1) + "%";
 
 function totalScope12(e) { return e.scope1T + e.scope2T; }
-function yearSeconds() {
-  const y = new Date().getUTCFullYear();
-  return (Date.UTC(y + 1, 0, 1) - Date.UTC(y, 0, 1)) / 1000;
+function Definition({ label, definition, children }) {
+  return (
+    <Tooltip title={definition} arrow placement="top">
+      <Box component="span" aria-label={`Definition: ${label}`} sx={{ display: "inline-flex", alignItems: "center", gap: 0.45, cursor: "help" }}>
+        {children}<Box component="span" aria-hidden="true" sx={{ color: HONEY, fontSize: "0.82rem", fontWeight: 900 }}>ⓘ</Box>
+      </Box>
+    </Tooltip>
+  );
 }
 
 // Verified aggregate context (CDP) — used in discussion, not per-row.
@@ -51,35 +56,10 @@ const CDP_CONTEXT = [
 ];
 
 export default function CarbonExposurePage() {
-  const [now, setNow] = useState(null);
-  const [quotes, setQuotes] = useState({});
   const [sort, setSort] = useState("debt");
   const [sortDir, setSortDir] = useState("desc");
   const [sector, setSector] = useState("All");
   const [open, setOpen] = useState({});
-
-  useEffect(() => {
-    setNow(Date.now());
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/quotes")
-      .then((r) => r.json())
-      .then((j) => {
-        const map = {};
-        (j.quotes || []).forEach((q) => { map[q.ticker] = q; });
-        setQuotes(map);
-      })
-      .catch(() => {});
-  }, []);
-
-  const ytd = useMemo(() => {
-    if (now === null) return 0;
-    const y = new Date().getUTCFullYear();
-    return (now - Date.UTC(y, 0, 1)) / 1000 / yearSeconds();
-  }, [now]);
 
   const rows = useMemo(() => {
     const enriched = EMITTERS.map((e) => {
@@ -90,15 +70,13 @@ export default function CarbonExposurePage() {
       const repayment = annualDebt > 0 ? greenCapex / annualDebt : 0;
       const coverage = metrics.burdenToMarketCap;
       const burdenToRevenue = metrics.burdenToRevenue;
-      const ratePerSec = annualDebt != null ? annualDebt / yearSeconds() : null;
-      return { ...e, ...metrics, scope12T, annualDebt, greenCapex, repayment, coverage, burdenToRevenue, ratePerSec };
+      return { ...e, ...metrics, scope12T, annualDebt, greenCapex, repayment, coverage, burdenToRevenue };
     });
     const filtered = sector === "All" ? enriched : enriched.filter((r) => r.sector === sector);
     const dir = sortDir === "asc" ? 1 : -1;
     filtered.sort((a, b) => {
       switch (sort) {
         case "debt": return (a.annualDebt - b.annualDebt) * dir;
-        case "rate": return (a.ratePerSec - b.ratePerSec) * dir;
         case "intensity": return (a.scope12T - b.scope12T) * dir;
         case "reinvest": return (a.greenCapex - b.greenCapex) * dir;
         case "repayment": return (a.repayment - b.repayment) * dir;
@@ -127,11 +105,8 @@ export default function CarbonExposurePage() {
       disclosedDebt,
       repaymentRatio: disclosedDebt > 0 ? reinvest / disclosedDebt : 0,
       unpaid: annualDebt - reinvest,
-      ytdDebt: annualDebt * ytd,
-      ytdT: annualT * ytd,
-      ratePerSec: annualDebt / yearSeconds(),
     };
-  }, [ytd]);
+  }, []);
 
   const sectors = useMemo(() => [...new Set(EMITTERS.map((e) => e.sector))].sort(), []);
   const handleSort = (key) => {
@@ -164,7 +139,7 @@ export default function CarbonExposurePage() {
           </Box>
           <Box sx={{ px: { xs: 3, md: 4 }, py: 2, bgcolor: "#FBF6EA", borderTop: "1px solid #E3D9C8", display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr auto" }, gap: 2, alignItems: "center" }}>
             <Typography sx={{ color: "#51483C", fontSize: "0.92rem", lineHeight: 1.55 }}>
-              <b style={{ color: BARK }}>How to read it:</b> Scope 1+2 emissions × a fixed ${PRICE_PER_T}/t benchmark = modeled burden. That is compared with disclosed environmental response capital. It is a common financial scale — not a damage invoice or an offset claim.
+              <b style={{ color: BARK }}>What this measures:</b> Scope 1+2 means emissions from a company&apos;s own operations and the energy it buys. We place reported tonnes × a fixed ${PRICE_PER_T}/t carbon-market reference on one comparison scale, then show disclosed environmental response capital beside it. This is not environmental damage, a legal debt, a forecast, or investment advice.
             </Typography>
             <Typography sx={{ color: MOSS, fontSize: "0.82rem", fontWeight: 800, whiteSpace: { md: "nowrap" } }}>🌱 pressure → capital → outcome</Typography>
           </Box>
@@ -221,24 +196,24 @@ export default function CarbonExposurePage() {
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" } }}>
             <Box sx={{ px: { xs: 0, md: 2 }, py: { xs: 1.5, md: 0 }, borderBottom: { xs: "1px solid #E3D9C8", md: "none" }, borderRight: { md: "1px solid #E3D9C8" }, "&:first-of-type": { pl: { md: 0 } }, "&:last-child": { borderRight: "none", borderBottom: "none", pr: { md: 0 } } }}>
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>
-                Comparable-company ratio
+                Response comparison
               </Typography>
               <Typography sx={{ fontWeight: 800, fontSize: "1.15rem", color: BARK, my: 0.5 }}>
                 {fmtPct(totals.repaymentRatio)}
               </Typography>
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.78rem" }}>
-                among the {totals.disclosedCount} disclosing companies only
+                ACTUAL annual figures only; not restitution
               </Typography>
             </Box>
             <Box sx={{ px: { xs: 0, md: 2 }, py: { xs: 1.5, md: 0 }, borderBottom: { xs: "1px solid #E3D9C8", md: "none" }, borderRight: { md: "1px solid #E3D9C8" }, "&:first-of-type": { pl: { md: 0 } }, "&:last-child": { borderRight: "none", borderBottom: "none", pr: { md: 0 } } }}>
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>
-                Unmatched modeled cost
+                Unobserved comparison gap
               </Typography>
               <Typography sx={{ fontWeight: 800, fontSize: "1.15rem", color: RUST, my: 0.5 }}>
                 {fmtUsdB(totals.unpaid)}
               </Typography>
               <Typography sx={{ color: "#8A7D6B", fontSize: "0.78rem" }}>
-                upper bound — incomplete disclosure
+                not a net liability; disclosure is incomplete
               </Typography>
             </Box>
             <Box sx={{ px: { xs: 0, md: 2 }, py: { xs: 1.5, md: 0 }, borderBottom: { xs: "1px solid #E3D9C8", md: "none" }, borderRight: { md: "1px solid #E3D9C8" }, "&:first-of-type": { pl: { md: 0 } }, "&:last-child": { borderRight: "none", borderBottom: "none", pr: { md: 0 } } }}>
@@ -255,34 +230,27 @@ export default function CarbonExposurePage() {
           </Box>
         </Paper>
 
-        {/* Annualized strip — three equal cards */}
-        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" }, gap: 2, mb: 3 }}>
-          <Box>
-            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 2, width: "100%", minHeight: 104 }}>
-              <Typography sx={{ color: "#8A7D6B", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700, mb: 1 }}>
-                Modeled YTD burden
-              </Typography>
-              <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", color: BARK }}>{fmtUsd(totals.ytdDebt)}</Typography>
-            </Paper>
+        {/* First-reader guide: historical disclosures, not a live meter */}
+        <Paper elevation={0} sx={{ mb: 3, p: { xs: 2.5, md: 3 }, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 2 }}>
+          <Typography sx={{ color: BARK, fontWeight: 900, fontSize: "1.15rem", mb: 0.6 }}>🧭 What these numbers mean</Typography>
+          <Typography sx={{ color: "#51483C", fontSize: "0.93rem", lineHeight: 1.65, maxWidth: 980, mb: 2.25 }}>
+            Every row is a historical company disclosure, mostly for one fiscal year. The table turns operational emissions into a single comparison value; it does not measure total environmental harm or predict a company&apos;s future cost.
+          </Typography>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" }, gap: 0 }}>
+            <Box sx={{ pr: { md: 2.5 }, pb: { xs: 2, md: 0 }, borderBottom: { xs: "1px solid #E3D9C8", md: "none" }, borderRight: { md: "1px solid #E3D9C8" } }}>
+              <Typography sx={{ color: BARK, fontWeight: 800, mb: 0.45 }}>1. Physical emissions</Typography>
+              <Typography sx={{ color: "#6B6254", fontSize: "0.86rem", lineHeight: 1.6 }}>Operational emissions (Scope 1 + 2) are the company&apos;s direct emissions plus purchased-energy emissions. Scope 3 is shown in details where disclosed, but excluded from this model.</Typography>
+            </Box>
+            <Box sx={{ px: { md: 2.5 }, py: { xs: 2, md: 0 }, borderBottom: { xs: "1px solid #E3D9C8", md: "none" }, borderRight: { md: "1px solid #E3D9C8" } }}>
+              <Typography sx={{ color: BARK, fontWeight: 800, mb: 0.45 }}>2. One comparison rule</Typography>
+              <Typography sx={{ color: "#6B6254", fontSize: "0.86rem", lineHeight: 1.6 }}>Reported tonnes × a fixed ${PRICE_PER_T}/t reference = modeled burden. The fixed price makes rows comparable; it is not a valuation of environmental damage.</Typography>
+            </Box>
+            <Box sx={{ pl: { md: 2.5 }, pt: { xs: 2, md: 0 } }}>
+              <Typography sx={{ color: BARK, fontWeight: 800, mb: 0.45 }}>3. Economic scale</Typography>
+              <Typography sx={{ color: "#6B6254", fontSize: "0.86rem", lineHeight: 1.6 }}>Revenue and market cap show how large that comparison value is relative to the issuer. Example: ExxonMobil&apos;s modeled burden is divided by its reported revenue and market-cap snapshot; neither percentage is a liability.</Typography>
+            </Box>
           </Box>
-          <Box>
-            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 2, width: "100%", minHeight: 104 }}>
-              <Typography sx={{ color: "#8A7D6B", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700, mb: 1 }}>
-                Annualized rate
-              </Typography>
-              <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", color: BARK }}>{fmtUsd(totals.ratePerSec)}/s</Typography>
-            </Paper>
-          </Box>
-          <Box>
-            <Paper elevation={0} sx={{ p: 2.5, bgcolor: PARCHMENT, border: "1px solid #E3D9C8", borderRadius: 2, width: "100%", minHeight: 104 }}>
-              <Typography sx={{ color: "#8A7D6B", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700, mb: 1 }}>
-                Modeled YTD emissions
-              </Typography>
-              <Typography sx={{ fontWeight: 900, fontSize: "1.3rem", color: BARK }}>{fmtT(totals.ytdT)}</Typography>
-            </Paper>
-          </Box>
-        </Box>
-
+        </Paper>
         {/* Two-sided context */}
         <Paper elevation={0} sx={{ mb: 3, p: 3, bgcolor: "#FBF6EA", border: "1px solid #E3D9C8", borderRadius: 2 }}>
           <Typography sx={{ fontWeight: 800, color: BARK, mb: 2 }}>⚖️ Two sides, one question</Typography>
@@ -317,39 +285,41 @@ export default function CarbonExposurePage() {
         </Stack>
 
         {/* Table */}
+        <Typography sx={{ display: { xs: "block", md: "none" }, color: "#8A7D6B", fontSize: "0.8rem", fontWeight: 700, mb: 1 }}>
+          ↔ Swipe the table sideways to view every metric. Tap a company for sources and full context.
+        </Typography>
         <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #D9CFBF", borderRadius: 3, overflowX: "auto" }}>
-          <Table size="small" sx={{ minWidth: 1240 }}>
+          <Table size="small" sx={{ minWidth: 1440 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: CREAM }}>
                 <TableCell sx={{ fontWeight: 800, color: BARK }}>Company</TableCell>
                 <TableCell sx={{ fontWeight: 800, color: BARK }}>Sector</TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
-                  <TableSortLabel active={sort === "intensity"} direction={sortDir} onClick={() => handleSort("intensity")}>Scope 1+2</TableSortLabel>
+                  <Definition label="Operational emissions (Scope 1 + 2)" definition="Direct emissions from company operations plus emissions from the electricity and energy it buys. Displayed in tonnes of CO₂ equivalent."><TableSortLabel active={sort === "intensity"} direction={sortDir} onClick={() => handleSort("intensity")}>Operational emissions</TableSortLabel></Definition>
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
-                  <TableSortLabel active={sort === "debt"} direction={sortDir} onClick={() => handleSort("debt")}>Modeled burden</TableSortLabel>
+                  <Definition label="Modeled burden" definition={`Operational-emissions tonnes multiplied by the fixed $${PRICE_PER_T}/t benchmark. It is a comparison value, not a damage estimate or bill.`}><TableSortLabel active={sort === "debt"} direction={sortDir} onClick={() => handleSort("debt")}>Modeled burden</TableSortLabel></Definition>
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
-                  <TableSortLabel active={sort === "revenue"} direction={sortDir} onClick={() => handleSort("revenue")}>Revenue (FY)</TableSortLabel>
+                  <Definition label="Revenue (fiscal year)" definition="The company’s reported annual revenue for the listed fiscal year, converted to the dataset’s USD snapshot."><TableSortLabel active={sort === "revenue"} direction={sortDir} onClick={() => handleSort("revenue")}>Revenue (FY)</TableSortLabel></Definition>
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
-                  <TableSortLabel active={sort === "burdenRevenue"} direction={sortDir} onClick={() => handleSort("burdenRevenue")}>Burden / rev.</TableSortLabel>
+                  <Definition label="Modeled burden / revenue" definition="Modeled burden divided by fiscal-year revenue. It shows scale context only; it is not a liability, margin, or forecast."><TableSortLabel active={sort === "burdenRevenue"} direction={sortDir} onClick={() => handleSort("burdenRevenue")}>Burden / rev.</TableSortLabel></Definition>
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
-                  <TableSortLabel active={sort === "marketCap"} direction={sortDir} onClick={() => handleSort("marketCap")}>Market cap*</TableSortLabel>
+                  <Definition label="Market capitalization snapshot" definition="A rounded market-value snapshot from research, not a live quote. It provides investor-scale context only."><TableSortLabel active={sort === "marketCap"} direction={sortDir} onClick={() => handleSort("marketCap")}>Market cap*</TableSortLabel></Definition>
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
-                  <TableSortLabel active={sort === "coverage"} direction={sortDir} onClick={() => handleSort("coverage")}>Burden / cap</TableSortLabel>
+                  <Definition label="Modeled burden / market cap" definition="Modeled burden divided by the rounded market-cap snapshot. It provides scale context only; it is not a liability or valuation target."><TableSortLabel active={sort === "coverage"} direction={sortDir} onClick={() => handleSort("coverage")}>Burden / cap</TableSortLabel></Definition>
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>
-                  <TableSortLabel active={sort === "reinvest"} direction={sortDir} onClick={() => handleSort("reinvest")}>Response capital</TableSortLabel>
+                  <Definition label="Response capital — disclosure only" definition="Company-disclosed spending or commitment for low-carbon transition, prevention, abatement, restoration, or related work. Tags distinguish ACTUAL annual figures from BUDGET or MULTI-YEAR statements."><TableSortLabel active={sort === "reinvest"} direction={sortDir} onClick={() => handleSort("reinvest")}>Response capital</TableSortLabel></Definition>
                 </TableCell>
-                <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}>Source yr</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 800, color: BARK }}><Definition label="Disclosure year" definition="The reporting year for the company disclosure used in this row.">Source year</Definition></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {rows.map((r) => {
-                const q = quotes[r.ticker];
                 const isOpen = !!open[r.ticker];
                 return (
                   <Fragment key={r.ticker}>
