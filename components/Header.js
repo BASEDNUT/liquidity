@@ -83,6 +83,7 @@ const NAV_SECTIONS = [
           { label: "PIPS/USDC · reCLAMM", href: "/pool/pips-usdc-balancer-reclamm" },
         ],
       },
+      { label: "🔗 Pair Your Token", href: "/pair-your-token" },
       { label: "TVL", href: "/tvl" },
       { label: "Staking", href: "/staking" },
     ],

@@ -9,6 +9,8 @@ import FilterTokens from "../components/FilterTokens";
 import SearchBar from "../components/SearchBar";
 import PoolCard from "../components/PoolCard";
 import TokenCard from "../components/TokenCard";
+import PoolsTable from "../components/PoolsTable";
+import TokensTable from "../components/TokensTable";
 import DataToggle from "../components/DataToggle";
 import { fetchPools } from "../utils/fetchPools";
 import { fetchTokens } from "../utils/fetchTokens";
@@ -21,6 +23,7 @@ export default function Home({ initialPools, initialTokens }) {
   const [tokenFilter, setTokenFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [liveTokens, setLiveTokens] = useState(null);
+  const [marketData, setMarketData] = useState(null);
 
   const pools = initialPools || [];
   const tokens = liveTokens || initialTokens || [];
@@ -44,6 +47,22 @@ export default function Home({ initialPools, initialTokens }) {
         setLiveTokens(merged);
       } catch {
         // Silent fail — static data is already rendered
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Client-side hydration: fetch live pool market data for the table view
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/market-data');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setMarketData(data);
+      } catch {
+        // Silent fail - static data is already rendered
       }
     })();
     return () => { cancelled = true; };
@@ -143,21 +162,58 @@ export default function Home({ initialPools, initialTokens }) {
         </Box>
 
         {view === 'pools' ? (
-          <Grid container spacing={3} sx={{ mt: 2 }}>
-            {filteredPools.map((pool) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pool.id}>
-                <PoolCard {...pool} />
-              </Grid>
-            ))}
-          </Grid>
+          <>
+            <Grid container spacing={3} sx={{ mt: 2 }}>
+              {filteredPools.map((pool) => (
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pool.id}>
+                  <PoolCard {...pool} />
+                </Grid>
+              ))}
+            </Grid>
+            <Box sx={{ width: '100%', mt: 5 }}>
+              <Typography variant="h6" sx={{ color: '#5B3A29', mb: 2, fontWeight: 700 }}>
+                📋 All Pools — table view
+              </Typography>
+              <PoolsTable pools={filteredPools} marketData={marketData} />
+              <Box sx={{ textAlign: 'center', mt: 3 }}>
+                <Typography variant="body2" sx={{ color: '#7D5A50', mb: 1 }}>
+                  Have your own token? Root it into the Orchard.
+                </Typography>
+                <Typography
+                  component="a"
+                  href="/pair-your-token"
+                  sx={{ color: '#8B4513', fontWeight: 700, textDecoration: 'underline', '&:hover': { color: '#A0522D' } }}
+                >
+                  🔗 Pair your token with NUT →
+                </Typography>
+              </Box>
+            </Box>
+          </>
         ) : (
-          <Grid container spacing={3} sx={{ mt: 2 }}>
-            {filteredTokens.map((token) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={token.id}>
-                <TokenCard token={token} />
-              </Grid>
-            ))}
-          </Grid>
+          <>
+            <Grid container spacing={3} sx={{ mt: 2 }}>
+              {filteredTokens.map((token) => (
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={token.id}>
+                  <TokenCard token={token} />
+                </Grid>
+              ))}
+            </Grid>
+            <Box sx={{ width: '100%', mt: 5 }}>
+              <Typography variant="h6" sx={{ color: '#5B3A29', mb: 2, fontWeight: 700 }}>
+                📋 All Tokens — table view
+              </Typography>
+              <TokensTable tokens={filteredTokens} />
+              <Box sx={{ textAlign: 'center', mt: 3 }}>
+                <Typography
+                  component="a"
+                  href="/pair-your-token"
+                  sx={{ color: '#8B4513', fontWeight: 700, textDecoration: 'underline', '&:hover': { color: '#A0522D' } }}
+                >
+                  🔗 Pair your token with NUT →
+                </Typography>
+              </Box>
+            </Box>
+          </>
         )}
 
         <Box sx={{ width: '100%', textAlign: 'center', mt: 3, mb: 2 }}>
