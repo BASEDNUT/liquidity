@@ -7,7 +7,7 @@
 
 ## 1. Working API Endpoints
 
-**IMPORTANT**: `api.mint.club` subdomain is unreachable from our container. However, MintClub's internal API lives at `mint.club/api/` (same domain as the main site) and is fully accessible.
+**IMPORTANT**: The `api.mint.club` subdomain may be unreachable from some network environments. MintClub's internal API lives at `mint.club/api/` (same domain as the main site) and is fully accessible.
 
 ### Confirmed Working Endpoints
 

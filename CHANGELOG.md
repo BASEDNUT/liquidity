@@ -6,8 +6,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Fixed
-- Removed all false "NFT fractionalization" claims — Sudoswap pools are whole-NFT AMMs (bonding curves), no fractionalization exists in the ecosystem. Purged from FAQ (fake Q&A + 2 answers), arb-bot (fake loop 6, route, venues row, /nft-status), pool/token descriptions, skills.md, llms.txt. Arb loops 9 → 8.
-- FAQ question count corrected to actual (46 after fake Q&A removal; was claimed 42)
+- Removed incorrect "NFT fractionalization" references — Sudoswap pools are whole-NFT AMMs (bonding curves); no fractionalization exists in the ecosystem. Corrected FAQ (removed Q&A + 2 answers), arb-bot (loop 6, route, venues row, /nft-status), pool/token descriptions, skills.md, llms.txt. Arb loops 9 → 8.
+- FAQ question count corrected to 46 (was 42)
 
 ### Added
 - AGENTS.md — AI agent coding instructions
@@ -34,7 +34,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - SNUT casing standardized (not sNUT)
 - Palm tree emoji for meta-pool
 - _app.js title: "Liquidity App" → "BASED NUT Liquidity Portal"
-- SNUT tax 6% → 1% across token/pool/FAQ/arb-bot/skills (Session 30 cut)
+- SNUT tax 6% → 1% across token/pool/FAQ/arb-bot/skills
 - NFT token descriptions refreshed with on-chain facts (supply, airdrop, Sudoswap venues)
 - PIPS tax claims corrected to on-chain truth: 1%/1% configured, only official Virtuals pair registered; external pools untaxed today
 

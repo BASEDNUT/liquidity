@@ -71,7 +71,7 @@ const FAQ_DATA = [
   {
     cat: 'tokens',
     q: 'What is SNUT?',
-    a: 'SNUT is a deflationary reward-position token. Supply = 100,000, decimals = 9. SNUT has a 1% tax on every transaction (cut from 6% — Session 30). Holding SNUT automatically earns NUT rewards via non-escrow reward-position — no locking required. SNUT buyback/burn mechanism permanently reduces both SNUT and NUT supply.',
+    a: 'SNUT is a deflationary reward-position token. Supply = 100,000, decimals = 9. SNUT has a 1% tax on every transaction (cut from 6%). Holding SNUT automatically earns NUT rewards via non-escrow reward-position — no locking required. SNUT buyback/burn mechanism permanently reduces both SNUT and NUT supply.',
     links: [{ text: 'View SNUT page', href: '/token/snut' }]
   },
   {

@@ -16,7 +16,7 @@ const POOL_DESCRIPTIONS = {
   'pnut-balancer': 'Balancer V2 4-asset index basket (25% cbETH, 25% cbBTC, 25% NUT, 25% SNUT). Mint/redeem BPT to enter/exit the basket. NAV drift from market price creates arbitrage opportunities.',
   'nut-aero-aerodrome': 'NUT/AERO pair on Aerodrome. Provides NUT exposure denominated in AERO. Aerodrome gauge emissions may incentivize liquidity.',
   'nut-cbbtc-aerodrome': 'NUT/cbBTC pair on Aerodrome. Bitcoin-denominated NUT liquidity. Connects the NUT ecosystem to Base\'s wrapped Bitcoin via cbBTC.',
-  'snut-weth-uniswap-v2': 'Main spot liquidity for SNUT. SNUT/wETH on Uniswap V2. Primary price discovery venue for SNUT — 1% tax applies on all swaps (cut from 6%, Session 30).',
+  'snut-weth-uniswap-v2': 'Main spot liquidity for SNUT. SNUT/wETH on Uniswap V2. Primary price discovery venue for SNUT — 1% tax applies on all swaps (cut from 6%).',
   'pips-nut-aerodrome-slipstream-cl': 'PIPS/NUT concentrated liquidity on Aerodrome Slipstream CL (1% fee). Gives the Pipshell machine a NUT-denominated venue. Thin but live. Token tax is unregistered here — untaxed today; owner registration would break CL invariant.',
   'pips-usdc-balancer-reclamm': 'PIPS/USDC Balancer V3 reCLAMM. Auto-recentering concentrated liquidity, 1% pool fee. LP build-out in progress: needs ~$120 USDC to match the remaining PIPS side. Token tax is unregistered here — untaxed today.',
   'snut-lp-weth-uniswap-v2': 'Meta-Market pool for SNUT-LP tokens. LPs who provide SNUT/wETH liquidity can trade their LP positions here. Liquidity rights trading venue.',

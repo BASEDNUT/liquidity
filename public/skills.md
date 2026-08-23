@@ -64,7 +64,7 @@ Each source is labeled in price displays: GT, DS, RPC, CG, BAL.
 3. **INDEX** — Balancer V2 pNUT pool (25% each cbETH/cbBTC/NUT/SNUT)
 4. **NESTED** — Mint Club bonding curve tokens and NFT Sudoswap pools, backed by locked NUT
 
-## SNUT Tax — 1% total (was 6% — cut Session 30, 2026-07-30)
+## SNUT Tax — 1% total (was 6%)
 
 - Streams: liquidity, manager wallet, buyback/burn, NUT rewards
 - Live per-stream rates are read from the SNUT contract on `/token/snut`
