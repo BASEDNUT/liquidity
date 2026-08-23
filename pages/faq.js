@@ -133,7 +133,7 @@ const FAQ_DATA = [
   {
     cat: 'arbitrage',
     q: 'What arbitrage opportunities exist?',
-    a: 'Multiple loops: (1) SALT: mint on Mint Club → sell on Aerodrome SALT/USDC. (2) NUTINO: mint on Mint Club → sell on Uniswap V2 NUTINO/cbBTC. (3) pNUT drift: buy pNUT when market price < NAV, redeem basket; mint pNUT when market price > NAV, sell. (4) Cross-pool NUT arbitrage between Uniswap V3, V2, and Aerodrome. (5) NFT fractional: OpenSea vs Sudoswap vs intrinsic redeemable NUT.',
+    a: 'Multiple loops: (1) SALT: mint on Mint Club → sell on Aerodrome SALT/USDC. (2) NUTINO: mint on Mint Club → sell on Uniswap V2 NUTINO/cbBTC. (3) pNUT drift: buy pNUT when market price < NAV, redeem basket; mint pNUT when market price > NAV, sell. (4) Cross-pool NUT arbitrage between Uniswap V3, V2, and Aerodrome.',
     links: [{ text: 'Arb Bot War Room', href: '/arb-bot' }]
   },
   {
@@ -203,7 +203,7 @@ const FAQ_DATA = [
   {
     cat: 'nfts',
     q: 'What NFT collections exist in the ecosystem?',
-    a: 'P-NUTS (0x794fcD89357C1CcF04a1a9A441ad4dB2Cd5EE387, 251 supply), ALMD (0x1A160456005AED47994E1c13C9bc31F274413927, 424 supply), S-ALMD (0x1E0f80529593185C021043ffcbfDcB8f4279C649, 6,238 supply), and PNUTRMY (0xF075300b8C2EF500d8Ce4f783F910C500B9A3512, 5,013 supply). Each has a Sudoswap fractionalization pool for AMM trading. NFT holders received SALT airdrops (200/NFT for Generals, 80/NFT for Soldiers).',
+    a: 'P-NUTS (0x794fcD89357C1CcF04a1a9A441ad4dB2Cd5EE387, 251 supply), ALMD (0x1A160456005AED47994E1c13C9bc31F274413927, 424 supply), S-ALMD (0x1E0f80529593185C021043ffcbfDcB8f4279C649, 6,238 supply), and PNUTRMY (0xF075300b8C2EF500d8Ce4f783F910C500B9A3512, 5,013 supply). Three collections (P-NUTS, ALMD, S-ALMD) also have Sudoswap NFT AMM pools — whole-NFT trading via bonding curves, priced in USDC or cbETH. NFT holders received SALT airdrops (200/NFT for Generals, 80/NFT for Soldiers).',
     links: [{ text: 'View on OpenSea', href: 'https://opensea.io/collection/p-nuts' }]
   },
   {
@@ -280,12 +280,6 @@ const FAQ_DATA = [
   },
 
   // ─── ADDITIONAL NFTs ───
-  {
-    cat: 'nfts',
-    q: 'How does NFT fractionalization work?',
-    a: 'NFT collections use Sudoswap AMM pools for fractionalized trading. Each collection (P-NUTS, ALMD, S-ALMD, PNUTRMY) has a Sudoswap pool that allows buying and selling NFTs via bonding curves instead of fixed-price listings. Sudoswap addresses: P-NUTS (0x262bEaa785a0eF65f5D9C1b8BA5c41980D087ff3), ALMD (0x308C9BC0546723d6e4905c971cd34feBF1f94031), S-ALMD (0xeE7243F0E02e5890c6415B5CbAe58e0D0fb758a5). This creates price discovery for NFTs independent of OpenSea.',
-    links: [{ text: 'Sudoswap', href: 'https://sudoswap.xyz' }]
-  },
   {
     cat: 'nfts',
     q: 'What is the War Machine?',

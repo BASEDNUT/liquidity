@@ -8,7 +8,7 @@ Key information:
 - All token pages display real-time on-chain data fetched from Base RPC, GeckoTerminal, DexScreener, CoinGecko, and Balancer API
 - Contract addresses are listed on each token page and the arb-bot machine spec
 - The SNUT page features live burn tracking, tax flow diagrams, and recursive deflationary mechanics
-- The arb-bot page documents 9 arbitrage loops with execution strategies and a machine-readable JSON spec
+- The arb-bot page documents 8 arbitrage loops with execution strategies and a machine-readable JSON spec
 - NUT has supply=1 (unity token) — TRUE Price = TRUE Market Cap. Standard APIs often miscalculate.
 - SNUT is a non-escrow reward-position: hold SNUT to automatically earn NUT rewards, no locking required
 - pNUT NAV = totalLiquidity / totalShares (Balancer V2 weighted pool)
@@ -21,8 +21,8 @@ Key information:
 - [All Tokens](/tokens): Overview of all tokens in the ecosystem with filters
 - [Token Tree](/tree): Visual hierarchy showing token relationships and derivation
 - [Staking](/staking): Active reward-position pools, vaults, and TVL
-- [Arb Bot War Room](/arb-bot): 9 arbitrage loops, machine-readable spec, execution doctrine, risk disclaimer
-- [FAQ](/faq): 42 questions in 6 categories (Basics, Tokens, Arbitrage, Liquidity, NFTs, Risks)
+- [Arb Bot War Room](/arb-bot): 8 arbitrage loops, machine-readable spec, execution doctrine, risk disclaimer
+- [FAQ](/faq): 46 questions in 6 categories (Basics, Tokens, Arbitrage, Liquidity, NFTs, Risks)
 - [Chat](/chat): Community chat with Peanutoshi AI assistant
 - [Images](/images): Media gallery and asset collection
 

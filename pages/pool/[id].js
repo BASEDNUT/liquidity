@@ -19,7 +19,7 @@ const POOL_DESCRIPTIONS = {
   'snut-weth-uniswap-v2': 'Main spot liquidity for SNUT. SNUT/wETH on Uniswap V2. Primary price discovery venue for SNUT — 1% tax applies on all swaps (cut from 6%, Session 30).',
   'pips-nut-aerodrome-slipstream-cl': 'PIPS/NUT concentrated liquidity on Aerodrome Slipstream CL (1% fee). Gives the Pipshell machine a NUT-denominated venue. Thin but live. Token tax is unregistered here — untaxed today; owner registration would break CL invariant.',
   'pips-usdc-balancer-reclamm': 'PIPS/USDC Balancer V3 reCLAMM. Auto-recentering concentrated liquidity, 1% pool fee. LP build-out in progress: needs ~$120 USDC to match the remaining PIPS side. Token tax is unregistered here — untaxed today.',
-  'snut-lp-weth-uniswap-v2': 'Meta-Market pool for SNUT-LP tokens. LPs who provide SNUT/wETH liquidity can fractionalize their LP positions here. Liquidity rights trading venue.',
+  'snut-lp-weth-uniswap-v2': 'Meta-Market pool for SNUT-LP tokens. LPs who provide SNUT/wETH liquidity can trade their LP positions here. Liquidity rights trading venue.',
   'nutino-nut-mintclub': 'Mint Club bonding curve for NUTINO backed by NUT. Mint NUTINO by depositing NUT, burn to withdraw. Bonding curve price = NUT locked ÷ NUTINO supply. Two-venue arb: mint on Mint Club → sell on Uniswap V2 (NUTINO/cbBTC).',
   'nutino-cbbtc-uniswap-v2': 'NUTINO/cbBTC DEX pair on Uniswap V2. Second venue for NUTINO — enables two-venue arbitrage with the Mint Club bonding curve. Bitcoin-denominated.',
   'salt-usdc-aerodrome': 'SALT/USDC pair on Aerodrome. Primary DEX venue for SALT. Enables the two-venue arb loop: mint SALT with NUT on Mint Club → sell for USDC here.',
@@ -28,10 +28,10 @@ const POOL_DESCRIPTIONS = {
   'almd-nut-mintclub': 'Mint Club NFT bonding curve for ALMONDS (Golden Salted Swarm NFT collection). Backed by NUT. Bonding curve sets floor price.',
   'salmd-nut-mintclub': 'Mint Club NFT bonding curve for S-ALMONDS (Sky-Seasoned Crunch NFT collection). Backed by NUT. Bonding curve sets floor price.',
   'pnutrmy-nut-mintclub': 'Mint Club NFT bonding curve for PEANUT ARMY NFT collection. Holders received SALT airdrop. Backed by NUT.',
-  'spnut-usdc-sudoswap': 'Sudoswap fractionalization pool for SPNUT NFTs. AMM-based NFT fractionalization — buy/sell fractions priced by the Sudoswap bonding curve in USDC.',
-  'pnuts-usdc-sudoswap': 'Sudoswap fractionalization pool for P-NUTS NFTs. AMM-based NFT trading with USDC pricing. Enables fractional NFT ownership.',
-  'salmd-cbeth-sudoswap': 'Sudoswap fractionalization pool for S-ALMONDS NFTs priced in cbETH. Ethereum-backed NFT trading venue.',
-  'almd-cbeth-sudoswap': 'Sudoswap fractionalization pool for ALMONDS NFTs priced in cbETH. Ethereum-backed NFT trading venue.',
+  'spnut-usdc-sudoswap': 'Sudoswap NFT AMM pool for SPNUT NFTs. Buy/sell whole NFTs priced by the Sudoswap bonding curve in USDC — AMM trading instead of fixed-price listings.',
+  'pnuts-usdc-sudoswap': 'Sudoswap NFT AMM pool for P-NUTS NFTs. Whole-NFT trading with USDC pricing via bonding curve.',
+  'salmd-cbeth-sudoswap': 'Sudoswap NFT AMM pool for S-ALMONDS NFTs priced in cbETH. Whole-NFT trading venue.',
+  'almd-cbeth-sudoswap': 'Sudoswap NFT AMM pool for ALMONDS NFTs priced in cbETH. Whole-NFT trading venue.',
 };
 
 // ── Format helpers ──
@@ -267,7 +267,7 @@ const PoolPage = ({ pool: initialPool }) => {
                 <Typography sx={{ fontSize: '2rem' }}>{isNFTPool ? '🎨' : '📊'}</Typography>
                 <Typography>{isNFTPool ? 'NFT Pool — Chart not available' : 'Chart not available for this pool type'}</Typography>
                 <Typography sx={{ fontSize: '0.85rem', color: 'rgba(91,58,41,0.6)', textAlign: 'center' }}>
-                  {pool.platform === 'Sudoswap' ? 'NFT fractionalization pools are not indexed by DEX charting services' : pool.platform === 'Balancer' ? 'Balancer compound pools require specialized charting' : 'Try the Explore link below for external charts'}
+                  {pool.platform === 'Sudoswap' ? 'NFT AMM pools are not indexed by DEX charting services' : pool.platform === 'Balancer' ? 'Balancer compound pools require specialized charting' : 'Try the Explore link below for external charts'}
                 </Typography>
                 {isNFTPool && (
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1, justifyContent: 'center' }}>

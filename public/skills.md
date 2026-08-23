@@ -69,17 +69,16 @@ Each source is labeled in price displays: GT, DS, RPC, CG, BAL.
 - Streams: liquidity, manager wallet, buyback/burn, NUT rewards
 - Live per-stream rates are read from the SNUT contract on `/token/snut`
 
-## Arbitrage Loops (9 total)
+## Arbitrage Loops (8 total)
 
 1. Cross-Venue NUT Arbitrage (Beginner)
 2. pNUT NAV Drift Arbitrage (Expert)
 3. SALT Loop — Mint Club to Aerodrome (Advanced)
 4. NUTINO Loop — Mint Club to Uniswap V2 (Advanced)
 5. SNUT Buyback/Burn Capture (Beginner)
-6. NFT Fractional Arbitrage (Intermediate)
-7. SNUT-LP Meta-Pool Arbitrage (Expert)
-8. Forced Liquidity Arbitrage (Expert)
-9. Balancer Basket Drift (Advanced)
+6. SNUT-LP Meta-Pool Arbitrage (Expert)
+7. Forced Liquidity Arbitrage (Expert)
+8. Balancer Basket Drift (Advanced)
 
 ## Pages
 
@@ -88,14 +87,14 @@ Each source is labeled in price displays: GT, DS, RPC, CG, BAL.
 - `/token/[id]` — Individual token profiles (NUT, SNUT, pNUT, SALT, NUTINO, NFTs)
 - `/token/snut` — Dedicated SNUT page with live burn tracker, tax flow, recursive flywheel
 - `/staking` — Active reward-position pools, vaults, and TVL
-- `/arb-bot` — 9 arbitrage loops with execution strategies, machine-readable JSON spec, risk disclaimer
+- `/arb-bot` — 8 arbitrage loops with execution strategies, machine-readable JSON spec, risk disclaimer
 - `/tree` — Visual token hierarchy and derivation tree
 - `/great-nut-war` — Epic narrative of Peanut Republic vs Almond Empire
 - `/warmachine` — Faction abilities and protocol defensive infrastructure
 - `/nutinoMemes` — Community meme gallery
 - `/chat` — Chat with Peanutoshi AI assistant
 - `/images` — Media gallery
-- `/faq` — 42 questions in 6 categories with search and accordion
+- `/faq` — 46 questions in 6 categories with search and accordion
 - `/404` — Random peanut character error page
 - `/429` — Rate limit error page
 - `/500` — Server error page

@@ -5,6 +5,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- Removed all false "NFT fractionalization" claims — Sudoswap pools are whole-NFT AMMs (bonding curves), no fractionalization exists in the ecosystem. Purged from FAQ (fake Q&A + 2 answers), arb-bot (fake loop 6, route, venues row, /nft-status), pool/token descriptions, skills.md, llms.txt. Arb loops 9 → 8.
+- FAQ question count corrected to actual (46 after fake Q&A removal; was claimed 42)
+
 ### Added
 - AGENTS.md — AI agent coding instructions
 - skills.md — developer/AI architecture documentation
@@ -12,8 +16,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - robots.txt, sitemap.xml, manifest.json, .well-known/security.txt
 - /429 error page with peanut character
 - /nutinoMemes community gallery page
-- FAQ expanded to 42 questions across 6 categories with search and accordion
-- Arb-bot page: 9 arbitrage loops with 7 context fields each, risk disclaimer
+- FAQ expanded across 6 categories with search and accordion
+- Arb-bot page: 8 arbitrage loops with 7 context fields each, risk disclaimer
 - SNUT page: live burn tracker, tax flow diagram, recursive burn flywheel
 - Homepage SSR via getServerSideProps for instant data rendering
 - 404 error page with 4 random peanut character illustrations

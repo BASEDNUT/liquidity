@@ -544,32 +544,6 @@ const ARB_LOOPS = [
   },
   {
     id: 6,
-    emoji: '🖼️',
-    name: 'NFT Fractionalization Arb',
-    routeIds: ['NFT-SUDOSWAP-FRAC'],
-    venues: 'Sudoswap AMM (fractional pools) ↔ OpenSea / NFT marketplaces',
-    formula: 'profit = (fraction_price × total_fractions) - NFT_floor_price - gas',
-    steps: [
-      'Identify NFT collections with Sudoswap fractional pools (PNUTS, ALMD, SALMD)',
-      'Compare: sum of fraction prices vs NFT floor price on marketplaces',
-      'If fractions cheap: buy fractions, assemble NFT, sell on marketplace',
-      'If NFT cheap: buy NFT on marketplace, fractionalize on Sudoswap, sell fractions',
-    ],
-    profitCondition: '|fraction_sum - floor_price| > gas + Sudoswap fees + marketplace fees (2.5%)',
-    risks: 'Illiquid NFT markets. Fractionalization may not be available for all collections. Marketplace fees. Slow execution.',
-    verdict: 'OPPORTUNISTIC — Low liquidity makes this sporadic. Monitor floor prices vs Sudoswap pool values. Best for bots with NFT marketplace integration.',
-    verdictColor: 'warning',
-    whatIsIt: 'NFT fractionalization arbitrage using Sudoswap AMM. Some BASED NUT NFT collections (PNUTS, ALMD, SALMD) have fractional pools on Sudoswap. When the sum of fraction prices diverges from the NFT floor price on marketplaces, you can arbitrage the gap.',
-    howToUse: '1. Identify collections with Sudoswap fractional pools. 2. Get fraction price from Sudoswap pool contract. 3. Get NFT floor price from OpenSea/marketplace. 4. If fractions cheap: buy fractions, assemble full NFT, sell on marketplace. 5. If NFT cheap: buy NFT, fractionalize on Sudoswap, sell fractions. 6. Account for 2.5% marketplace fee.',
-    whenToUse: 'When NFT floor prices move sharply (market dumps/hypes). When Sudoswap pool has stale pricing. After collection launches or events. Very opportunistic.',
-    difficulty: 'Expert',
-    frequency: 'Very rare — NFT markets are illiquid and slow. Maybe once a week or less during active NFT periods.',
-    capitalNeeded: '$500+ per NFT. NFT floor prices vary. Fractionalization and assembly have gas costs. Marketplace fees (2.5%) eat into profits.',
-    prerequisites: 'Sudoswap SDK, NFT marketplace API (OpenSea), understanding of ERC721/ERC1155, fractionalization mechanics, NFT floor price tracking.',
-        tokens: ['PNUTS', 'ALMD', 'SALMD'],
-  },
-  {
-    id: 7,
     emoji: '🥥',
     name: 'SNUT Cross-Venue Arbitrage',
     routeIds: ['SNUT-WETH-UNI2', 'SNUT-NUT-AERO', 'SNUT-BALANCER-BASKET'],
@@ -598,7 +572,7 @@ const ARB_LOOPS = [
         tokens: ['SNUT', 'NUT', 'WETH', 'pNUT'],
   },
   {
-    id: 8,
+    id: 7,
     emoji: '⚛️',
     name: 'SNUT/NUT Reactor Keeper Game',
     routeIds: ['SNUT-NUT-REACTOR'],
@@ -625,7 +599,7 @@ const ARB_LOOPS = [
         tokens: ['SNUT', 'NUT'],
   },
   {
-    id: 9,
+    id: 8,
     emoji: '🧬',
     name: 'SNUT/ETH-LP Meta-Pool Arbitrage',
     routeIds: ['SNUT-ETHLP-META'],
@@ -679,7 +653,7 @@ const VENUES = [
   { name: 'Aerodrome', type: 've(3,3) AMM', pairs: 'NUT/AERO, NUT/cbBTC, SALT/USDC, SNUT/NUT', fee: 'Variable', notes: 'Base native DEX. SALT primary venue. SNUT primary venue. Same interface as UniV2.', api: 'Base RPC: getReserves() + token0() for ordering' },
   { name: 'Mint Club', type: 'Bonding Curve', pairs: 'SALT (backed by NUT), NUTINO (backed by NUT)', fee: '1% royalty', notes: 'Mint/burn only. Buy ≠ Sell. Price = NUT_locked / supply. Use SDK or browser for prices.', api: 'SDK: npm i mint.club-v2-sdk | UI: https://mint.club/token/base/{TOKEN}' },
   { name: 'Balancer V2', type: 'Weighted Pool', pairs: 'pNUT (25% each: cbETH, cbBTC, NUT, SNUT)', fee: 'Variable', notes: 'pNUT IS the BPT. NAV = totalLiquidity / totalShares. Mint by depositing basket, redeem to withdraw.', api: 'REST: https://api.balancer.fi/v1/pools/base/{pool_addr} | GraphQL: https://api.thegraph.com/subgraphs/name/balancer-base-v2' },
-  { name: 'Sudoswap', type: 'NFT AMM', pairs: 'PNUTS, ALMD, SALMD fractional pools', fee: 'Variable', notes: 'NFT fractionalization. Buy/sell fractions without splitting NFTs.', api: 'Base RPC: balanceOf() on pool contracts' },
+  { name: 'Sudoswap', type: 'NFT AMM', pairs: 'PNUTS, ALMD, SALMD NFT pools', fee: 'Variable', notes: 'Whole-NFT AMM via bonding curves.', api: 'Base RPC: balanceOf() on pool contracts' },
   { name: 'DexScreener', type: 'Price API', pairs: 'All DEX pairs (fallback)', fee: 'Free', notes: 'Good for V2 pools. CANNOT correctly handle UniV3 NUT/WETH pool. Use as secondary source only.', api: 'GET https://api.dexscreener.com/latest/dex/tokens/{token_addr}' },
   { name: 'CoinGecko', type: 'Price API', pairs: 'ETH, BTC, cbETH (quote tokens only)', fee: 'Free (rate-limited)', notes: 'Use for USD normalization of quote tokens. Do NOT use for NUT ecosystem token prices directly.', api: 'GET https://api.coingecko.com/api/v3/simple/price?ids=ethereum,wrapped-bitcoin,coinbase-wrapped-staked-eth&vs_currencies=usd' },
 ];
@@ -768,7 +742,6 @@ const MACHINE_SPEC = {
     'SNUT-NUT-AERO',
     'SNUT-BALANCER-BASKET',
     'SNUT-BUYBACK-BURN',
-    'NFT-SUDOSWAP-FRAC',
     'PIPS-NUT-SLIPSTREAM',
     'PIPS-USDC-RECLAMM',
   ],
@@ -884,16 +857,15 @@ const COMMANDS = [
     name: 'NFT Status',
     emoji: '🖼️',
     args: '[none]',
-    desc: 'NFT collection status — minted counts, Sudoswap pools, and fractionalization opportunities.',
-    scanTypes: ['Supply Query', 'Sudoswap Pool Prices', 'Floor Price Comparison'],
+    desc: 'NFT collection status — minted counts and Sudoswap pools.',
+    scanTypes: ['Supply Query', 'Sudoswap Pool Balances'],
     impl: [
       'Query totalSupply() (0x18160ddd) for each NFT contract',
-      'Check Sudoswap pool balances for fraction prices',
-      'Compare fraction sums vs NFT floor prices on marketplaces',
+      'Check Sudoswap pool balances for whole-NFT inventory',
       'Collections: PNUTS (251), ALMD (424), SALMD (6238), PNUTRMY (5013)',
     ],
     keyData: 'PNUTS: 0x794fcD... (251 minted). ALMD: 0x1A1604... (424). SALMD: 0x1E0f80... (6238). PNUTRMY: 0xF07530... (5013). Sudoswap pools for 3 of 4.',
-    verdict: 'OPPORTUNISTIC — Use for NFT fractionalization arb research. Low liquidity, sporadic opportunities.',
+    verdict: 'MONITORING — collection status tool. Low-liquidity NFT venue.',
   },
 ];
 
@@ -954,7 +926,7 @@ export default function ArbBotPage() {
           <Box sx={{ mt: 1, p: 1.5, borderRadius: 2, background: 'rgba(255,252,245,0.12)', border: '1px solid rgba(255,252,245,0.2)' }}>
             <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#FAF3E6', mb: 0.5 }}>📌 Build order — what each section gives you</Typography>
             <Typography sx={{ fontSize: '0.78rem', color: 'rgba(250,243,230,0.9)', lineHeight: 1.5 }}>
-              📍 Addresses = which contracts to call · 🔧 Sigs = the read calls to price them (a subset, not the full ABI) · 🐍 RPC Code = working Python to copy · ⚔️ Arb Loops = which trades exist and when they work · 🏭 Mint Club = bonding-curve pricing quirks (buy ≠ sell) · 🧺 pNUT = how to price the index basket · 🏠 Venues = where each token trades + which API · 🖼️ NFT = fractionalization · ⚙️ Spec = one machine-readable JSON of everything · 🚀 Start = the order to build.
+              📍 Addresses = which contracts to call · 🔧 Sigs = the read calls to price them (a subset, not the full ABI) · 🐍 RPC Code = working Python to copy · ⚔️ Arb Loops = which trades exist and when they work · 🏭 Mint Club = bonding-curve pricing quirks (buy ≠ sell) · 🧺 pNUT = how to price the index basket · 🏠 Venues = where each token trades + which API · 🖼️ NFT = collection status · ⚙️ Spec = one machine-readable JSON of everything · 🚀 Start = the order to build.
             </Typography>
           </Box>
         </Box>

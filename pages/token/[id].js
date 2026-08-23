@@ -167,13 +167,13 @@ const TOKENOMICS = {
       { label: 'Type', value: 'Mint Club NFT bonding curve' },
       { label: 'Collection', value: 'Extra Roasted Trio' },
       { label: 'Backed by', value: 'NUT' },
-      { label: 'Sudoswap', value: 'PNUTS/USDC fractionalization pool' },
+      { label: 'Sudoswap', value: 'PNUTS/USDC NFT AMM pool' },
     ],
     mechanics: [
       'Mint by depositing NUT via bonding curve',
       'Burn to withdraw NUT backing',
       'Bonding curve sets floor price',
-      'Sudoswap pool enables fractional NFT trading in USDC',
+      'Sudoswap pool enables whole-NFT AMM trading in USDC',
     ],
   },
   ALMD: {
@@ -181,13 +181,13 @@ const TOKENOMICS = {
       { label: 'Type', value: 'Mint Club NFT bonding curve' },
       { label: 'Collection', value: 'Golden Salted Swarm' },
       { label: 'Backed by', value: 'NUT' },
-      { label: 'Sudoswap', value: 'ALMD/cbETH fractionalization pool' },
+      { label: 'Sudoswap', value: 'ALMD/cbETH NFT AMM pool' },
     ],
     mechanics: [
       'Mint by depositing NUT via bonding curve',
       'Burn to withdraw NUT backing',
       'Bonding curve sets floor price',
-      'Sudoswap pool enables fractional NFT trading in cbETH',
+      'Sudoswap pool enables whole-NFT AMM trading in cbETH',
     ],
   },
   SALMD: {
@@ -195,13 +195,13 @@ const TOKENOMICS = {
       { label: 'Type', value: 'Mint Club NFT bonding curve' },
       { label: 'Collection', value: 'Sky-Seasoned Crunch' },
       { label: 'Backed by', value: 'NUT' },
-      { label: 'Sudoswap', value: 'SALMD/cbETH fractionalization pool' },
+      { label: 'Sudoswap', value: 'SALMD/cbETH NFT AMM pool' },
     ],
     mechanics: [
       'Mint by depositing NUT via bonding curve',
       'Burn to withdraw NUT backing',
       'Bonding curve sets floor price',
-      'Sudoswap pool enables fractional NFT trading in cbETH',
+      'Sudoswap pool enables whole-NFT AMM trading in cbETH',
     ],
   },
   PNUTRMY: {

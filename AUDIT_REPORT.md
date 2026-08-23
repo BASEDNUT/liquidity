@@ -88,7 +88,7 @@ The site has 3 custom token pages (NUT, SNUT, pNUT) that are rich with live data
 - The /api/market-data API can provide this
 
 **No charts for 8 pools**
-- 7 Sudoswap pools (NFT fractionalization) — not on DEX Screener
+- 7 Sudoswap pools (NFT AMM) — not on DEX Screener
 - 1 Balancer pool (compound) — not on DEX Screener
 - These show empty chart placeholder areas
 - Fix: Find alternative chart sources or display pool-specific visualizations
@@ -103,7 +103,7 @@ The site has 3 custom token pages (NUT, SNUT, pNUT) that are rich with live data
 ### P0 — High Impact, Data Already Available
 1. **Wire pool/[id].js to /api/market-data** — The API exists and fetches real data, but pool pages don't call it. This would fix TBD stats for all 20 pools instantly.
 2. **Add TOKEN_DESCRIPTIONS for soil tokens** (cbETH, cbBTC, USDC, AERO, wETH) — Explain their role as base/collateral assets in the ecosystem
-3. **Add TOKENOMICS for NFT tokens** (PNUTS, ALMD, SALMD, PNUTRMY) — Supply, collection size, fractionalization details
+3. **Add TOKENOMICS for NFT tokens** (PNUTS, ALMD, SALMD, PNUTRMY) — Supply, collection size, Sudoswap AMM details
 
 ### P1 — Medium Impact, Needs New Data Sources
 4. **Add NFT tokens to TOKEN_ADDRESSES** and fetch market data from Mint Club / Sudoswap APIs
