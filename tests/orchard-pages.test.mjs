@@ -3,36 +3,58 @@ import { existsSync, readFileSync } from 'node:fs';
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const agentEconomy = read('../pages/agent-economy.js');
-const runway = read('../src/utils/runway.mjs');
+const agentEconomyApi = read('../pages/api/agent-economy-data.js');
 const complaints = read('../pages/complaints.js');
 const header = read('../components/Header.js');
 const sitemap = read('../public/sitemap.xml');
 
+// Agent economy: original design language + live data wiring
 for (const required of [
-  'Can the agents pay for themselves?',
+  'Can the agents',
+  'pay for themselves?',
   'Pipshell',
-  'Peanutoshi',
+  'Peanut',
   'Shared runway',
   'Treasury composition',
   'Benefactor policy',
-  'DATA PENDING',
+  'Treasury ledger',
+  'TREASURY WALLET · 0x762a8235506c719a4da37389c6b84b35d02df230',
+  "fetch('/api/agent-economy-data')",
 ]) {
   assert.ok(agentEconomy.includes(required), `agent economy missing: ${required}`);
 }
+// The manual calculator must not exist
+assert.ok(!agentEconomy.includes('Manual calculator'), 'manual calculator must be removed');
+assert.ok(!agentEconomy.includes('calcOut'), 'calculator script remnant found');
+// No hardcoded live financial values — everything renders from the API
 assert.ok(!agentEconomy.match(/(?:treasury|burn|income|balance|USD)\s*[:=]\s*['\"]?\$?\d+/i), 'agent economy must not hardcode asserted financial values');
-assert.ok(runway.includes('∞ operating runway at current ACP income'), 'runway utility missing self-funding state');
+// Live API contract: canonical wallet + spoof filter
+assert.ok(agentEconomyApi.includes("'0x762a8235506c719a4da37389c6b84b35d02df230'"), 'API must read the Pipshell operations wallet');
+assert.ok(agentEconomyApi.includes('counterfeit'), 'API must classify counterfeit token events');
+assert.ok(agentEconomyApi.includes('USDC_TOKEN'), 'API must anchor on canonical USDC');
 
+// Complaints: original paper-bureaucracy design + Karen + manager flow
 for (const required of [
   'NUT Department of Complaints & Emotional Liquidity',
+  'FORM NUT-13F',
   'Submit Formal Grievance',
+  'KAREN N. TITLEMENT',
+  'Supreme Council of Nut Affairs',
+  'I Want To See The Manager',
   'Peanutoshi has ruled.',
+  'I Demand To Speak To The Manager',
+  'Office of Ultimate Escalations',
+  'Terminal bureaucracy achieved',
   'Grow Your NUTS',
   '/img/peanut.webp',
+  'Your panic has already been priced in',
 ]) {
   assert.ok(complaints.includes(required), `complaints missing: ${required}`);
 }
+// Grow Your NUTS returns to the orchard homepage
+assert.ok(/<Link href="\/">[\s\S]*?Grow Your NUTS/.test(complaints), 'Grow Your NUTS must link to the homepage');
+// Local-only guarantees
 for (const forbidden of [
-  'KAREN N. TITLEMENT',
   'fetch(',
   'XMLHttpRequest',
   'localStorage',
@@ -42,10 +64,12 @@ for (const forbidden of [
   assert.ok(!complaints.includes(forbidden), `complaints must remain local-only: ${forbidden}`);
 }
 
+// Navigation + sitemap
 for (const href of ['/agent-economy', '/complaints']) {
   assert.ok(header.includes(`href: "${href}"`), `navbar missing: ${href}`);
   assert.ok(sitemap.includes(`https://orchard.basednut.com${href}`), `sitemap missing: ${href}`);
 }
 assert.ok(existsSync(new URL('../public/img/peanut.webp', import.meta.url)), 'peanut image must be a static public asset');
+assert.ok(!existsSync(new URL('../src/utils/runway.mjs', import.meta.url)), 'runway calculator utility must be deleted');
 
-console.log('orchard pages: 24 requirements passed');
+console.log('orchard pages: 32 requirements passed');
