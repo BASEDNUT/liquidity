@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 
 // Agent Economy — The Orchard
-// Design: Boss-supplied orchard_agent_economy_unified.html, ported verbatim.
+// Design: Boss-supplied orchard_agent_economy_unified.html (design tokens + section order preserved).
 // Data: live from /api/agent-economy-data (Base RPC + Blockscout + GeckoTerminal + CoinGecko).
-// The manual calculator from the draft was removed; the side card is now the live treasury ledger.
+// Survival framing: alive-clock counts up from the first on-chain treasury event. Real data only.
 
 const fmtUsd = (v, min = 2, max = 2) =>
   v === null || v === undefined ? '—' : `$${Number(v).toLocaleString('en-US', { minimumFractionDigits: min, maximumFractionDigits: max })}`;
@@ -13,10 +13,12 @@ const fmtNum = (v, d = 6) =>
   v === null || v === undefined ? '—' : Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
 const fmtDate = (ts) =>
   ts ? new Date(ts).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+const pad2 = (n) => String(n).padStart(2, '0');
 
 export default function AgentEconomy() {
   const [data, setData] = useState(null);
   const [failed, setFailed] = useState(false);
+  const [now, setNow] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -27,33 +29,57 @@ export default function AgentEconomy() {
     return () => { alive = false; };
   }, []);
 
+  useEffect(() => {
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
   const L = data && data.ledger ? data.ledger : null;
   const I = data && data.income30d ? data.income30d : null;
+  const transfers = data && Array.isArray(data.transfers) ? data.transfers : [];
+  const realEvents = transfers.filter((t) => t.kind !== 'counterfeit');
   const inflowTotal = L ? L.inflowTotalUsdc : null;
   const acpShare = L && inflowTotal ? (L.acpIncomeUsdc / inflowTotal) * 100 : null;
   const externalShare = L && inflowTotal ? (L.externalInflowUsdc / inflowTotal) * 100 : null;
   const ringPct = acpShare === null ? 0 : Math.max(0, Math.min(100, acpShare));
   const concentration = I && I.uniqueCounterparties === 1 ? 100 : null;
 
-  const seedT = data && Array.isArray(data.transfers) ? data.transfers.find((t) => t.kind === 'seed') : null;
+  // Survival clock — counts UP from the first real on-chain treasury event. Zero fabrication.
+  const firstTs = realEvents.length ? Math.min(...realEvents.map((t) => t.ts)) : null;
+  const aliveMs = firstTs && now ? now - firstTs : null;
+  const aliveDays = aliveMs !== null ? Math.floor(aliveMs / 86400000) : null;
+  const aliveH = aliveMs !== null ? Math.floor((aliveMs % 86400000) / 3600000) : null;
+  const aliveM = aliveMs !== null ? Math.floor((aliveMs % 3600000) / 60000) : null;
+  const aliveS = aliveMs !== null ? Math.floor((aliveMs % 60000) / 1000) : null;
+  const clock = aliveDays !== null ? `${aliveDays}d ${pad2(aliveH)}:${pad2(aliveM)}:${pad2(aliveS)}` : '—';
+  // On-chain outflow pace: escrow commitments spread over the life of the wallet.
+  const chainOutflowPerDay = L && aliveDays > 0 ? L.escrowFundedUsdc / aliveDays : null;
+  const incomePerDay = I && aliveDays > 0 ? I.receivedUsdc / aliveDays : null;
+
+  const seedT = transfers.find((t) => t.kind === 'seed') || null;
   const seedTs = seedT ? seedT.ts : null;
+  const acpT = transfers.find((t) => t.kind === 'acp_payment') || null;
+  const acpTs = acpT ? acpT.ts : null;
+  const acpDay = acpTs && firstTs ? Math.max(1, Math.floor((acpTs - firstTs) / 86400000) + 1) : null;
+
   const timelineEvents = [];
-  if (data && Array.isArray(data.transfers) && L) {
-    for (const t of data.transfers) {
+  if (data && L) {
+    for (const t of transfers) {
       if (t.kind === 'seed') timelineEvents.push({ ts: t.ts, title: 'Treasury seeded', detail: `${fmtUsd(t.amountUsdc)} USDC operator seed received by the operations wallet.` });
       else if (t.kind === 'escrow_fund') timelineEvents.push({ ts: t.ts, title: 'ACP escrow funded', detail: `${fmtUsd(t.amountUsdc)} USDC committed to ACP job escrow.` });
-      else if (t.kind === 'acp_payment') timelineEvents.push({ ts: t.ts, title: 'ACP income received', detail: `Job 70824 · $0.01 base_gas offering · ${fmtUsd(t.amountUsdc, 3, 3)} USDC released to the provider wallet.` });
+      else if (t.kind === 'acp_payment') timelineEvents.push({ ts: t.ts, title: 'First self-earned income', detail: `Job 70824 · $0.01 base_gas offering · ${fmtUsd(t.amountUsdc, 3, 3)} USDC released to the provider wallet — the agents' first dollar of self-earned revenue.` });
       else if (t.kind === 'escrow_release') timelineEvents.push({ ts: t.ts, title: 'Escrow micro-release', detail: `${fmtUsd(t.amountUsdc, 5, 5)} USDC returned from ACP escrow.` });
     }
     if (L.counterfeitEvents > 0) timelineEvents.push({ ts: null, title: 'Counterfeit tokens rejected', detail: `${L.counterfeitEvents} homoglyph “USDC” transfers filtered as address-poisoning spam.` });
-    timelineEvents.push({ ts: null, title: 'Now — live', detail: `${fmtUsd(data.treasuryUsd)} liquid treasury · ${fmtUsd(L.escrowOutstandingUsdc)} held in escrow · ${L.counterfeitEvents} counterfeit events filtered.` });
+    timelineEvents.push({ ts: null, title: 'Now — alive and live', detail: `${fmtUsd(data.treasuryUsd)} liquid treasury · ${fmtUsd(L.escrowOutstandingUsdc)} held in escrow · ${L.counterfeitEvents} counterfeit events filtered.` });
   }
 
   return (
     <Layout>
       <Head>
         <title>Agent Economy — The Orchard</title>
-        <meta name="description" content="Pipshell and Peanut share one economic engine: ACP work generates PIPS income, income extends the shared treasury, and the treasury funds agent operations." />
+        <meta name="description" content="Pipshell and Peanut share one economic engine: ACP work generates PIPS income, income extends the shared treasury, and the treasury funds agent operations. Runway measures how long that system can sustain itself." />
       </Head>
       <div className="shell">
         <header className="topbar">
@@ -75,10 +101,15 @@ export default function AgentEconomy() {
             </div>
           </div>
           <div className="statusCard">
-            <div><span className="statusDot live" /><b>{failed ? 'DATA UNAVAILABLE' : 'LIVE · BASE RPC'}</b></div>
+            <div><span className={failed ? 'statusDot' : 'statusDot live'} /><b>{failed ? 'DATA UNAVAILABLE' : 'LIVE · BASE RPC'}</b></div>
             <div className="big">{fmtUsd(data ? data.treasuryUsd : null)}</div>
-            <small>Liquid shared treasury, read live from the operations wallet. Runway needs a published burn figure — operating costs are not on-chain.</small>
-            <div style={{ marginTop: 18 }}>
+            <small>Liquid shared treasury, read live from the operations wallet.</small>
+            <div className="aliveWrap">
+              <div className="aliveLabel">ALIVE ON-CHAIN</div>
+              <div className="clock">{clock}</div>
+              <small>since the first treasury event{firstTs ? ` · ${fmtDate(firstTs)}` : ''}</small>
+            </div>
+            <div style={{ marginTop: 14 }}>
               <span className={failed ? 'badge amber' : 'badge green'}>{failed ? 'FETCH FAILED' : 'LIVE DATA'}</span>
             </div>
           </div>
@@ -86,7 +117,7 @@ export default function AgentEconomy() {
 
         <div className="grid">
           <div className="card metric"><div className="label">Shared treasury</div><div className="value">{fmtUsd(data ? data.treasuryUsd : null)}</div><div className="sub">live wallet balance · Base RPC</div></div>
-          <div className="card metric"><div className="label">Net daily burn</div><div className="value">—</div><div className="sub">off-chain costs not yet published</div></div>
+          <div className="card metric"><div className="label">Held in escrow</div><div className="value">{fmtUsd(L ? L.escrowOutstandingUsdc : null)}</div><div className="sub">committed to ACP jobs · recoverable per protocol</div></div>
           <div className="card metric"><div className="label">30d ACP income</div><div className="value">{fmtUsd(I ? I.grossJobValueUsdc : null)}</div><div className="sub">{I ? `${I.jobsCompleted} job · ${fmtUsd(I.receivedUsdc, 3, 3)} received` : 'earned through agent services'}</div></div>
           <div className="card metric"><div className="label">24h PIPS volume</div><div className="value">{fmtUsd(data && data.pipsMarket ? data.pipsMarket.volume24hUsd : null, 0, 0)}</div><div className="sub">shared market activity · GeckoTerminal</div></div>
 
@@ -104,11 +135,12 @@ export default function AgentEconomy() {
           <section className="card wide">
             <h2>Shared runway</h2>
             <div className="runwayWrap">
-              <div className="ring" style={{ background: `conic-gradient(var(--green) 0 ${ringPct}%, #e9e2d6 ${ringPct}% 100%)` }}><div className="ringText"><strong>—</strong><small>days remaining</small></div></div>
+              <div className="ring" style={{ background: `conic-gradient(var(--green) 0 ${ringPct}%, #e9e2d6 ${ringPct}% 100%)` }}><div className="ringText"><strong>{aliveDays === null ? '—' : aliveDays}</strong><small>days alive</small></div></div>
               <div>
-                <div className="row"><div className="rlabel">Base runway</div><div className="rval">Liquid treasury ÷ net daily burn</div></div>
-                <div className="row"><div className="rlabel">Stress runway</div><div className="rval">— <span className="badge">volatile assets −50%</span></div></div>
-                <div className="row"><div className="rlabel">ACP coverage</div><div className="rval">—% of gross operating burn</div></div>
+                <div className="row"><div className="rlabel">Base runway</div><div className="rval">— <span className="badge">burn unpublished</span></div></div>
+                <div className="row"><div className="rlabel">Liquid treasury</div><div className="rval">{fmtUsd(data ? data.treasuryUsd : null)}</div></div>
+                <div className="row"><div className="rlabel">On-chain outflow pace</div><div className="rval">{chainOutflowPerDay === null ? '—' : `${fmtUsd(chainOutflowPerDay, 3, 3)}/day`} <span className="badge">escrow commitments</span></div></div>
+                <div className="row"><div className="rlabel">ACP income pace</div><div className="rval">{incomePerDay === null ? '—' : `${fmtUsd(incomePerDay, 4, 4)}/day`}</div></div>
                 <div className="row"><div className="rlabel">External support dependence</div><div className="rval">{externalShare === null ? '—' : `${externalShare.toFixed(2)}%`} <span className="badge">of inflows</span></div></div>
                 <div className="row"><div className="rlabel">Runway confidence</div><div className="rval"><span className="badge amber">LOW · burn unpublished</span></div></div>
                 <div style={{ marginTop: 15 }}>
@@ -116,6 +148,9 @@ export default function AgentEconomy() {
                   <div className="bar"><i style={{ width: `${ringPct}%` }} /></div>
                 </div>
               </div>
+            </div>
+            <div style={{ marginTop: 12, fontSize: 12, color: 'var(--muted)', lineHeight: 1.5 }}>
+              Runway math is shown honestly: off-chain operating costs are not yet published, so a countdown to zero would be theater. What is verifiable: how long the treasury has already sustained itself, and at what on-chain pace value moves.
             </div>
           </section>
 
@@ -187,6 +222,7 @@ export default function AgentEconomy() {
             <h2>Autonomy primitives</h2>
             <div className="row"><div className="rlabel">ACP self-funding ratio</div><div className="rval">{acpShare === null ? '—' : `${acpShare.toFixed(3)}%`} <span className="badge">of inflows</span></div></div>
             <div className="row"><div className="rlabel">Treasury solvency</div><div className="rval"><span className="badge green">SOLVENT</span></div></div>
+            <div className="row"><div className="rlabel">First self-earned income</div><div className="rval">{acpDay ? `day ${acpDay}` : '—'} <span className="badge">ACP job 70824</span></div></div>
             <div className="row"><div className="rlabel">External support dependence</div><div className="rval">{externalShare === null ? '—' : `${externalShare.toFixed(2)}%`}</div></div>
             <div className="row"><div className="rlabel">PIPS liquidity dependence</div><div className="rval">0%</div></div>
             <div className="row"><div className="rlabel">Income concentration</div><div className="rval">{concentration === null ? '—' : `${concentration}%`}</div></div>
@@ -252,7 +288,7 @@ export default function AgentEconomy() {
         </footer>
       </div>
       <style jsx>{`
-        :root{
+        .shell{
           --bg:#f3efe5;
           --paper:#fffdf7;
           --paper2:#f8f3e8;
@@ -301,6 +337,10 @@ export default function AgentEconomy() {
         .statusDot.live{background:var(--green)}
         .statusCard .big{font-size:44px;font-weight:800;letter-spacing:-.04em;margin:8px 0 0}
         .statusCard small{color:var(--muted);line-height:1.5;display:block}
+        .aliveWrap{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px}
+        .aliveLabel{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brown);font-weight:800}
+        .clock{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:26px;font-weight:700;letter-spacing:.02em;margin-top:6px;color:var(--ink)}
+        .aliveWrap small{margin-top:6px;font-size:11px}
         .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:14px}
         .card{border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);padding:20px;box-shadow:var(--shadow)}
         .metric{grid-column:span 3;min-height:140px}

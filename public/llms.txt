@@ -25,6 +25,9 @@ Key information:
 - [FAQ](/faq): 46 questions in 6 categories (Basics, Tokens, Arbitrage, Liquidity, NFTs, Risks)
 - [Chat](/chat): Community chat with Peanutoshi AI assistant
 - [Images](/images): Media gallery and asset collection
+- [Agent Economy](/agent-economy): Live autonomous-agent survival dashboard — Pipshell/Peanut shared treasury, ACP income, escrow ledger, benefactor policy, on-chain alive clock (Base RPC + Blockscout + GeckoTerminal)
+- [Department of Complaints](/complaints): Satirical local-only grievance office — file complaints against the market, escalate to the manager, receive Peanutoshi's ruling
+- [The Nut Standard](/rwa/nut-inflation): Purchasing-power experiment — the U.S. economy priced in nuts vs dollars, gold, bitcoin; BLS CPI/PPI, USDA producer prices, two centuries of data
 
 ## Token Pages
 
