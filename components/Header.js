@@ -118,6 +118,7 @@ const NAV_SECTIONS = [
     items: [
       { label: "Carbon Pricing Exposure", href: "/rwa/carbon-debt" },
       { label: "US Nut Economy", href: "/rwa/nuts-production" },
+      { label: "Nut Standard", href: "/rwa/nut-inflation" },
     ],
   },
   {

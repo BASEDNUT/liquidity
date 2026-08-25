@@ -72,4 +72,20 @@ for (const href of ['/agent-economy', '/complaints']) {
 assert.ok(existsSync(new URL('../public/img/peanut.webp', import.meta.url)), 'peanut image must be a static public asset');
 assert.ok(!existsSync(new URL('../src/utils/runway.mjs', import.meta.url)), 'runway calculator utility must be deleted');
 
+
+// Nut Standard: verbatim port, no network, scoped css
+const nutStd = JSON.parse(read('../src/data/nutStandard.json'));
+assert.ok(nutStd.html.includes('THE NUT'), 'nut standard html missing hero');
+assert.ok(nutStd.html.includes('THE NUT STANDARD') || nutStd.html.includes('Nut Standard'), 'nut standard missing title text');
+assert.ok(nutStd.script.includes('renderSelector') && nutStd.script.includes('lineChart'), 'nut standard script incomplete');
+assert.ok(!nutStd.script.includes('fetch('), 'nut standard script must be local-only');
+assert.ok(!nutStd.html.includes('http://'), 'nut standard html must not load external resources');
+assert.ok(nutStd.css.startsWith('.nutstd'), 'css must be scoped under .nutstd');
+const nutPage = read('../pages/rwa/nut-inflation.js');
+assert.ok(nutPage.includes('nutStandard.json'), 'page must load verbatim data');
+for (const href of ['/rwa/nut-inflation']) {
+  assert.ok(header.includes(`href: "${href}"`), `navbar missing: ${href}`);
+  assert.ok(sitemap.includes(`https://orchard.basednut.com${href}`), `sitemap missing: ${href}`);
+}
+
 console.log('orchard pages: 32 requirements passed');
