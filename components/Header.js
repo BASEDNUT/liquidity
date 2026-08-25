@@ -107,6 +107,7 @@ const NAV_SECTIONS = [
     title: "🤖 AI Agents",
     items: [
       { label: "Agents", href: "/agents" },
+      { label: "Agent Economy", href: "/agent-economy" },
       { label: "Arb Bot", href: "/arb-bot" },
       { label: "Chat", href: "/chat" },
       { label: "Images", href: "/images" },
@@ -123,6 +124,7 @@ const NAV_SECTIONS = [
     title: "📚 Learn",
     items: [
       { label: "FAQ", href: "/faq" },
+      { label: "Department of Complaints", href: "/complaints" },
       { label: "Docs", href: "https://docs.basednut.com/", external: true },
     ],
   },

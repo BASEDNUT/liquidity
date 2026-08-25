@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node tests/carbonMetrics.test.mjs",
+    "test": "node tests/carbonMetrics.test.mjs && node tests/carbonClarity.test.mjs && node tests/runway.test.mjs && node tests/orchard-pages.test.mjs",
     "cron:orchard-refresh": "node scripts/cron/refresh-orchard-tvl.js"
   },
   "keywords": [],
