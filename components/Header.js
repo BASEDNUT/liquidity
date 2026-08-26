@@ -119,6 +119,14 @@ const NAV_SECTIONS = [
       { label: "Carbon Pricing Exposure", href: "/rwa/carbon-debt" },
       { label: "US Nut Economy", href: "/rwa/nuts-production" },
       { label: "Nut Standard", href: "/rwa/nut-inflation" },
+      { label: "Nut Stocks", href: "/rwa/nut-stocks" },
+      { label: "Nut Atlas", href: "/rwa/nut-atlas" },
+    ],
+  },
+  {
+    title: "🌐 Infra",
+    items: [
+      { label: "Mycelium + Taproot", href: "/infra/mycelium-taproot" },
     ],
   },
   {

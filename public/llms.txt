@@ -28,6 +28,9 @@ Key information:
 - [Agent Economy](/agent-economy): Live autonomous-agent survival dashboard — Pipshell/Peanut shared treasury, ACP income, escrow ledger, benefactor policy, on-chain alive clock (Base RPC + Blockscout + GeckoTerminal)
 - [Department of Complaints](/complaints): Satirical local-only grievance office — file complaints against the market, escalate to the manager, receive Peanutoshi's ruling
 - [The Nut Standard](/rwa/nut-inflation): Purchasing-power experiment — the U.S. economy priced in nuts vs dollars, gold, bitcoin; BLS CPI/PPI, USDA producer prices, two centuries of data
+- [Nut Stocks](/rwa/nut-stocks): Nuts, publicly traded — global nut-economy equities: growers, farmland, processors, brands, small caps, with issuer filings and market sources
+- [Nut Atlas](/rwa/nut-atlas): SHOW ME THE NUTS — USA + territories nut map, 2025 harvest ledger, growers on the ground, wild mast density (USDA NASS + FIA)
+- [Mycelium + Taproot](/infra/mycelium-taproot): Sovereignty without isolation — the network beneath the network; Mycelium protocol, Taproot node, live agent social protocol surface
 
 ## Token Pages
 
