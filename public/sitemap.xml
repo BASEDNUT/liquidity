@@ -55,6 +55,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://orchard.basednut.com/rwa/nut-trade-flows</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://orchard.basednut.com/infra/mycelium-taproot</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

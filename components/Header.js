@@ -86,6 +86,8 @@ const NAV_SECTIONS = [
       { label: "🔗 Pair Your Token", href: "/pair-your-token" },
       { label: "TVL", href: "/tvl" },
       { label: "Staking", href: "/staking" },
+      { label: "Tree", href: "/tree" },
+      { label: "Graphs", href: "/ecosystem" },
     ],
   },
   {
@@ -97,13 +99,6 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    title: "🖼️ Explore",
-    items: [
-      { label: "Tree", href: "/tree" },
-      { label: "Graphs", href: "/ecosystem" },
-    ],
-  },
-  {
     title: "🤖 AI Agents",
     items: [
       { label: "Agents", href: "/agents" },
@@ -111,22 +106,18 @@ const NAV_SECTIONS = [
       { label: "Arb Bot", href: "/arb-bot" },
       { label: "Chat", href: "/chat" },
       { label: "Images", href: "/images" },
+      { label: "Mycelium + Taproot", href: "/infra/mycelium-taproot" },
     ],
   },
   {
     title: "🏦 RWA",
     items: [
-      { label: "Carbon Pricing Exposure", href: "/rwa/carbon-debt" },
       { label: "US Nut Economy", href: "/rwa/nuts-production" },
-      { label: "Nut Standard", href: "/rwa/nut-inflation" },
-      { label: "Nut Stocks", href: "/rwa/nut-stocks" },
       { label: "Nut Atlas", href: "/rwa/nut-atlas" },
-    ],
-  },
-  {
-    title: "🌐 Infra",
-    items: [
-      { label: "Mycelium + Taproot", href: "/infra/mycelium-taproot" },
+      { label: "Nut Stocks", href: "/rwa/nut-stocks" },
+      { label: "Nut Trade Flows", href: "/rwa/nut-trade-flows" },
+      { label: "Nut Standard", href: "/rwa/nut-inflation" },
+      { label: "Carbon Pricing Exposure", href: "/rwa/carbon-debt" },
     ],
   },
   {
