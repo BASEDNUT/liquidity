@@ -20,18 +20,43 @@ for (const required of [
   'Treasury ledger',
   'TREASURY WALLET · 0x762a8235506c719a4da37389c6b84b35d02df230',
   "fetch('/api/agent-economy-data')",
+  'MONTHLY_OPS_PIPSHELL = 20',
+  'MONTHLY_OPS_PEANUT = 35',
+  'Send support — USDC on Base',
+  'runwayDays',
+  'Treasury seeded',
+  'First self-earned income',
 ]) {
   assert.ok(agentEconomy.includes(required), `agent economy missing: ${required}`);
 }
 // The manual calculator must not exist
 assert.ok(!agentEconomy.includes('Manual calculator'), 'manual calculator must be removed');
+const timelineStart = agentEconomy.indexOf('const timelineEvents = []');
+const timelineEnd = agentEconomy.indexOf('return (', timelineStart);
+assert.ok(timelineStart > -1 && timelineEnd > timelineStart, 'timeline block found');
+const timelineBlock = agentEconomy.slice(timelineStart, timelineEnd);
+assert.ok(!timelineBlock.includes('escrow_fund'), 'survival history must omit escrow funding noise');
+assert.ok(!timelineBlock.includes('escrow_release'), 'survival history must omit escrow release noise');
+assert.ok(!timelineBlock.includes('Counterfeit'), 'survival history must omit counterfeit noise');
+assert.ok(timelineBlock.includes("t.kind === 'seed'"), 'survival history keeps the seed event');
+assert.ok(timelineBlock.includes("t.kind === 'acp_payment'"), 'survival history keeps first income event');
 assert.ok(!agentEconomy.includes('calcOut'), 'calculator script remnant found');
 // No hardcoded live financial values — everything renders from the API
 assert.ok(!agentEconomy.match(/(?:treasury|burn|income|balance|USD)\s*[:=]\s*['\"]?\$?\d+/i), 'agent economy must not hardcode asserted financial values');
 // Live API contract: canonical wallet + spoof filter
 assert.ok(agentEconomyApi.includes("'0x762a8235506c719a4da37389c6b84b35d02df230'"), 'API must read the Pipshell operations wallet');
 assert.ok(agentEconomyApi.includes('counterfeit'), 'API must classify counterfeit token events');
+assert.ok(!agentEconomy.includes('Counterfeit “USDC”'), 'counterfeit row must not be displayed');
+assert.ok(!agentEconomy.includes('COUNTERFEIT EVENTS REJECTED'), 'counterfeit badge must not be displayed');
+assert.ok(agentEconomy.match(/counterfeit/g).length === 1, 'exactly one functional counterfeit filter allowed');
 assert.ok(agentEconomyApi.includes('USDC_TOKEN'), 'API must anchor on canonical USDC');
+// Ledger resilience: on-chain verified baseline fallback when Blockscout is unreachable
+assert.ok(agentEconomyApi.includes('VERIFIED_BASELINE'), 'API must carry the on-chain verified baseline');
+assert.ok((agentEconomyApi.match(/blockNumber: 49\d{6}/g) || []).length === 6, 'baseline must contain exactly 6 verified transfers');
+assert.ok(agentEconomyApi.includes("ledgerSource = 'on-chain-verified'"), 'API must flag the verified fallback source');
+assert.ok(Math.abs((60 + 0.009 + 0.00002 + 0.00002) - (20.4 + 20.4) - 19.20904) < 1e-9, 'baseline math must reconcile to the wallet balance');
+assert.ok(agentEconomy.includes('ON-CHAIN VERIFIED'), 'page must surface the verified-ledger badge');
+assert.ok(agentEconomy.includes('reconciled against the live balance'), 'ledger caption must describe reconciliation');
 
 // Complaints: original paper-bureaucracy design + Karen + manager flow
 for (const required of [

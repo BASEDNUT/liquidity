@@ -19,9 +19,25 @@ const ESCROW_RELEASE_ADDRESS = '0xc9b67cf086e8763dd407f6dc464a844ce0790287'.toLo
 const FIRST_JOB_DATE = Date.parse('2026-08-04T04:36:35Z');
 const FIRST_JOB_GROSS_USDC = 0.01;
 
+// On-chain verified baseline ledger — eth_getLogs scan of canonical-USDC Transfer events to/from
+// the wallet (blocks 49.30M → 50.46M), timestamps via eth_getBlockByNumber (2026-08-25 session).
+// Math: inflow 60.00904 − outflow 40.80 = 19.20904 USDC == live wallet balance (reconciles exactly).
+// Served when Blockscout is unreachable and no cache exists; per-request reconciliation against
+// the live RPC balance proves whether this baseline is still complete.
+const VERIFIED_BASELINE = [
+  { blockNumber: 49404058, timeStamp: '1785597463', from: SEED_ADDRESS, to: WALLET, value: '60000000', contractAddress: USDC_TOKEN, tokenSymbol: 'USDC' },
+  { blockNumber: 49465179, timeStamp: '1785719705', from: WALLET, to: ESCROW_FUND_ADDRESS, value: '20400000', contractAddress: USDC_TOKEN, tokenSymbol: 'USDC' },
+  { blockNumber: 49465236, timeStamp: '1785719819', from: ESCROW_RELEASE_ADDRESS, to: WALLET, value: '20', contractAddress: USDC_TOKEN, tokenSymbol: 'USDC' },
+  { blockNumber: 49514424, timeStamp: '1785818195', from: ACP_PAYMENT_ADDRESS, to: WALLET, value: '9000', contractAddress: USDC_TOKEN, tokenSymbol: 'USDC' },
+  { blockNumber: 49582448, timeStamp: '1785954243', from: WALLET, to: ESCROW_FUND_ADDRESS, value: '20400000', contractAddress: USDC_TOKEN, tokenSymbol: 'USDC' },
+  { blockNumber: 49582478, timeStamp: '1785954303', from: ESCROW_RELEASE_ADDRESS, to: WALLET, value: '20', contractAddress: USDC_TOKEN, tokenSymbol: 'USDC' },
+];
+
 const RPC_URLS = ['https://mainnet.base.org', 'https://base.publicnode.com'];
 const CACHE_KEY = 'agent-economy:v1';
 const CACHE_TTL_SECONDS = 300;
+const TRANSFERS_CACHE_KEY = 'agent-economy:transfers:v1';
+const TRANSFERS_TTL_SECONDS = 7 * 24 * 3600; // transfers are append-only history — serve stale on upstream failure
 
 async function rpc(method, params) {
   for (const url of RPC_URLS) {
@@ -167,12 +183,30 @@ export default async function handler(req, res) {
     return res.status(200).json({ source: 'cache', ...cached });
   }
 
+  // Transfers are append-only history: fetch independently and fall back to a long-TTL
+  // stale cache when Blockscout is down — a ledger outage must not kill live balances.
+  let transfersRaw = null;
+  let ledgerSource = 'unavailable';
   try {
-    const [ethWei, usdcRaw, pipsRaw, transfersRaw, pipsQuote, ethQuote] = await Promise.all([
+    transfersRaw = await fetchTransfers(WALLET);
+    ledgerSource = 'live';
+    await setJSON(TRANSFERS_CACHE_KEY, transfersRaw, TRANSFERS_TTL_SECONDS).catch(() => {});
+  } catch (e) {
+    const stale = await getJSON(TRANSFERS_CACHE_KEY).catch(() => null);
+    if (Array.isArray(stale) && stale.length) {
+      transfersRaw = stale;
+      ledgerSource = 'stale-cache';
+    } else {
+      transfersRaw = VERIFIED_BASELINE;
+      ledgerSource = 'on-chain-verified';
+    }
+  }
+
+  try {
+    const [ethWei, usdcRaw, pipsRaw, pipsQuote, ethQuote] = await Promise.all([
       rpc('eth_getBalance', [WALLET, 'latest']),
       erc20Balance(USDC_TOKEN, WALLET),
       erc20Balance(PIPS_TOKEN, WALLET),
-      fetchTransfers(WALLET),
       fetchJson(`https://api.geckoterminal.com/api/v2/networks/base/tokens/${PIPS_TOKEN}`, 8000),
       fetchJson('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd', 8000),
     ]);
@@ -184,16 +218,17 @@ export default async function handler(req, res) {
     const pipsVol24h = pipsAttrs ? Number(pipsAttrs.volume_usd?.h24 ?? 0) : null;
     const ethUsd = ethQuote?.ethereum?.usd !== undefined ? Number(ethQuote.ethereum.usd) : null;
 
-    const snapshot = buildSnapshot({ ethWei, usdcRaw, pipsRaw, ethUsd, pipsUsd, pipsVol24h, transfers: transfersRaw });
+    const snapshot = buildSnapshot({ ethWei, usdcRaw, pipsRaw, ethUsd, pipsUsd, pipsVol24h, transfers: transfersRaw || [] });
+    snapshot.ledgerSource = ledgerSource; // persist through cache round-trip
 
     await setJSON(CACHE_KEY, snapshot, CACHE_TTL_SECONDS).catch(() => {});
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-    return res.status(200).json({ source: 'live', ...snapshot });
+    return res.status(200).json({ source: 'live', ledgerSource, ...snapshot });
   } catch (err) {
     console.error('[api/agent-economy-data] Error:', err?.message || err);
     if (cached) {
       res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600');
-      return res.status(200).json({ source: 'stale-cache', ...cached });
+      return res.status(200).json({ source: 'stale-cache', ledgerSource: 'stale-cache', ...cached });
     }
     return res.status(503).json({ error: 'fetch_failed' });
   }
