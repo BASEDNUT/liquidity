@@ -86,8 +86,36 @@ const NAV_SECTIONS = [
       { label: "🔗 Pair Your Token", href: "/pair-your-token" },
       { label: "TVL", href: "/tvl" },
       { label: "Staking", href: "/staking" },
-      { label: "Tree", href: "/tree" },
-      { label: "Graphs", href: "/ecosystem" },
+    ],
+  },
+  {
+    title: "🏦 RWA",
+    items: [
+      { label: "The Nut RWA Stack", href: "/rwa" },
+      {
+        label: "Grown ▾",
+        sub: [
+          { label: "US Nut Economy", href: "/rwa/nuts-production" },
+          { label: "Nut Atlas", href: "/rwa/nut-atlas" },
+          { label: "Orchard Economics", href: "/rwa/orchard-economics" },
+        ],
+      },
+      {
+        label: "Traded ▾",
+        sub: [
+          { label: "Inventory & Infrastructure", href: "/rwa/nut-inventory-infrastructure" },
+          { label: "Nut Trade Flows", href: "/rwa/nut-trade-flows" },
+        ],
+      },
+      {
+        label: "Priced ▾",
+        sub: [
+          { label: "Nut Demand", href: "/rwa/nut-demand" },
+          { label: "Nut Standard", href: "/rwa/nut-inflation" },
+          { label: "Nut Stocks", href: "/rwa/nut-stocks" },
+        ],
+      },
+      { label: "Carbon Pricing Exposure", href: "/rwa/carbon-debt" },
     ],
   },
   {
@@ -99,36 +127,33 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    title: "🤖 AI Agents",
+    title: "🤖 Agents",
     items: [
-      { label: "Agents", href: "/agents" },
       { label: "Agent Economy", href: "/agent-economy" },
+      { label: "ACP Agents", href: "/agents" },
       { label: "Arb Bot", href: "/arb-bot" },
-      { label: "Chat", href: "/chat" },
-      { label: "Images", href: "/images" },
-      { label: "Mycelium + Taproot", href: "/infra/mycelium-taproot" },
+      {
+        label: "Playground ▾",
+        sub: [
+          { label: "Chat", href: "/chat" },
+          { label: "Images", href: "/images" },
+        ],
+      },
+      {
+        label: "Infra ▾",
+        sub: [
+          { label: "Mycelium + Taproot", href: "/infra/mycelium-taproot" },
+        ],
+      },
     ],
   },
   {
-    title: "🏦 RWA",
+    title: "🌰 Explore",
     items: [
-      { label: "The Nut RWA Stack", href: "/rwa" },
-      { label: "US Nut Economy", href: "/rwa/nuts-production" },
-      { label: "Nut Atlas", href: "/rwa/nut-atlas" },
-      { label: "Orchard Economics", href: "/rwa/orchard-economics" },
-      { label: "Inventory & Infrastructure", href: "/rwa/nut-inventory-infrastructure" },
-      { label: "Nut Trade Flows", href: "/rwa/nut-trade-flows" },
-      { label: "Nut Demand", href: "/rwa/nut-demand" },
-      { label: "Nut Standard", href: "/rwa/nut-inflation" },
-      { label: "Nut Stocks", href: "/rwa/nut-stocks" },
-      { label: "Carbon Pricing Exposure", href: "/rwa/carbon-debt" },
-    ],
-  },
-  {
-    title: "📚 Learn",
-    items: [
-      { label: "FAQ", href: "/faq" },
+      { label: "Tree", href: "/tree" },
+      { label: "Graphs", href: "/ecosystem" },
       { label: "Department of Complaints", href: "/complaints" },
+      { label: "FAQ", href: "/faq" },
       { label: "Docs", href: "https://docs.basednut.com/", external: true },
     ],
   },
