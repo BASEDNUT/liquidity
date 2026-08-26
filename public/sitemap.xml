@@ -59,6 +59,26 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+    <url>
+    <loc>https://orchard.basednut.com/rwa</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+    <url>
+    <loc>https://orchard.basednut.com/rwa/orchard-economics</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+    <url>
+    <loc>https://orchard.basednut.com/rwa/nut-inventory-infrastructure</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+    <url>
+    <loc>https://orchard.basednut.com/rwa/nut-demand</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
   <url>
     <loc>https://orchard.basednut.com/infra/mycelium-taproot</loc>
     <changefreq>monthly</changefreq>

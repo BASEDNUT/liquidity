@@ -1,0 +1,116 @@
+{
+  "generated": "2026-08-26",
+  "sources": [
+    {
+      "id": "D1",
+      "publisher": "USDA ERS",
+      "title": "Almonds lead increase in tree nut consumption",
+      "url": "https://www.ers.usda.gov/data-products/charts-of-note/93152",
+      "period": "1970\u20132016",
+      "numbers": [
+        "1.38 lb/person U.S. tree nuts 1970",
+        "3.69 lb/person 2016",
+        "+1.35 lb/person almonds",
+        "0.33 lb/person pistachios 2016"
+      ]
+    },
+    {
+      "id": "D2/I2/P1/T1",
+      "publisher": "USDA FAS",
+      "title": "Tree Nuts: World Markets and Trade \u2014 October 2024",
+      "url": "https://www.fas.usda.gov/sites/default/files/2024-11/TreeNuts.pdf",
+      "period": "MY2019/20\u2013MY2024/25",
+      "notes": "Almond tables use metric tons, shelled basis."
+    },
+    {
+      "id": "INV1",
+      "publisher": "USDA NASS",
+      "title": "Cold Storage \u2014 January 23, 2026",
+      "url": "https://www.nass.usda.gov/Publications/Todays_Reports/reports/cost0126.pdf",
+      "period": "Dec 2024 / Nov 2025 / Dec 2025",
+      "numbers": [
+        "Shelled pecans 35.411M / 38.409M / 38.969M lb",
+        "In-shell pecans 88.333M / 35.108M / 60.126M lb"
+      ]
+    },
+    {
+      "id": "O1",
+      "publisher": "UC Cooperative Extension / UC Davis / Almond Board",
+      "title": "2024 Sample Costs to Establish an Orchard and Produce Almonds, San Joaquin Valley North",
+      "url": "https://www.almonds.org/sites/default/files/2025-05/AlmondsSJVNorth%20Final%20draft4.pdf",
+      "numbers": [
+        "$17,292/ac establishment",
+        "$25,000/ac land assumption",
+        "$42,292/ac land + establishment",
+        "2,200 lb/ac mature model yield",
+        "$4,546/ac cash cost",
+        "$8,615/ac total cost"
+      ]
+    },
+    {
+      "id": "O2/I3",
+      "publisher": "USDA RMA",
+      "title": "PM-25-073 \u2014 2026 Almond Additional Price Elections",
+      "url": "https://www.rma.usda.gov/print/pdf/node/7726",
+      "numbers": [
+        "Conventional $2.25/lb additional; $1.70 established",
+        "Organic $3.40/lb additional; $2.55 established"
+      ]
+    },
+    {
+      "id": "O3",
+      "publisher": "USDA RMA",
+      "title": "2023 Specialty Crops Report Appendix",
+      "url": "https://www.rma.usda.gov/sites/default/files/2024-08/2023-Specialty-Crops-Report-Appendix.pdf",
+      "period": "2022 acreage",
+      "numbers": [
+        "Almonds 72%",
+        "Macadamia 74%",
+        "Pecans 45%",
+        "Pistachios 48%",
+        "Walnuts 53%"
+      ]
+    },
+    {
+      "id": "I1",
+      "publisher": "World Bank WITS / UN Comtrade",
+      "title": "U.S. almonds without shells exports, 2024",
+      "url": "https://wits.worldbank.org/trade/comtrade/en/country/USA/year/2024/tradeflow/Exports/partner/ALL/product/080212",
+      "numbers": [
+        "$3.522096B",
+        "716.378M kg",
+        "derived $4.92/kg"
+      ]
+    },
+    {
+      "id": "I2",
+      "publisher": "World Bank WITS / UN Comtrade",
+      "title": "U.S. pistachio exports, 2024",
+      "url": "https://wits.worldbank.org/trade/comtrade/en/country/USA/year/2024/tradeflow/Exports/partner/ALL/product/080250",
+      "numbers": [
+        "$2.508886B",
+        "348.310M kg",
+        "derived $7.20/kg"
+      ]
+    },
+    {
+      "id": "I4",
+      "publisher": "BSE Limited",
+      "title": "Annual Report 2020\u201321",
+      "url": "https://www.bseindia.com/downloads1/Annual%20Report%202020-21_20210729093311.pdf",
+      "numbers": [
+        "Almond futures launched June 22, 2020",
+        "120,000 kg delivered since launch"
+      ]
+    },
+    {
+      "id": "I5",
+      "publisher": "BSE Limited / redistributed by Publicnow",
+      "title": "Notice 20250328-51 \u2014 Discontinuation of Almond Futures",
+      "url": "https://www.marketscreener.com/quote/stock/BSE-LIMITED-33930062/news/BSE-Discontinuation-of-Futures-contracts-on-Almond-in-Commodity-Derivatives-Segment-49466686/",
+      "numbers": [
+        "April 2025 and onward monthly futures discontinued effective Apr 1 2025"
+      ]
+    }
+  ]
+}

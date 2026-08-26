@@ -31,6 +31,10 @@ Key information:
 - [Nut Stocks](/rwa/nut-stocks): Nuts, publicly traded — global nut-economy equities: growers, farmland, processors, brands, small caps, with issuer filings and market sources
 - [Nut Atlas](/rwa/nut-atlas): SHOW ME THE NUTS — USA + territories nut map, 2025 harvest ledger, growers on the ground, wild mast density (USDA NASS + FIA)
 - [Nut Trade Flows](/rwa/nut-trade-flows): Nut trade is the circulation layer — 2024 U.S. almond/pistachio export corridors, global exporters, demand hubs, and the exact bilateral route ledger (USDA FAS + WITS/UN Comtrade)
+- [The Nut RWA Stack](/rwa): Navigation ontology for the RWA section — a nut becomes a real-world asset through states: land/biology, economics, custody, trade, demand, price, plus capital and environmental cross-cutting layers
+- [Orchard Economics](/rwa/orchard-economics): An orchard is a capital project that grows — establishment cost per acre, capital-before-yield, the orchard as an economic object, insurance inside the model (UC Cooperative Extension sample costs)
+- [Inventory & Infrastructure](/rwa/nut-inventory-infrastructure): Inventory is the collateral layer — cold storage stocks, processing custody, public-data boundary from orchard to warehouse (USDA NASS Cold Storage)
+- [Nut Demand](/rwa/nut-demand): Where the crop disappears into use — the demand equation, MY2024/25 almond demand table, per-capita consumption shift (USDA ERS + FAS)
 - [Mycelium + Taproot](/infra/mycelium-taproot): Sovereignty without isolation — the network beneath the network; Mycelium protocol, Taproot node, live agent social protocol surface
 
 ## Token Pages

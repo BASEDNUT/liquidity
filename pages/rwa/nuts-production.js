@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import Layout from "../../components/Layout";
 import {
-  Box, Typography, Paper, Chip, Stack, Divider, Grid,
+  Box, Typography, Paper, Chip, Stack, Divider, Grid, Link as MuiLink,
 } from "@mui/material";
 import nutsMap from "../../src/data/nuts-map.json";
 
@@ -202,6 +202,34 @@ export default function NutsProduction() {
             </Paper>
           ))}
         </Stack>
+
+        <Paper elevation={0} sx={{ mt: 5, p: 3, bgcolor: CREAM, borderLeft: "4px solid #A67C52", borderRadius: 2 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: BARK, mb: 1 }}>
+            Production ≠ Use
+          </Typography>
+          <Typography sx={{ color: "#51483C", fontSize: "0.93rem", lineHeight: 1.7, mb: 2 }}>
+            Production measures what the biological system creates. It is not the same as consumption.
+            Inventory changes and international trade sit between crop output and final use.
+          </Typography>
+          <Typography sx={{ color: "#51483C", fontSize: "0.93rem", mb: 1 }}>
+            For almonds, USDA FAS projects <strong>1,646,710 MT global production</strong>, <strong>1,615,830 MT global domestic consumption</strong>, and <strong>256,877 MT ending stocks</strong> in MY2024/25, all on a shelled basis.{" "}
+            <MuiLink href="https://www.fas.usda.gov/sites/default/files/2024-11/TreeNuts.pdf" target="_blank" rel="noreferrer">[P1 — USDA FAS, Tree Nuts: World Markets and Trade, Oct 2024]</MuiLink>
+          </Typography>
+          <Typography sx={{ fontFamily: "monospace", color: BARK, fontSize: "0.88rem", bgcolor: "#FFFDF8", p: 1.5, borderRadius: 1, display: "inline-block" }}>
+            production → stocks / trade → domestic use
+          </Typography>
+          <Box sx={{ mt: 2, display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+            <Link href="/rwa/nut-inventory-infrastructure" passHref style={{ textDecoration: "none" }}>
+              <Chip clickable size="small" label="Inventory & Infrastructure" sx={{ bgcolor: "#EFE3CE", color: BARK, fontWeight: 700 }} />
+            </Link>
+            <Link href="/rwa/nut-trade-flows" passHref style={{ textDecoration: "none" }}>
+              <Chip clickable size="small" label="Trade Flows" sx={{ bgcolor: "#EFE3CE", color: BARK, fontWeight: 700 }} />
+            </Link>
+            <Link href="/rwa/nut-demand" passHref style={{ textDecoration: "none" }}>
+              <Chip clickable size="small" label="Nut Demand" sx={{ bgcolor: "#EFE3CE", color: BARK, fontWeight: 700 }} />
+            </Link>
+          </Box>
+        </Paper>
 
         <Paper elevation={0} sx={{ mt: 5, p: 3, bgcolor: CREAM, borderLeft: "4px solid #C68B36", borderRadius: 2 }}>
           <Typography sx={{ fontWeight: 800, color: BARK, mb: 1 }}>

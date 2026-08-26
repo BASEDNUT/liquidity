@@ -54,11 +54,10 @@ const routes = ['/', '/token/nut', '/token/snut', '/token/pnut', '/tokens',
   '/rwa/nut-inflation', '/rwa/nut-stocks', '/rwa/nut-atlas', '/rwa/nut-trade-flows',
   '/faq', '/complaints'];
 for (const r of routes) assert.ok(header.includes(`"${r}"`), `nav lost route ${r}`);
-// RWA narrative order: production -> capital -> trade
-const atlasIdx = header.indexOf('"/rwa/nut-atlas"');
-const stocksIdx = header.indexOf('"/rwa/nut-stocks"');
-const tradeIdx = header.indexOf('"/rwa/nut-trade-flows"');
-assert.ok(atlasIdx > -1 && stocksIdx > atlasIdx && tradeIdx > stocksIdx, 'RWA must follow production->capital->trade order');
+// RWA stack order (2026-08-26): atlas -> economics -> inventory -> trade -> demand -> inflation (stocks = cross-cutting)
+const order = ['"/rwa/nut-atlas"', '"/rwa/orchard-economics"', '"/rwa/nut-inventory-infrastructure"', '"/rwa/nut-trade-flows"', '"/rwa/nut-demand"', '"/rwa/nut-inflation"'];
+let prev = -1;
+for (const r of order) { const i = header.indexOf(r); assert.ok(i > prev, `RWA stack order broken at ${r}`); prev = i; }
 
 // ── llms.txt + sitemap ─────────────────────────────────────────
 const llms = read('../public/llms.txt');

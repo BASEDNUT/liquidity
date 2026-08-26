@@ -112,11 +112,15 @@ const NAV_SECTIONS = [
   {
     title: "🏦 RWA",
     items: [
+      { label: "The Nut RWA Stack", href: "/rwa" },
       { label: "US Nut Economy", href: "/rwa/nuts-production" },
       { label: "Nut Atlas", href: "/rwa/nut-atlas" },
-      { label: "Nut Stocks", href: "/rwa/nut-stocks" },
+      { label: "Orchard Economics", href: "/rwa/orchard-economics" },
+      { label: "Inventory & Infrastructure", href: "/rwa/nut-inventory-infrastructure" },
       { label: "Nut Trade Flows", href: "/rwa/nut-trade-flows" },
+      { label: "Nut Demand", href: "/rwa/nut-demand" },
       { label: "Nut Standard", href: "/rwa/nut-inflation" },
+      { label: "Nut Stocks", href: "/rwa/nut-stocks" },
       { label: "Carbon Pricing Exposure", href: "/rwa/carbon-debt" },
     ],
   },

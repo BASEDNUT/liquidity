@@ -410,6 +410,17 @@ export default function CarbonExposurePage() {
               <Typography sx={{ fontSize: "1.5rem", mb: 0.5 }}>🏭</Typography>
               <Typography sx={{ color: BARK, fontWeight: 800, mb: 0.75 }}>1. Environmental pressure</Typography>
               <Typography sx={{ color: "#51483C", fontSize: "0.9rem", lineHeight: 1.65 }}>The burden column is disclosed Scope 1+2 emissions translated onto the same fixed ${PRICE_PER_T}/t reference scale. It excludes Scope 3, water, land, waste and biodiversity.</Typography>
+            <Box sx={{ mt: 4, p: 3, bgcolor: "#F6EFDF", borderLeft: "4px solid #7D5A50", borderRadius: 2 }}>
+        <Typography sx={{ color: "#51483C", fontSize: "0.95rem", fontStyle: "italic", lineHeight: 1.7 }}>
+          Orchard Economics measures the private farm balance sheet. Carbon Debt measures costs and
+          liabilities that may sit outside that private balance sheet. Water, energy, fertilizer,
+          land-use and carbon effects should cross-link between the two pages rather than be duplicated.
+        </Typography>
+        <Link href="/rwa/orchard-economics" passHref style={{ textDecoration: "none" }}>
+          <Chip clickable size="small" label="Orchard Economics → private balance sheet" sx={{ mt: 1.5, bgcolor: "#7D5A50", color: "#FFF", fontWeight: 700 }} />
+        </Link>
+      </Box>
+
             </Box>
             <Box sx={{ px: { md: 2 }, borderRight: { md: "1px solid #E3D9C8" } }}>
               <Typography sx={{ fontSize: "1.5rem", mb: 0.5 }}>🌱</Typography>
