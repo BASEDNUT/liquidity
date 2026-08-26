@@ -9,8 +9,7 @@ import FilterTokens from "../components/FilterTokens";
 import SearchBar from "../components/SearchBar";
 import PoolCard from "../components/PoolCard";
 import TokenCard from "../components/TokenCard";
-import PoolsTable from "../components/PoolsTable";
-import TokensTable from "../components/TokensTable";
+import OrchardBoard from "../components/OrchardBoard";
 import DataToggle from "../components/DataToggle";
 import { fetchPools } from "../utils/fetchPools";
 import { fetchTokens } from "../utils/fetchTokens";
@@ -170,24 +169,7 @@ export default function Home({ initialPools, initialTokens }) {
                 </Grid>
               ))}
             </Grid>
-            <Box sx={{ width: '100%', mt: 5 }}>
-              <Typography variant="h6" sx={{ color: '#5B3A29', mb: 2, fontWeight: 700 }}>
-                📋 All Pools — table view
-              </Typography>
-              <PoolsTable pools={filteredPools} marketData={marketData} />
-              <Box sx={{ textAlign: 'center', mt: 3 }}>
-                <Typography variant="body2" sx={{ color: '#7D5A50', mb: 1 }}>
-                  Have your own token? Root it into the Orchard.
-                </Typography>
-                <Typography
-                  component="a"
-                  href="/pair-your-token"
-                  sx={{ color: '#8B4513', fontWeight: 700, textDecoration: 'underline', '&:hover': { color: '#A0522D' } }}
-                >
-                  🔗 Pair your token with NUT →
-                </Typography>
-              </Box>
-            </Box>
+
           </>
         ) : (
           <>
@@ -198,23 +180,28 @@ export default function Home({ initialPools, initialTokens }) {
                 </Grid>
               ))}
             </Grid>
-            <Box sx={{ width: '100%', mt: 5 }}>
-              <Typography variant="h6" sx={{ color: '#5B3A29', mb: 2, fontWeight: 700 }}>
-                📋 All Tokens — table view
-              </Typography>
-              <TokensTable tokens={filteredTokens} />
-              <Box sx={{ textAlign: 'center', mt: 3 }}>
-                <Typography
-                  component="a"
-                  href="/pair-your-token"
-                  sx={{ color: '#8B4513', fontWeight: 700, textDecoration: 'underline', '&:hover': { color: '#A0522D' } }}
-                >
-                  🔗 Pair your token with NUT →
-                </Typography>
-              </Box>
-            </Box>
+
           </>
         )}
+
+        <Box sx={{ width: '100%', mt: 6 }}>
+          <Typography variant="h6" sx={{ color: '#5B3A29', mb: 2, fontWeight: 700 }}>
+            📋 All NUTs — live board
+          </Typography>
+          <OrchardBoard tokens={filteredTokens} pools={filteredPools} marketData={marketData} />
+          <Box sx={{ textAlign: 'center', mt: 3 }}>
+            <Typography variant="body2" sx={{ color: '#7D5A50', mb: 1 }}>
+              Have your own token? Root it into the Orchard.
+            </Typography>
+            <Typography
+              component="a"
+              href="/pair-your-token"
+              sx={{ color: '#8B4513', fontWeight: 700, textDecoration: 'underline', '&:hover': { color: '#A0522D' } }}
+            >
+              🔗 Pair your token with NUT →
+            </Typography>
+          </Box>
+        </Box>
 
         <Box sx={{ width: '100%', textAlign: 'center', mt: 3, mb: 2 }}>
           <Typography variant="caption" sx={{ color: 'rgba(93,64,55,0.6)', fontSize: '0.7rem' }}>
