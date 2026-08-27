@@ -269,7 +269,7 @@ const FAQ_DATA = [
   {
     cat: 'liquidity',
     q: 'Does the dead address hold liquidity?',
-    a: 'Yes. The dead address (0x000000000000000000000000000000000000dEaD) holds burned SNUT and NUT tokens. As the buyback/burn mechanism operates, the dead address accumulates tokens that are permanently removed from circulation. This includes both burned SNUT (from the 1.5% buyback/burn tax portion) and burned NUT (equivalent value burned alongside SNUT). The dead address balance is displayed live on the SNUT page.',
+    a: 'Yes. The dead address (0x000000000000000000000000000000000000dEaD) holds burned SNUT and NUT tokens. As the buyback/burn mechanism operates, the dead address accumulates tokens that are permanently removed from circulation. This includes both burned SNUT (from the buyback/burn stream of the 1% tax) and burned NUT (equivalent value burned alongside SNUT). The dead address balance is displayed live on the SNUT page.',
     links: [{ text: 'View SNUT page', href: '/token/snut' }, { text: 'Check dead address on Basescan', href: 'https://basescan.org/address/0x000000000000000000000000000000000000dEaD' }]
   },
   {

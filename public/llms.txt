@@ -1,6 +1,6 @@
 # BASED NUT
 
-> BASED NUT is an experimental memefi project on Base (Coinbase L2) featuring a unity token (NUT, supply=1), deflationary reward-position (SNUT, 6% tax buyback/burn), Balancer index basket (pNUT, 25% cbETH/cbBTC/NUT/SNUT), and Mint Club bonding-curve tokens (SALT, NUTINO). NOT financial advice. Trade at your own risk.
+> BASED NUT is an experimental memefi project on Base (Coinbase L2) featuring a unity token (NUT, supply=1), deflationary reward-position (SNUT, 1% tax buyback/burn), Balancer index basket (pNUT, 25% cbETH/cbBTC/NUT/SNUT), and Mint Club bonding-curve tokens (SALT, NUTINO). NOT financial advice. Trade at your own risk.
 
 Key information:
 
@@ -40,7 +40,7 @@ Key information:
 ## Token Pages
 
 - [NUT](/token/nut): Unity token — supply=1, no tax, anchor asset for all nested tokens
-- [SNUT](/token/snut): Deflationary reward-position — 6% tax, live burn tracker, recursive burn flywheel
+- [SNUT](/token/snut): Deflationary reward-position — 1% tax, live burn tracker, recursive burn flywheel
 - [pNUT](/token/pnut): Balancer V2 index basket — 25% each cbETH/cbBTC/NUT/SNUT, inflationary counterbalance
 - [SALT](/token/salt): Mint Club bonding-curve token — arbitrage via Aerodrome SALT/USDC
 - [NUTINO](/token/nutino): Mint Club bonding-curve token — arbitrage via Uniswap V2 NUTINO/cbBTC
