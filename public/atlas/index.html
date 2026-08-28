@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Orchard — Based Nut Liquidity Framework</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥜</text></svg>">
+<style>
+  :root{
+    --cream:#faf6ee; --paper:#f3ecdd; --ink:#2d2013; --ink-soft:#5c4a33;
+    --peanut:#b5712f; --peanut-deep:#8a5220; --gold:#c9a227; --green:#4a6b3a; --leaf:#6b8e4e;
+    --plum:#7d5ba6; --sky:#3f6fa8; --teal:#2f7f74; --rose:#b05a78;
+    --line:#e2d8c3; --card:#fffdf7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--cream);color:var(--ink);font:16px/1.6 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif}
+  .serif{font-family:Georgia,"Times New Roman",serif}
+  a{color:var(--peanut-deep);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  nav{position:sticky;top:0;z-index:50;background:rgba(250,246,238,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:18px;height:58px}
+  nav .brand{font-weight:700;letter-spacing:.4px;display:flex;align-items:center;gap:8px}
+  nav .brand .nut{font-size:20px}
+  nav .links{margin-left:auto;display:flex;gap:18px;font-size:14px}
+  nav .links a{color:var(--ink-soft)}
+  nav .links a.active{color:var(--peanut-deep);font-weight:600}
+
+  header.hero{padding:72px 0 48px;text-align:center;background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(201,162,39,.14), transparent),
+    linear-gradient(180deg, #f7f0df 0%, var(--cream) 100%)}
+  .kicker{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--peanut);font-weight:700}
+  h1{font-size:clamp(40px,6vw,64px);line-height:1.05;margin:14px 0 16px}
+  .hero p.lede{max-width:680px;margin:0 auto;color:var(--ink-soft);font-size:18px}
+  .hero .eq{margin-top:22px;font-family:Georgia,serif;font-size:17px;color:var(--ink-soft)}
+  .hero .eq b{color:var(--ink)}
+  .stats{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:30px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 20px;text-align:center;min-width:110px}
+  .stat .n{font-size:22px;font-weight:700;color:var(--peanut-deep)}
+  .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft)}
+  .cta{display:inline-flex;gap:10px;margin-top:28px}
+  .btn{display:inline-block;padding:12px 26px;border-radius:999px;font-weight:600;font-size:15px}
+  .btn.primary{background:var(--peanut);color:#fff}
+  .btn.primary:hover{background:var(--peanut-deep);text-decoration:none}
+  .btn.ghost{border:1.5px solid var(--peanut);color:var(--peanut-deep)}
+  .btn.ghost:hover{background:rgba(181,113,47,.08);text-decoration:none}
+
+  section{padding:64px 0;border-top:1px solid var(--line)}
+  h2{font-size:30px;margin-bottom:6px}
+  .sub{color:var(--ink-soft);max-width:720px;margin-bottom:36px}
+
+  /* Ladder */
+  .ladder{display:flex;flex-direction:column;align-items:center;gap:0}
+  .rung{width:min(620px,100%);border-radius:14px;padding:16px 22px;border:1.5px solid var(--line);background:var(--card);display:flex;align-items:baseline;gap:14px}
+  .rung .t{font-weight:700;font-size:17px;min-width:150px}
+  .rung .d{color:var(--ink-soft);font-size:14px;flex:1}
+  .rung .c{font-size:13px;color:var(--peanut-deep);font-weight:600;white-space:nowrap}
+  .rung.r0{border-color:var(--gold);background:linear-gradient(90deg,#fdf6df,#fffdf7)}
+  .rung.r1{border-color:var(--peanut)}
+  .rung.r2{border-color:var(--green)}
+  .rung.r3{border-color:var(--teal)}
+  .rung.r4{border-color:var(--sky)}
+  .arrow-up{color:var(--ink-soft);font-size:13px;padding:4px 0;display:flex;align-items:center;gap:8px}
+  .arrow-up::before{content:"";width:1.5px;height:18px;background:var(--ink-soft)}
+  .sigma{margin-top:18px;font-family:Georgia,serif;color:var(--ink-soft);font-size:15px}
+
+  /* Taxonomy cards */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;position:relative;overflow:hidden}
+  .card .glyph{height:88px;margin-bottom:14px}
+  .card h3{font-size:19px;display:flex;align-items:center;gap:8px}
+  .card .math{font-family:Georgia,serif;color:var(--ink-soft);font-size:14px;margin:6px 0 10px;font-style:italic}
+  .card p{font-size:14px;color:var(--ink-soft)}
+  .card .ex{margin-top:12px;font-size:13px;padding-top:12px;border-top:1px dashed var(--line)}
+  .card .ex .who{font-weight:600;color:var(--ink)}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-left:auto}
+  .t-branch{background:rgba(107,142,78,.16);color:#3c5a2c}
+  .t-graft{background:rgba(201,162,39,.18);color:#7a5c10}
+  .t-whorl{background:rgba(125,91,166,.14);color:#5a3f85}
+  .t-grove{background:rgba(47,127,116,.14);color:#1f6157}
+
+  /* Graft anatomy */
+  .anatomy{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center}
+  .anatomy .notes h3{font-size:22px;margin-bottom:14px}
+  .anatomy ol{margin:0 0 18px 20px;color:var(--ink-soft);font-size:15px}
+  .anatomy ol li{margin-bottom:10px}
+  .anatomy .formula{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;font-family:Georgia,serif;font-size:16px}
+  figure.diagram{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+  figcaption{font-size:12px;color:var(--ink-soft);text-align:center;padding:6px 0 4px}
+
+  /* Grove classes */
+  .classes{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-bottom:40px}
+  .class-card{border-radius:16px;padding:20px;border:1.5px solid var(--line);background:var(--card)}
+  .class-card .icon{font-size:26px}
+  .class-card h3{margin:8px 0 4px;font-size:17px}
+  .class-card p{font-size:13.5px;color:var(--ink-soft)}
+  .class-card .members{margin-top:12px;font-size:12.5px;color:var(--peanut-deep);font-weight:600}
+  .practical{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+  .prac{border-radius:16px;padding:22px;color:#fff;position:relative;overflow:hidden}
+  .prac.sun{background:linear-gradient(135deg,#c98f1e,#e3b34c)}
+  .prac.heir{background:linear-gradient(135deg,#6b4f2a,#8a5220)}
+  .prac.poly{background:linear-gradient(135deg,#2f5d46,#3f7d5c)}
+  .prac .icon{font-size:30px}
+  .prac h3{font-size:19px;margin:8px 0 8px}
+  .prac p{font-size:13.5px;opacity:.92}
+  .prac .meta{margin-top:14px;font-size:12.5px;display:flex;gap:16px;opacity:.95}
+  .prac .meta b{font-size:15px}
+  .prac a{color:#fff;text-decoration:underline;text-underline-offset:3px}
+
+  /* Canopy forms */
+  .canopy{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+  .form{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+  .form svg{display:block;margin:0 auto 8px}
+  .form .nm{font-weight:600;font-size:14px}
+  .form .st{font-size:11.5px;color:var(--ink-soft)}
+  .form.live{border-color:var(--green)}
+  .form.live .st::after{content:" · live";color:var(--green);font-weight:700}
+
+  /* State strip */
+  .state-strip{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+  .state-strip .node{padding:10px 18px;border-radius:10px;background:var(--paper);border:1px solid var(--line);font-size:14px;font-weight:600}
+  .state-strip .arr{color:var(--peanut);font-family:Georgia,serif}
+  .state-strip .note{flex-basis:100%;text-align:center;font-size:13px;color:var(--ink-soft)}
+
+  footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--ink-soft);font-size:13.5px}
+  footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr;gap:30px}
+  footer h4{color:var(--ink);font-size:14px;margin-bottom:10px}
+  footer ul{list-style:none}
+  footer li{margin-bottom:6px}
+  .badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;padding:3px 10px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--ink-soft)}
+
+  .scale-note{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--peanut);border-radius:12px;padding:12px 16px;font-size:14.5px;color:var(--ink-soft);margin:16px 0}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--peanut);outline-offset:2px}
+  @media (max-width:520px){
+    header.hero{padding:48px 0 34px}
+    .hero p.lede{font-size:15.5px}
+    .hero .eq{font-size:14.5px}
+    .stats{gap:10px}
+    .stat .n{font-size:18px}
+    .wrap{padding:0 14px}
+  }
+  @media (max-width:760px){
+    .anatomy{grid-template-columns:1fr}
+    footer .cols{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand"><span class="nut">🥜</span> The Orchard <span style="color:var(--ink-soft);font-weight:400;font-size:13px">· Based Nut</span></div>
+    <div class="links">
+      <a href="#ladder">Vocabulary</a>
+      <a href="#structures">Structures</a>
+      <a href="#groves">Groves</a>
+      <a href="/atlas/data.html">Atlas →</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Liquidity Framework · Base Mainnet</div>
+    <h1 class="serif">The Orchard</h1>
+    <p class="lede">Based Nut liquidity modeled as a <b>rooted, multiplex liquidity hypergraph</b>, expressed through tree language —
+      where every pool is a botanical structure, every collection is a grove, and the whole farm evolves as an economic state machine.</p>
+    <div class="eq">NUT → wNUT → <b>Branches · Grafts · Whorls</b> → Groves → 𝒪</div>
+    <div class="stats" id="hero-stats"></div>
+    <div class="cta">
+      <a class="btn primary" href="/atlas/data.html">Open the Atlas (live data)</a>
+      <a class="btn ghost" href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves">Read the docs ↗</a>
+    </div>
+  </div>
+</header>
+
+<section id="ladder">
+  <div class="wrap">
+    <h2 class="serif">The five layers</h2>
+    <p class="sub">Five things that are easy to conflate, kept separate: assets, structures, groves, topology, and state. No layer reduces to another — a pool is not a grove, a shape is not a mechanism, a snapshot is not the machine.</p>
+    <div class="ladder">
+      <div class="rung r4"><span class="t">🌳 Orchard</span><span class="d">The entire system — full multiplex liquidity hypergraph 𝒪</span><span class="c" id="c-orchard"></span></div>
+      <div class="arrow-up">contains</div>
+      <div class="rung r3"><span class="t">🌾 Groves</span><span class="d">Overlapping semantic projections — why structures belong together</span><span class="c" id="c-groves"></span></div>
+      <div class="arrow-up">group</div>
+      <div class="rung r2"><span class="t">🌿 Structures</span><span class="d">Branches (2-token) · Grafts (rooted 3-token) · Whorls (n≥3) · bonding curves</span><span class="c" id="c-structs"></span></div>
+      <div class="arrow-up">rooted on</div>
+      <div class="rung r1"><span class="t">🪵 Rootstock</span><span class="d">wNUT — the common connector grafts attach to; Branches root directly on NUT</span><span class="c">1:1 wrap</span></div>
+      <div class="arrow-up">wraps</div>
+      <div class="rung r0"><span class="t">🥜 Root Asset</span><span class="d">NUT — the primitive economic asset of the ecosystem</span><span class="c">supply 1</span></div>
+    </div>
+    <p class="scale-note"><b>Two scales, two graphs.</b> Branches root on <b>NUT</b>; Grafts root on <b>wNUT</b>, its 1:1 rootstock wrap. The wrapper is the only edge between them — a NUT-rooted pool and a wNUT-rooted pool hold different tokens and form different graphs, joined by one rail. The Atlas filter bar separates the scales explicitly.</p>
+    <div class="sigma" style="text-align:center">…and beneath it all, the state machine: 𝒪<sub>t</sub> → 𝒪<sub>t+1</sub>, economic transitions every block.</div>
+  </div>
+</section>
+
+<section id="structures">
+  <div class="wrap">
+    <h2 class="serif">Liquidity structures</h2>
+    <p class="sub">A 2-token pool, a 3-token pool, and a 4-token pool are mathematically different objects — the Orchard gives each its own name. Every example below is live on Base right now, with its address. Each arity admits different invariants, different swap mathematics, and different failure modes — the names are graph theory, not ornament.</p>
+    <div class="grid">
+      <div class="card">
+        <div class="glyph" id="g-branch"></div>
+        <h3>Branch <span class="tag t-branch">edge</span></h3>
+        <div class="math">B<sub>ij</sub> = {a<sub>i</sub>, a<sub>j</sub>}</div>
+        <p>A two-asset market — an ordinary graph edge. The same pair can exist on many venues at once (multiplicity): NUT/WETH grows on three parallel branches.</p>
+        <div class="ex"><span class="who">Live example:</span> NUT/WETH · Uniswap V3 · <span data-tvl="nut-weth-v3"></span> — <a data-link="nut-weth-v3">pool ↗</a></div>
+      </div>
+      <div class="card">
+        <div class="glyph" id="g-graft"></div>
+        <h3>Graft <span class="tag t-graft">hyperedge</span></h3>
+        <div class="math">G<sub>ij</sub> = {wNUT, s<sub>i</sub>, s<sub>j</sub>}</div>
+        <p>A rooted ternary hyperedge: rootstock plus exactly two scions. Strictly three tokens, strictly wNUT-rooted. The Sunflower Grove's Twin Grafts run 20/40/40.</p>
+        <div class="ex"><span class="who">Live example:</span> gtINF · wNUT/VVV/DIEM · Balancer v3 · 20/40/40 — <a data-link="gt-inf">pool ↗</a></div>
+      </div>
+      <div class="card">
+        <div class="glyph" id="g-whorl"></div>
+        <h3>Whorl <span class="tag t-whorl">hyperedge</span></h3>
+        <div class="math">W<sub>ijkl</sub> = {a<sub>i</sub>, a<sub>j</sub>, a<sub>k</sub>, a<sub>l</sub>}</div>
+        <p>An unrooted multi-asset hyperedge (n≥3), no distinguished rootstock. pNUT — the 4-merous 25/25/25/25 pool that predates grafting — is the Orchard's heirloom Whorl.</p>
+        <div class="ex"><span class="who">Live example:</span> pNUT · NUT/SNUT/cbETH/cbBTC · Balancer V2 · <span data-tvl="pnut"></span> — <a data-link="pnut">pool ↗</a></div>
+      </div>
+      <div class="card">
+        <div class="glyph" id="g-grove"></div>
+        <h3>Grove <span class="tag t-grove">subgraph</span></h3>
+        <div class="math">G<sub>i</sub> = φ(𝒪<sub>t</sub>)</div>
+        <p>Not a pool — a projection. A grove is any economically, functionally, or historically coherent collection of structures. One structure may belong to many groves at once.</p>
+        <div class="ex"><span class="who">Live example:</span> Sunflower Grove — 5 Twin Grafts on one rootstock — <a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/sunflower-grove">docs ↗</a></div>
+      </div>
+    </div>
+
+    <h2 class="serif" style="margin-top:56px">Graft anatomy</h2>
+    <p class="sub">The propagation metaphor is literal: a scion from one tree joined to the root system of another, sharing liquidity the way grafted plants share water.</p>
+    <div class="anatomy">
+      <figure class="diagram">
+        <svg viewBox="0 0 520 340" width="100%" id="anatomy-svg"></svg>
+        <figcaption>gtINF — the Inference Twin Graft, live on Balancer v3 (Base)</figcaption>
+      </figure>
+      <div class="notes">
+        <h3>How a graft grows</h3>
+        <ol>
+          <li><b>Rootstock (20%)</b> — wNUT sits at the base of every graft, the shared root that connects all five pools of the Sunflower Grove.</li>
+          <li><b>Scions (40/40)</b> — two external assets, joined as equals. For gtINF: VVV (Venice) and DIEM (Venice compute).</li>
+          <li><b>One invariant</b> — three tokens, one pool, one continuous function. Swaps price all three against each other directly.</li>
+          <li><b>Weights are form</b> — 20/40/40 is the <i>Twin</i> form. Future forms (Equal 33/33/33, Rootstock 70/15/15) change the geometry, never the arity.</li>
+        </ol>
+        <div class="formula">G = {wNUT 20% · s<sub>i</sub> 40% · s<sub>j</sub> 40%} &nbsp;—&nbsp; symbol grammar: <b>g</b>+<b>t</b>+THEME → gtINF</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="groves">
+  <div class="wrap">
+    <h2 class="serif">Grove taxonomy</h2>
+    <p class="sub">Four classes by meaning, three practical groves you can walk through today. Grove membership is a function of state — a pool can enter an Arbitrage grove when a discrepancy exists and leave when it's arbitraged away. One pool wears tags from every class at once: gtAGT is Compute crop + Routing guild + Weighted cultivation + Sunflower member.</p>
+
+    <div class="classes">
+      <div class="class-card"><div class="icon">🌾</div><h3>Crop Groves</h3><p>Economic exposure — what the orchard grows.</p><div class="members" id="m-crop"></div></div>
+      <div class="class-card"><div class="icon">⚙️</div><h3>Guild Groves</h3><p>Economic function — what structures do for the system. Pollinators, routers, arbitrageurs.</p><div class="members" id="m-guild"></div></div>
+      <div class="class-card"><div class="icon">🌱</div><h3>Cultivation Groves</h3><p>Liquidity mechanism — how value is grown. The Orchard is deliberate polyculture.</p><div class="members" id="m-cult"></div></div>
+      <div class="class-card"><div class="icon">🧬</div><h3>Heritage Groves</h3><p>Lineage and history — where structures came from, what they inherit.</p><div class="members" id="m-herit"></div></div>
+    </div>
+
+    <h3 class="serif" style="font-size:22px;margin-bottom:16px">The three practical groves</h3>
+    <div class="practical">
+      <div class="prac sun">
+        <div class="icon">🌻</div>
+        <h3>Sunflower Grove</h3>
+        <p>Five rooted Twin Grafts on one wNUT rootstock — the standardized planting. Batch I went live 2026-08-27: Inference, Agent, Ether, Bitcoin, FX.</p>
+        <div class="meta"><span><b id="n-sun">–</b> grafts</span><span><b>20/40/40</b> Twin form</span></div>
+        <p style="margin-top:10px"><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/sunflower-grove">grove docs ↗</a></p>
+      </div>
+      <div class="prac heir">
+        <div class="icon">🏺</div>
+        <h3>Heirloom Grove</h3>
+        <p>The inherited collection — foundational branches, the pNUT Whorl, the Mint Club curves. Everything planted since genesis, kept for lineage.</p>
+        <div class="meta"><span><b id="n-heir">–</b> live structures</span><span><b id="n-exited">–</b> retired</span></div>
+        <p style="margin-top:10px"><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/heirloom-grove">grove docs ↗</a></p>
+      </div>
+      <div class="prac poly">
+        <div class="icon">🌲</div>
+        <h3>Polyforest Grove</h3>
+        <p>The wild mixed forest — heterogeneous cross-mechanism routes. Ring I closes a loop through four different pricing functions: bonding curve → vAMM → reCLAMM → concentrated liquidity. Cycle enumeration since found 70 rings total — 19 exist only because the NUT↔wNUT wrapper connects the two scales. Every ring traverses both ways.</p>
+        <div class="meta"><span><b id="n-poly">–</b> structures</span><span><b id="n-rings">–</b></span></div>
+        <p style="margin-top:10px"><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/polyforest-grove">grove docs ↗</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="canopy">
+  <div class="wrap">
+    <h2 class="serif">Canopy forms</h2>
+    <p class="sub">Topology is the view from above — the geometric shape the connections make when you squint at the whole system. The Orchard is honest about maturity: parallel markets on the same pair (NUT/WETH on Uniswap V2 and V3) are multiplicity, not Mesh — route redundancy is the seed of Mesh, not its proof. A form is claimed live only when the shape is drawn by real, address-bearing structures.</p>
+    <div class="canopy">
+      <div class="form live"><svg width="90" height="64" data-form="sunflower"></svg><div class="nm">Sunflower</div><div class="st">5 grafts radial on wNUT</div></div>
+      <div class="form live"><svg width="90" height="64" data-form="ring"></svg><div class="nm">Ring</div><div class="st" id="st-ring">cycle</div></div>
+      <div class="form live"><svg width="90" height="64" data-form="hub"></svg><div class="nm">Hub-and-Spoke</div><div class="st">NUT hub — the OG</div></div>
+      <div class="form live"><svg width="90" height="64" data-form="hier"></svg><div class="nm">Hierarchical</div><div class="st">NUT → hubs → leaves</div></div>
+      <div class="form"><svg width="90" height="64" data-form="mesh"></svg><div class="nm">Mesh</div><div class="st">emerging — route redundancy</div></div>
+      <div class="form"><svg width="90" height="64" data-form="star"></svg><div class="nm">Star</div><div class="st">the seed of every form</div></div>
+    </div>
+    <div class="state-strip" style="margin-top:36px">
+      <div class="node">𝒪<sub>t</sub> · block t</div><n class="arr">→</n>
+      <div class="node">trade / seed / arb / wrap</div><n class="arr">→</n>
+      <div class="node">𝒪<sub>t+1</sub> · block t+1</div>
+      <div class="note">Contracts frozen · meaning moving — the same structure can mean something different at the next block. <a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/state-machine">State machine docs ↗</a></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap cols">
+    <div>
+      <h4>The Orchard Atlas</h4>
+      <p>Concept surface for the Based Nut liquidity framework. The instrument surface — the live hypergraph, forest, and registry — lives in the <a href="/atlas/data.html">Atlas</a>.</p>
+      <p style="margin-top:10px"><span class="badge">Static snapshot <span id="snap-date"></span></span> <span class="badge">Base mainnet · chain 8453</span> <span class="badge">adapter-ready</span></p>
+      <p style="margin-top:10px;font-size:12.5px">No live feed is claimed on this page. Pool data: multi-source reconciled cache (DexScreener · GeckoTerminal · Balancer). Addresses: config.py, canonical.</p>
+    </div>
+    <div>
+      <h4>Framework docs</h4>
+      <ul>
+        <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves">Tree Groves</a></li>
+        <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/canopy-forms">Canopy Forms</a></li>
+        <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/topology-graphs">Topology Graphs</a></li>
+        <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/state-machine">State Machine</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Grove docs</h4>
+      <ul>
+        <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/sunflower-grove">🌻 Sunflower</a></li>
+        <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/heirloom-grove">🏺 Heirloom</a></li>
+        <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/polyforest-grove">🌲 Polyforest</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script src="/atlas/orchard-data.js?v=live1"></script>
+<script>
+(function(){
+  const O = ORCHARD;
+  const live = O.structures.filter(s => s.status === 'live');
+  const fmt = n => n == null ? '—' : '$' + (n >= 1000 ? (n/1000).toFixed(1) + 'k' : n.toFixed(n < 10 ? 2 : 0));
+
+  /* Hero stats */
+  const stats = [
+    [Object.keys(O.tokens).length, 'tokens'],
+    [live.length, 'live structures'],
+    [live.filter(s => s.type === 'graft').length, 'grafts'],
+    [Object.keys(O.groves).length, 'groves'],
+    [fmt(live.reduce((a,s) => a + (s.tvl || 0), 0)), 'live TVL']
+  ];
+  document.getElementById('hero-stats').innerHTML = stats.map(s =>
+    `<div class="stat"><div class="n">${s[0]}</div><div class="l">${s[1]}</div></div>`).join('');
+
+  /* Ladder counts */
+  document.getElementById('c-orchard').textContent = Object.keys(O.tokens).length + ' assets';
+  document.getElementById('c-groves').textContent = Object.keys(O.groves).length + ' tagged';
+  document.getElementById('c-structs').textContent = live.length + ' live · ' + (O.structures.length - live.length) + ' retired';
+
+  /* Structure card examples */
+  document.querySelectorAll('[data-tvl]').forEach(el => {
+    const s = O.structures.find(x => x.id === el.dataset.tvl);
+    if (s) el.textContent = fmt(s.tvl);
+  });
+  document.querySelectorAll('[data-link]').forEach(el => {
+    const s = O.structures.find(x => x.id === el.dataset.link);
+    if (s) el.href = (s.venue.indexOf('Balancer') === 0) ? ORCHARD.link.balancer(s.address) : ORCHARD.link.dexscreener(s.address);
+  });
+
+  /* Grove class member counts (live only) */
+  const crop = ['reserve','settlement','compute','infra'].map(g =>
+    live.filter(s => s.groves.includes(g)).length);
+  document.getElementById('m-crop').textContent = `Reserve ${crop[0]} · Settlement ${crop[1]} · Compute ${crop[2]} · Infrastructure ${crop[3]}`;
+  const mechs = {};
+  live.forEach(s => mechs[s.mechanism] = (mechs[s.mechanism] || 0) + 1);
+  document.getElementById('m-cult').textContent = Object.entries(mechs).map(([k,v]) => `${k} ${v}`).join(' · ');
+  document.getElementById('m-guild').textContent = `Routing & Arbitrage: ${O.census.total} rings enumerated (${O.census.marketRings} market · ${O.census.wrapperCrossRings} wrapper-cross · ${O.census.parallelVenueLoops} parallel-venue)`;
+  document.getElementById('m-herit').textContent = `Heirloom ${live.filter(s => s.groves.includes('heirloom')).length} live · Lineage ${live.filter(s => s.groves.includes('nut-lineage')).length} · Nested ${live.filter(s => s.groves.includes('nested')).length}`;
+
+  /* Practical grove counts */
+  document.getElementById('n-sun').textContent = live.filter(s => s.groves.includes('sunflower')).length;
+  document.getElementById('n-heir').textContent = live.filter(s => s.groves.includes('heirloom')).length;
+  document.getElementById('n-exited').textContent = O.structures.length - live.length;
+  document.getElementById('n-poly').textContent = live.filter(s => s.groves.includes('polyforest')).length;
+  document.getElementById('n-rings').textContent = O.rings.length + ' documented · ' + O.census.total + ' rings';
+  document.getElementById('st-ring').textContent = 'cycle — ' + O.census.total + ' enumerated';
+  document.getElementById('snap-date').textContent = O.meta.snapshot;
+
+  /* ── SVG helpers ── */
+  const NS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs){ const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+  /* Branch glyph: two nodes, one edge */
+  (function(){
+    const svg = document.getElementById('g-branch'); svg.setAttribute('viewBox','0 0 200 88');
+    svg.appendChild(svgEl('path',{d:'M45,44 Q100,20 155,44',stroke:'#6b8e4e','stroke-width':3,fill:'none'}));
+    svg.appendChild(svgEl('circle',{cx:45,cy:44,r:13,fill:'#c9a227'}));
+    svg.appendChild(svgEl('circle',{cx:155,cy:44,r:13,fill:'#3f6fa8'}));
+    const t1 = svgEl('text',{x:45,y:48,'text-anchor':'middle','font-size':10,fill:'#2d2013','font-weight':700}); t1.textContent='NUT'; svg.appendChild(t1);
+    const t2 = svgEl('text',{x:155,y:48,'text-anchor':'middle','font-size':10,fill:'#fff','font-weight':700}); t2.textContent='WETH'; svg.appendChild(t2);
+  })();
+
+  /* Graft glyph: root + two scions as triangle hyperedge */
+  (function(){
+    const svg = document.getElementById('g-graft'); svg.setAttribute('viewBox','0 0 200 88');
+    svg.appendChild(svgEl('path',{d:'M100,74 L60,22 L140,22 Z',fill:'rgba(201,162,39,.18)',stroke:'#c9a227','stroke-width':2}));
+    svg.appendChild(svgEl('circle',{cx:100,cy:74,r:13,fill:'#c9a227'}));
+    svg.appendChild(svgEl('circle',{cx:60,cy:22,r:11,fill:'#f472b6'}));
+    svg.appendChild(svgEl('circle',{cx:140,cy:22,r:11,fill:'#f472b6'}));
+    const t1 = svgEl('text',{x:100,y:78,'text-anchor':'middle','font-size':9,fill:'#2d2013','font-weight':700}); t1.textContent='wNUT'; svg.appendChild(t1);
+    const t2 = svgEl('text',{x:60,y:26,'text-anchor':'middle','font-size':9,fill:'#fff','font-weight':700}); t2.textContent='s₁'; svg.appendChild(t2);
+    const t3 = svgEl('text',{x:140,y:26,'text-anchor':'middle','font-size':9,fill:'#fff','font-weight':700}); t3.textContent='s₂'; svg.appendChild(t3);
+  })();
+
+  /* Whorl glyph: quad hyperedge */
+  (function(){
+    const svg = document.getElementById('g-whorl'); svg.setAttribute('viewBox','0 0 200 88');
+    svg.appendChild(svgEl('path',{d:'M60,44 L100,16 L140,44 L100,72 Z',fill:'rgba(125,91,166,.15)',stroke:'#7d5ba6','stroke-width':2}));
+    [[60,44],[100,16],[140,44],[100,72]].forEach((p,i) => {
+      svg.appendChild(svgEl('circle',{cx:p[0],cy:p[1],r:10,fill:['#c9a227','#e08e45','#3f6fa8','#8ab4f8'][i]}));
+    });
+    const t1 = svgEl('text',{x:100,y:88,'text-anchor':'middle','font-size':9,fill:'#5c4a33'}); t1.textContent='n ≥ 3, no root'; svg.appendChild(t1);
+  })();
+
+  /* Grove glyph: overlapping blob sets */
+  (function(){
+    const svg = document.getElementById('g-grove'); svg.setAttribute('viewBox','0 0 200 88');
+    svg.appendChild(svgEl('ellipse',{cx:75,cy:44,rx:48,ry:30,fill:'rgba(47,127,116,.14)',stroke:'#2f7f74','stroke-width':1.5,'stroke-dasharray':'5 4'}));
+    svg.appendChild(svgEl('ellipse',{cx:125,cy:44,rx:48,ry:30,fill:'rgba(201,162,39,.14)',stroke:'#c9a227','stroke-width':1.5,'stroke-dasharray':'5 4'}));
+    [[60,36,'#c9a227'],[85,52,'#3f6fa8'],[105,30,'#f472b6'],[130,50,'#c9a227'],[150,36,'#3f6fa8']].forEach(p =>
+      svg.appendChild(svgEl('circle',{cx:p[0],cy:p[1],r:7,fill:p[2]})));
+  })();
+
+  /* Graft anatomy diagram */
+  (function(){
+    const svg = document.getElementById('anatomy-svg');
+    const A = [['M260,310','ground'],
+      // soil / root zone
+      ['M260,310 C230,318 215,330 200,338','root-hair'],['M260,310 C290,318 305,330 320,338','root-hair'],
+      ['M260,310 C240,320 235,332 232,344','root-hair'],['M260,310 C280,320 285,332 288,344','root-hair'],
+      // trunk (wNUT)
+      ['M260,310 C258,270 262,240 260,210','trunk'],
+      // graft union
+      ['M260,210 C225,185 195,160 165,132','scionA'],['M260,210 C295,185 325,160 355,132','scionB'],
+      ['M260,210 L238,196','bark'],['M260,210 L282,196','bark']
+    ];
+    // ground line
+    svg.appendChild(svgEl('rect',{x:60,y:310,width:400,height:2,fill:'#8a5220',opacity:.5}));
+    const soil = svgEl('rect',{x:60,y:312,width:400,height:28,fill:'rgba(138,82,32,.08)'}); svg.appendChild(soil);
+    // roots
+    svg.appendChild(svgEl('path',{d:'M260,310 C230,318 215,330 200,340 M260,310 C290,318 305,330 320,340 M260,310 C244,320 240,330 238,344 M260,310 C276,320 280,330 282,344',stroke:'#8a5220','stroke-width':5,fill:'none','stroke-linecap':'round',opacity:.85}));
+    // trunk
+    svg.appendChild(svgEl('path',{d:'M252,312 C250,270 254,240 254,212 L268,212 C268,240 266,270 268,312 Z',fill:'#a06a2e'}));
+    // scions — two branches up-left / up-right
+    svg.appendChild(svgEl('path',{d:'M254,218 C220,190 190,166 162,140',stroke:'#6b8e4e','stroke-width':9,fill:'none','stroke-linecap':'round'}));
+    svg.appendChild(svgEl('path',{d:'M268,218 C302,190 332,166 360,140',stroke:'#6b8e4e','stroke-width':9,fill:'none','stroke-linecap':'round'}));
+    // graft union band
+    svg.appendChild(svgEl('path',{d:'M244,206 C256,214 268,214 280,206 L276,196 C264,203 256,203 248,196 Z',fill:'#c9a227'}));
+    // canopies
+    svg.appendChild(svgEl('circle',{cx:158,cy:128,r:34,fill:'rgba(244,114,182,.25)',stroke:'#f472b6','stroke-width':2}));
+    svg.appendChild(svgEl('circle',{cx:364,cy:128,r:34,fill:'rgba(244,114,182,.25)',stroke:'#f472b6','stroke-width':2}));
+    // wNUT disc on trunk
+    svg.appendChild(svgEl('circle',{cx:261,cy:240,r:26,fill:'rgba(201,162,39,.3)',stroke:'#c9a227','stroke-width':2}));
+    // labels
+    function label(x,y,txt,fill,size,anchor){ const t = svgEl('text',{x:x,y:y,'text-anchor':anchor||'middle','font-size':size||13,fill:fill||'#2d2013','font-weight':700}); t.textContent = txt; svg.appendChild(t); }
+    label(158,132,'VVV','#fff',12); label(364,132,'DIEM','#fff',12);
+    label(261,244,'wNUT','#2d2013',12);
+    label(261,290,'ROOTSTOCK','#8a5220',10);
+    label(261,362,'20%','#8a5220',13);
+    label(158,86,'SCION A · 40%','#b05a78',11);
+    label(364,86,'SCION B · 40%','#b05a78',11);
+    const t1 = svgEl('text',{x:435,y:330,'font-size':10,fill:'#5c4a33','text-anchor':'middle'}); t1.textContent='soil'; svg.appendChild(t1);
+    // pool address tag
+    const link = svgEl('a',{href:ORCHARD.link.balancer(O.structures.find(s=>s.id==='gt-inf').address),target:'_blank'});
+    const tag = svgEl('text',{x:260,y:40,'text-anchor':'middle','font-size':11,fill:'#8a5220'});
+    tag.textContent = 'gtINF · Inference Twin Graft · Balancer v3 ↗';
+    link.appendChild(tag); svg.appendChild(link);
+  })();
+
+  /* Canopy form glyphs */
+  (function(){
+    function nodes(svg, pts, edges, r, colors){
+      edges.forEach(e => svg.appendChild(svgEl('line',{x1:pts[e[0]][0],y1:pts[e[0]][1],x2:pts[e[1]][0],y2:pts[e[1]][1],stroke:'#b8a77e','stroke-width':1.4})));
+      pts.forEach((p,i) => svg.appendChild(svgEl('circle',{cx:p[0],cy:p[1],r:r,fill:colors ? colors[i] : '#b5712f'})));
+    }
+    document.querySelectorAll('[data-form]').forEach(svg => {
+      const f = svg.dataset.form;
+      if (f === 'sunflower'){ // center + 5 petals
+        const cx=45,cy=32,R=20;
+        for(let i=0;i<5;i++){ const a=i*2*Math.PI/5-Math.PI/2;
+          svg.appendChild(svgEl('line',{x1:cx,y1:cy,x2:cx+R*Math.cos(a),y2:cy+R*Math.sin(a),stroke:'#c9a227','stroke-width':1.6}));
+          svg.appendChild(svgEl('ellipse',{cx:cx+R*Math.cos(a),cy:cy+R*Math.sin(a),rx:7,ry:4,fill:'rgba(201,162,39,.5)',transform:`rotate(${i*72} ${cx+R*Math.cos(a)} ${cy+R*Math.sin(a)})`}));
+        }
+        svg.appendChild(svgEl('circle',{cx:cx,cy:cy,r:7,fill:'#8a5220'}));
+      }
+      if (f === 'ring'){ const pts=[[45,12],[68,28],[59,54],[31,54],[22,28]]; nodes(svg,pts,[[0,1],[1,2],[2,3],[3,4],[4,0]],5.5); }
+      if (f === 'hub'){ const c=[45,32]; [[45,8],[66,22],[58,50],[32,50],[24,22]].forEach(p => svg.appendChild(svgEl('line',{x1:c[0],y1:c[1],x2:p[0],y2:p[1],stroke:'#b8a77e','stroke-width':1.4}))); svg.appendChild(svgEl('circle',{cx:45,cy:32,r:8,fill:'#8a5220'})); [[45,8],[66,22],[58,50],[32,50],[24,22]].forEach(p => svg.appendChild(svgEl('circle',{cx:p[0],cy:p[1],r:5,fill:'#b5712f'}))); }
+      if (f === 'hier'){ nodes(svg,[[45,10],[20,32],[70,32],[8,54],[32,54],[58,54],[82,54]],[[0,1],[0,2],[1,3],[1,4],[2,5],[2,6]],5); }
+      if (f === 'mesh'){ nodes(svg,[[30,16],[60,16],[45,38],[20,44],[68,46]],[[0,1],[0,2],[1,2],[2,3],[2,4],[0,3],[1,4],[3,4]],4.5); }
+      if (f === 'star'){ const c=[45,32]; for(let i=0;i<8;i++){ const a=i*Math.PI/4; svg.appendChild(svgEl('line',{x1:c[0],y1:c[1],x2:45+22*Math.cos(a),y2:32+22*Math.sin(a),stroke:'#b8a77e','stroke-width':1.2})); } svg.appendChild(svgEl('circle',{cx:45,cy:32,r:7,fill:'#c9a227'})); }
+    });
+  })();
+})();
+</script>
+</body>
+</html>

@@ -26,6 +26,7 @@ Key information:
 - [Chat](/chat): Community chat with Peanutoshi AI assistant
 - [Images](/images): Media gallery and asset collection
 - [Agent Economy](/agent-economy): Live autonomous-agent survival dashboard — Pipshell/Peanut shared treasury, ACP income, escrow ledger, benefactor policy, on-chain alive clock (Base RPC + Blockscout + GeckoTerminal)
+- [Orchard Atlas](/atlas): Liquidity framework concept surface — five-layer ladder (Asset → Structure → Grove → Canopy → Orchard), graft anatomy, grove taxonomy, canopy forms. Instrument surface at /atlas/data: live hypergraph with 23 structures, scale filters (NUT-rooted vs wNUT-rooted), forest carousel, ring census (70 rings), and address-linked registry
 - [Department of Complaints](/complaints): Satirical local-only grievance office — file complaints against the market, escalate to the manager, receive Peanutoshi's ruling
 - [The Nut Standard](/rwa/nut-inflation): Purchasing-power experiment — the U.S. economy priced in nuts vs dollars, gold, bitcoin; BLS CPI/PPI, USDA producer prices, two centuries of data
 - [Nut Stocks](/rwa/nut-stocks): Nuts, publicly traded — global nut-economy equities: growers, farmland, processors, brands, small caps, with issuer filings and market sources

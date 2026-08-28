@@ -58,6 +58,13 @@ module.exports = (phase) => {
                 },
             ];
         },
+        async rewrites() {
+            return [
+                { source: '/atlas', destination: '/atlas/index.html' },
+                { source: '/atlas/data', destination: '/atlas/data.html' },
+                { source: '/atlas/graph', destination: '/atlas/data.html' },
+            ];
+        },
         async redirects() {
             return [
                 {

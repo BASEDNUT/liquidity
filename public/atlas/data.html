@@ -1,0 +1,1124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orchard Atlas — Live Liquidity Hypergraph</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥜</text></svg>">
+<style>
+  :root{
+    --bg:#141812; --bg2:#1a2018; --panel:#1f271e; --panel2:#242e23;
+    --ink:#e8e4d8; --ink-dim:#a8a394; --ink-faint:#6e6a5c;
+    --gold:#e3b34c; --gold-deep:#c98f1e; --green:#7fb069; --leaf:#5a8a4a;
+    --sky:#7fa8d9; --teal:#5fc4b0; --rose:#e08eb0; --plum:#b595d9; --clay:#d98e5f;
+    --line:#333b2e; --live:#7fb069; --dead:#8a6a5c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:15px/1.55 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif}
+  a{color:var(--gold);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+
+  nav{position:sticky;top:0;z-index:60;background:rgba(20,24,18,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav .wrap{max-width:1400px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:16px;height:56px}
+  nav .brand{font-weight:700;display:flex;align-items:center;gap:8px;font-size:16px}
+  nav .brand .sub{color:var(--ink-dim);font-weight:400;font-size:12.5px}
+  nav .viewtabs{margin-left:auto;display:flex;gap:4px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:4px}
+  nav .viewtabs button{border:0;background:transparent;color:var(--ink-dim);padding:6px 16px;border-radius:7px;cursor:pointer;font-size:13.5px;font-weight:600}
+  nav .viewtabs button.on{background:var(--gold);color:#241c07}
+  nav .concept{color:var(--ink-dim);font-size:13.5px}
+
+  .wrap{max-width:1400px;margin:0 auto;padding:0 20px}
+  .statrow{display:flex;gap:12px;flex-wrap:wrap;padding:18px 0 6px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 18px;min-width:108px}
+  .stat .n{font-size:21px;font-weight:700;color:var(--gold)}
+  .stat .n.green{color:var(--live)}
+  .stat .l{font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint)}
+  .snapshot{padding:8px 0 14px;color:var(--ink-faint);font-size:12.5px}
+  .snapshot b{color:var(--ink-dim)}
+
+  /* Graph stage */
+  .stage{position:relative;background:
+    radial-gradient(ellipse 70% 60% at 50% 40%, rgba(227,179,76,.05), transparent),
+    linear-gradient(180deg,var(--bg2),var(--bg));
+    border:1px solid var(--line);border-radius:18px;overflow:hidden;height:720px}
+  .stage svg{width:100%;height:100%;display:block;cursor:grab}
+  .stage svg.panning{cursor:grabbing}
+  .stage .hint{position:absolute;bottom:10px;left:14px;color:var(--ink-faint);font-size:11.5px;pointer-events:none}
+  .stage .legend{position:absolute;top:12px;right:14px;background:rgba(31,39,30,.92);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:12px;max-width:230px}
+  .legend .li{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--ink-dim)}
+  .legend .sw{width:26px;height:0;border-top:3px solid;flex:none}
+  .legend .sw.filled{height:12px;border:0;border-radius:3px}
+
+  .filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:14px 0 6px}
+  .fgroup{display:flex;gap:6px;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:5px 10px}
+  .fgroup .gl{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-faint);padding-right:4px}
+  .chip{border:1px solid var(--line);background:transparent;color:var(--ink-dim);border-radius:999px;padding:4px 12px;font-size:12.5px;cursor:pointer;font-weight:600}
+  .chip:hover{color:var(--ink)}
+  .chip.on{background:var(--gold);border-color:var(--gold);color:#241c07}
+  .chip.on.teal{background:var(--teal);border-color:var(--teal);color:#0b2a24}
+  .chip.reset{border-style:dashed}
+
+  /* tooltip + detail */
+  .tooltip{position:absolute;pointer-events:none;background:rgba(26,32,24,.97);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:12.5px;max-width:260px;display:none;z-index:40;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+  .tooltip .tt{font-weight:700;color:var(--gold)}
+  .tooltip .tsub{color:var(--ink-dim)}
+  .detail{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;margin-top:16px}
+  .detail h3{font-size:19px;color:var(--gold);margin-bottom:2px}
+  .detail .dsub{color:var(--ink-dim);font-size:13px;margin-bottom:14px}
+  .detail table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .detail td{padding:7px 10px;border-top:1px solid var(--line);vertical-align:top}
+  .detail td:first-child{color:var(--ink-faint);white-space:nowrap;width:130px;text-transform:uppercase;font-size:11px;letter-spacing:.8px;padding-top:10px}
+  .detail .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .detail .links a{border:1px solid var(--line);border-radius:8px;padding:6px 14px;font-size:12.5px;font-weight:600}
+  .detail .links a:hover{border-color:var(--gold);text-decoration:none;background:rgba(227,179,76,.08)}
+  .placeholder{color:var(--ink-faint);font-size:13.5px;padding:8px 0}
+
+  /* Registry */
+  .sect{padding:34px 0 8px}
+  .sect h2{font-size:23px;margin-bottom:4px}
+  .sect .sub{color:var(--ink-dim);font-size:13.5px;margin-bottom:18px;max-width:760px}
+  table.reg{width:100%;border-collapse:collapse;font-size:13px}
+  table.reg th{text-align:left;color:var(--ink-faint);font-size:10.5px;text-transform:uppercase;letter-spacing:1.1px;padding:8px 10px;border-bottom:1px solid var(--line)}
+  table.reg td{padding:9px 10px;border-bottom:1px solid rgba(51,59,46,.55);vertical-align:middle}
+  table.reg tr:hover td{background:rgba(227,179,76,.04)}
+  .typ{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:7px}
+  .typ.branch{background:var(--leaf)}
+  .typ.graft{background:var(--gold)}
+  .typ.whorl{background:var(--plum)}
+  .typ.curve{background:var(--teal)}
+  .typ.wrapper{background:var(--gold)}
+  .tvlpill{font-weight:700;color:var(--gold)}
+  .addr{font-size:11.5px;color:var(--ink-dim)}
+  .addr:hover{color:var(--gold)}
+  .gv{display:inline-block;font-size:10.5px;color:var(--ink-dim);border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin:1px 3px 1px 0;white-space:nowrap}
+  .stlive{color:var(--live);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.8px}
+  .stexit{color:var(--dead);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.8px}
+  .regwrap{border:1px solid var(--line);border-radius:16px;overflow:auto;background:var(--panel)}
+
+  /* Forest walk */
+  /* forest carousel */
+  .carouselbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:4px 0 12px}
+  .gchip{border:1px solid var(--line);background:transparent;color:var(--ink-dim);border-radius:999px;padding:5px 13px;font-size:12.5px;cursor:pointer;font-weight:600}
+  .gchip:hover{color:var(--ink);border-color:var(--gold)}
+  .gchip.on{background:var(--gold);border-color:var(--gold);color:#241c07}
+  .grovehead{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:2px 0 12px}
+  .grovehead .ic{font-size:26px}
+  .grovehead h3{font-size:19px}
+  .grovehead .count{color:var(--ink-dim);font-size:13px}
+  .grovehead .count b{color:var(--gold)}
+  .grovehead .desc{color:var(--ink-dim);font-size:13px;flex-basis:100%;margin:2px 0 0}
+  .bigscene{position:relative;height:720px;border-radius:18px;border:1px solid var(--line);overflow:hidden}
+  .bigscene .fscene{width:100%;height:100%;border-radius:0}
+  .carrow{position:absolute;top:50%;transform:translateY(-50%);z-index:30;width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:rgba(26,32,24,.88);color:var(--ink-dim);font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0}
+  .carrow:hover{color:var(--ink);border-color:var(--gold)}
+  .carrow.left{left:14px}
+  .carrow.right{right:14px}
+  /* CSS trees — ported from concept scaffold, dark-adapted. Species = mechanism. */
+  .fscene{position:relative;height:460px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#20281f 0%,#181e15 78%,#131811 100%)}
+  .fscene .ground{position:absolute;left:0;right:0;bottom:0;height:34px;background:linear-gradient(180deg,rgba(90,138,74,.10),rgba(20,26,16,.9))}
+  .ftree{position:absolute;width:56px;height:84px;transform:translate(-50%,0);transform-origin:50% 100%;cursor:pointer;transition:filter .15s}
+  .ftree:hover{filter:brightness(1.3)}
+  .ftree .crown{position:absolute;left:50%;top:6px;transform:translateX(-50%);width:54px;height:54px;border-radius:48% 52% 44% 56%;background:#4d6b3f;box-shadow:inset -8px -10px rgba(255,255,255,.07),0 6px 16px rgba(0,0,0,.4)}
+  .ftree .trunk{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);width:6px;height:30px;background:#5a4630;border-radius:3px}
+  .ftree .lbl{position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;color:#d8d2c2;white-space:nowrap;text-shadow:0 1px 4px #000,0 0 8px #000}
+  .ftree.sun .crown{background:#d39e28;border-radius:50%;box-shadow:0 0 0 7px rgba(211,158,40,.16),0 0 24px rgba(211,158,40,.3)}
+  .ftree.pine .crown{width:46px;height:66px;border-radius:50% 50% 18% 18%;clip-path:polygon(50% 0,72% 25%,63% 25%,82% 52%,67% 50%,92% 86%,50% 72%,8% 86%,33% 50%,18% 52%,37% 25%,28% 25%);background:#2f513c}
+  .ftree.rose .crown{background:#9d5456}
+  .ftree.violet .crown{background:#6d4f91}
+  .ftree.teal .crown{background:#2e7d6e}
+  .ftree.sm{transform:translate(-50%,0) scale(.6)}
+  .ftree.md{transform:translate(-50%,0) scale(.8)}
+  .fstage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:280px;height:250px}
+  .ringarrow{position:absolute;height:2px;background:linear-gradient(90deg,rgba(227,179,76,.05),#e3b34c);transform-origin:left center}
+  .ringarrow:after{content:"";position:absolute;right:-1px;top:-3.5px;border-left:8px solid #e3b34c;border-top:4px solid transparent;border-bottom:4px solid transparent}
+  .mechtag{position:absolute;font-size:8.5px;font-weight:600;color:#c9b98a;background:rgba(35,40,28,.85);border:1px solid rgba(227,179,76,.3);padding:2px 6px;border-radius:99px;white-space:nowrap}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:11px;color:var(--ink-dim)}
+  .legend .li{display:flex;align-items:center;gap:5px}
+  .legend .sw{width:12px;height:12px;border-radius:48% 52% 44% 56%;display:inline-block}
+
+  footer{border-top:1px solid var(--line);margin-top:44px;padding:30px 0 50px;color:var(--ink-faint);font-size:12.5px}
+  footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr;gap:28px}
+  footer h4{color:var(--ink-dim);font-size:13px;margin-bottom:9px}
+  footer ul{list-style:none}
+  footer li{margin-bottom:5px}
+
+  .scales-hint{font-size:12.5px;color:var(--ink-dim);padding:0 0 10px}
+  .scales-hint b{color:var(--gold)}
+  .scl{font-size:10px;letter-spacing:.6px;padding:2.5px 9px;border-radius:999px;font-weight:700;white-space:nowrap}
+  .scl.nut{background:rgba(227,179,76,.16);color:#e3b34c}
+  .scl.wnut{background:rgba(245,215,138,.12);color:#f5d78a}
+  .scl.bridge{background:rgba(95,196,176,.13);color:#5fc4b0}
+  .scl.eco{background:rgba(168,163,148,.15);color:#a8a394}
+  .vlink{font-size:10.5px;color:var(--teal);text-decoration:none}
+  .vlink:hover{text-decoration:underline}
+  table.reg{min-width:1000px}
+  .stage svg{touch-action:none}
+  .chip:focus-visible,.gchip:focus-visible,.addr:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  @media (max-width:640px){
+    .wrap{padding:0 12px}
+    .statrow{gap:8px}
+    .stat{min-width:86px;padding:8px 12px}
+    .stat .n{font-size:18px}
+    .carouselbar{flex-wrap:nowrap;overflow-x:auto;padding-bottom:10px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+    .gchip{flex:none}
+    .fgroup{flex-wrap:wrap}
+    .bigscene{height:420px}
+    .stage{height:480px}
+    .stage .legend{display:none}
+    nav .brand .sub{display:none}
+    .detail{padding:14px}
+    .snapshot{font-size:11.5px}
+  }
+  @media (max-width:900px){
+    .fscene{height:380px}
+    .bigscene{height:460px}
+    .stage{height:560px}
+    footer .cols{grid-template-columns:1fr}
+    nav .concept{display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">🥜 <span>Orchard Atlas</span><span class="sub">· Based Nut · Base</span></div>
+    <div class="viewtabs">
+      <button id="tab-graph" class="on" aria-label="Graph view — full liquidity hypergraph">Graph</button>
+      <button id="tab-forest" aria-label="Forest view — grove by grove tree graphs">Forest</button>
+      <button id="tab-registry" aria-label="Registry view — every structure with address and links">Registry</button>
+    </div>
+    <a class="concept" href="/atlas/index.html">← concept surface</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="statrow" id="stats"></div>
+  <div class="snapshot">Static snapshot <b id="snap"></b> · sources: config.py (canonical addresses) · nut_cache.db pool_market_producer (multi-source TVL) · Base RPC verification 2026-08-27 · Balancer v3 pool state · <b>no live feed claimed</b> · ring census computed 2026-08-28 — adapter-ready dataset.</div>
+
+  <!-- ══ GRAPH VIEW ══ -->
+  <div id="view-graph">
+    <div class="filterbar" id="filters"></div>
+    <div class="scales-hint">Two scales, two graphs — <b>Branches</b> root on <b>NUT</b> · <b>Grafts</b> root on <b>wNUT</b> (its 1:1 rootstock wrap) · the <b>wrapper</b> is the only bridge. Filter by scale to isolate either graph.</div>
+    <div class="stage">
+      <svg id="graph" viewBox="0 0 1200 740"></svg>
+      <div class="legend">
+        <div class="li"><span class="sw" style="border-color:#5a8a4a"></span>Branch — 2-token edge</div>
+        <div class="li"><span class="sw filled" style="background:rgba(227,179,76,.25);outline:1.5px solid #e3b34c"></span>Graft — {wNUT, sᵢ, sⱼ}</div>
+        <div class="li"><span class="sw filled" style="background:rgba(181,149,217,.18);outline:1.5px solid #b595d9"></span>Whorl — n≥3 unrooted</div>
+        <div class="li"><span class="sw" style="border-color:#5fc4b0;border-top-style:dashed"></span>Bonding curve</div>
+        <div class="li"><span class="sw" style="border-color:#e3b34c;border-top-style:dotted;border-top-width:4px"></span>Wrapper — 1:1 rail</div>
+        <div class="li" style="margin-top:8px;color:var(--ink-faint)">two scales: Branches root on NUT · Grafts root on wNUT</div>
+        <div class="li"><span class="sw" style="border-color:#e3b34c;border-top-width:4px"></span>Ring route (toggle)</div>
+        <div class="li" style="margin-top:8px;color:var(--ink-faint)">drag to pan · wheel to zoom · click nodes &amp; edges</div>
+      </div>
+      <div class="tooltip" id="tip"></div>
+      <div class="hint"><span id="zoomlevel">100%</span> zoom</div>
+    </div>
+    <div class="detail" id="detail"><div class="placeholder">Select any node or structure on the graph — full on-chain detail, addresses, and venue links appear here.</div></div>
+  </div>
+
+  <!-- ══ FOREST VIEW ══ -->
+  <div id="view-forest" style="display:none">
+    <div class="sect">
+      <h2>A walk through the groves</h2>
+      <p class="sub">One grove at a time — pick a grove or use the arrows, and its tree graph renders full-stage. Tree nodes are assets (species = asset class); edges are that grove's liquidity structures, strictly filtered. Every node and edge traces to a live, address-bearing pool on Base.</p>
+    </div>
+    <div class="carouselbar" id="grove-chips"></div>
+    <div class="grovehead" id="grove-head"></div>
+    <div class="bigscene" id="grove-stage">
+      <button class="carrow left" id="grove-prev" aria-label="previous grove">‹</button>
+      <button class="carrow right" id="grove-next" aria-label="next grove">›</button>
+    </div>
+    <div class="legend" id="forest-legend"></div>
+  </div>
+
+  <!-- ══ REGISTRY VIEW ══ -->
+  <div id="view-registry" style="display:none">
+    <div class="sect">
+      <h2>Structure registry</h2>
+      <p class="sub">Every live structure with its address, venue, mechanism and TVL. Retired structures are kept as heritage record. Click any row for links.</p>
+      <div class="regwrap"><table class="reg" id="regtable">
+        <thead><tr><th></th><th>Structure</th><th>Assets</th><th>Venue</th><th>Mechanism</th><th>TVL</th><th>Groves</th><th>Address</th><th>Scale</th><th>Status</th></tr></thead>
+        <tbody id="regbody"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="cols">
+      <div>
+        <h4>Orchard Atlas — instrument surface</h4>
+        <p>The Orchard models Based Nut liquidity as a rooted, multiplex hypergraph: NUT root asset → wNUT rootstock → Branches, Grafts and Whorls → Groves → the whole evolving state machine.</p>
+        <p style="margin-top:8px">Dataset is a static, honestly-labeled snapshot — swap <span class="mono">orchard-data.js</span> for a live endpoint when one exists. Nothing here is simulated; every number traces to the reconciled cache or on-chain verification.</p>
+      </div>
+      <div>
+        <h4>Framework</h4>
+        <ul>
+          <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves">Tree Groves</a></li>
+          <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/canopy-forms">Canopy Forms</a></li>
+          <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/topology-graphs">Topology Graphs</a></li>
+          <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/state-machine">State Machine</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Groves</h4>
+        <ul>
+          <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/sunflower-grove">🌻 Sunflower</a></li>
+          <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/heirloom-grove">🏺 Heirloom</a></li>
+          <li><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/polyforest-grove">🌲 Polyforest</a></li>
+          <li><a href="/atlas/index.html">Concept surface</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="/atlas/orchard-data.js?v=live1"></script>
+<script>
+(function(){
+  const O = ORCHARD;
+  const NS = 'http://www.w3.org/2000/svg';
+  const live = O.structures.filter(s => s.status === 'live');
+  const fmt = n => n == null ? '—' : '$' + (n >= 1000 ? (n/1000).toFixed(1) + 'k' : n.toFixed(n < 10 ? 2 : 0));
+  const kindColor = { core:'#e3b34c', family:'#d98e5f', reserve:'#7fa8d9', settlement:'#5fc4b0', compute:'#e08eb0', infra:'#9db86e', meme:'#b595d9', meta:'#7fa8d9' };
+
+  /* ── stats ── */
+  const counts = {branch:0,graft:0,whorl:0,curve:0};
+  live.forEach(s => counts[s.type]++);
+  document.getElementById('stats').innerHTML = [
+    [Object.keys(O.tokens).length,'tokens',''],
+    [live.length,'live structures','green'],
+    [counts.branch,'branches',''],
+    [counts.graft,'grafts',''],
+    [counts.whorl,'whorls',''],
+    [counts.curve,'bonding curves',''],
+    [Object.keys(O.groves).length,'groves',''],
+    [fmt(live.reduce((a,s)=>a+(s.tvl||0),0)),'live TVL','']
+  ].map(s => `<div class="stat"><div class="n ${s[2]}">${s[0]}</div><div class="l">${s[1]}</div></div>`).join('');
+  document.getElementById('snap').textContent = O.meta.snapshot;
+
+  /* ── layout ── */
+  const CX = 600, CY = 372;
+  /* data-driven layout — derived from dataset, never hardcoded stale tokens */
+  const allTokens = Object.keys(O.tokens);
+  const placed = ['NUT','WNUT','SNUT','SALT','NUTINO','WETH','CBBTC','CBETH','USDC','PIPS','AERO'];
+  const outer = allTokens.filter(t => !placed.includes(t));
+  const rings = [
+    { r: 0,    tokens: ['NUT'] },
+    { r: 132,  tokens: placed.slice(1, 5) },
+    { r: 252,  tokens: placed.slice(5) },
+    { r: 348,  tokens: outer }
+  ];
+  const pos = {};
+  rings.forEach(rg => {
+    const n = rg.tokens.length;
+    rg.tokens.forEach((t, i) => {
+      if (rg.r === 0) { pos[t] = [CX, CY]; return; }
+      const a = (i / n) * 2 * Math.PI - Math.PI/2 + (rg.r === 132 ? 0.35 : rg.r === 252 ? -0.15 : 0.1);
+      pos[t] = [CX + rg.r * Math.cos(a), CY + rg.r * Math.sin(a) * 0.92];
+    });
+  });
+  const nodeR = t => t === 'NUT' ? 30 : t === 'WNUT' ? 24 : 15;
+
+  const svg = document.getElementById('graph');
+  const gRoot = document.createElementNS(NS,'g'); svg.appendChild(gRoot);
+  const gHyper = document.createElementNS(NS,'g');
+  const gEdges = document.createElementNS(NS,'g');
+  const gRing  = document.createElementNS(NS,'g');
+  const gNodes = document.createElementNS(NS,'g');
+  const gLabels= document.createElementNS(NS,'g');
+  gRoot.appendChild(gHyper); gRoot.appendChild(gEdges); gRoot.appendChild(gRing); gRoot.appendChild(gNodes); gRoot.appendChild(gLabels);
+
+  function el(tag, attrs, parent){ const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); (parent||gRoot).appendChild(e); return e; }
+
+  /* scale classification — explicit NUT vs wNUT graph separation */
+  const scaleOf = s => s.assets.includes('WNUT') && s.assets.includes('NUT') ? 'bridge' : s.assets.includes('WNUT') ? 'wnut' : s.assets.includes('NUT') ? 'nut' : 'eco';
+  const SCL_NAME = { nut: 'NUT-rooted', wnut: 'wNUT-rooted', bridge: 'bridge', eco: 'ecosystem' };
+
+  /* filter state */
+  const state = { grove: null, type: null, mech: null, ring: null, scale: null };
+
+  function structMatches(s){
+    if (state.grove && !s.groves.includes(state.grove)) return false;
+    if (state.type && s.type !== state.type) return false;
+    if (state.mech && s.mech !== state.mech) return false;
+    if (state.scale && scaleOf(s) !== state.scale) return false;
+    return true;
+  }
+
+  /* detail panel */
+  const detail = document.getElementById('detail');
+  function showDetail(s){
+    const tk = a => `<a href="${O.link.basescan(O.tokens[a].addr)}" target="_blank">${a}</a>`;
+    const scl = scaleOf(s);
+    const scLabel = { nut: '<span class="scl nut">NUT-rooted</span> — branch scale', wnut: '<span class="scl wnut">wNUT-rooted</span> — graft scale (rootstock)', bridge: '<span class="scl bridge">bridge</span> — the only NUT↔wNUT rail', eco: '<span class="scl eco">ecosystem</span> — roots on neither' }[scl];
+    const venueLink = s.venue.indexOf('Balancer') === 0
+      ? `<a href="${O.link.balancer(s.address)}" target="_blank">Balancer pool ↗</a>`
+      : `<a href="${O.link.dexscreener(s.address)}" target="_blank">DexScreener ↗</a>`;
+    detail.innerHTML = `
+      <h3>${s.name}</h3>
+      <div class="dsub">${s.type} · ${s.venue} · ${s.mechanism}${s.weights ? ' · weights ' + s.weights.join('/') : ''}${s.curve ? ' · ' + s.curve + ' curve' : ''}</div>
+      <table>
+        <tr><td>Assets</td><td>${s.assets.map(a => O.tokens[a] ? tk(a) + ' <span style=\"color:var(--ink-faint)\">· ' + O.tokens[a].label + '</span>' : a).join(' &nbsp;·&nbsp; ')}</td></tr>
+        <tr><td>Scale</td><td>${scl}</td></tr>
+        <tr><td>Address</td><td><span class="mono">${s.address}</span></td></tr>
+        <tr><td>TVL</td><td>${s.tvl == null ? (s.type === 'wrapper' ? 'not tracked (wrapper — no pool)' : 'not tracked (bonding curve)') : fmt(s.tvl) + ' <span style=\"color:var(--ink-faint)\">(snapshot)</span>'}</td></tr>
+        <tr><td>Fee</td><td>${s.feeBps == null ? '—' : (s.feeBps/100) + '%'}</td></tr>
+        <tr><td>Groves</td><td>${s.groves.map(g => `<span class="gv">${O.groves[g] ? O.groves[g].label : g}</span>`).join(' ')}</td></tr>
+        <tr><td>Status</td><td>${s.status === 'live' ? '<span class="stlive">● live — verified</span>' : '<span class="stexit">○ retired — heritage record</span>'}</td></tr>
+      </table>
+      <div class="links"><a href="${O.link.basescan(s.address)}" target="_blank">Basescan ↗</a>${venueLink}<a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves" target="_blank">Framework docs ↗</a></div>`;
+  }
+  function showToken(t){
+    const d = O.tokens[t];
+    const deg = O.structures.filter(s => s.status === 'live' && s.assets.includes(t));
+    detail.innerHTML = `
+      <h3>${t}</h3>
+      <div class="dsub">${d.label} · ${d.kind} asset · ${d.decimals} decimals</div>
+      <table>
+        <tr><td>Address</td><td><span class="mono">${d.addr}</span></td></tr>
+        <tr><td>Live degree</td><td>${deg.length} live structure${deg.length === 1 ? '' : 's'}: ${deg.map(s => s.name).join(' · ')}</td></tr>
+      </table>
+      <div class="links"><a href="${O.link.basescan(d.addr)}" target="_blank">Basescan ↗</a><a href="${O.link.dexscreener(d.addr)}" target="_blank">DexScreener ↗</a></div>`;
+  }
+
+  /* tooltip */
+  const tip = document.getElementById('tip');
+  function tipShow(html, x, y){ tip.innerHTML = html; tip.style.display = 'block';
+    const r = tip.getBoundingClientRect(); tip.style.left = Math.min(x + 16, window.innerWidth - r.width - 20) + 'px'; tip.style.top = Math.max(10, y - 40) + 'px'; }
+  function tipHide(){ tip.style.display = 'none'; }
+
+  /* ── draw hyperedges ── */
+  function drawHyper(){
+    gHyper.innerHTML = '';
+    live.filter(s => s.type === 'graft' || s.type === 'whorl').forEach(s => {
+      if (!structMatches(s)) return;
+      const pts = s.assets.map(a => pos[a]);
+      const p = el('polygon', {
+        points: pts.map(p => p.join(',')).join(' '),
+        fill: s.type === 'graft' ? 'rgba(227,179,76,.16)' : 'rgba(181,149,217,.13)',
+        stroke: s.type === 'graft' ? '#e3b34c' : '#b595d9', 'stroke-width': 1.6, opacity: .9, cursor: 'pointer'
+      }, gHyper);
+      p.addEventListener('click', () => showDetail(s));
+      p.addEventListener('mousemove', e => tipShow(`<div class=\"tt\">${s.name}</div><div class=\"tsub\">${s.venue} · ${s.assets.join(' · ')}${s.weights ? ' · ' + s.weights.join('/') : ''}</div><div class=\"tsub\">${s.tvl == null ? '' : fmt(s.tvl) + ' TVL'} — click for detail</div>`, e.clientX, e.clientY));
+      p.addEventListener('mouseleave', tipHide);
+    });
+  }
+
+  /* ── draw edges (branches + curves) ── */
+  function drawEdges(){
+    gEdges.innerHTML = '';
+    live.filter(s => s.type === 'branch' || s.type === 'curve' || s.type === 'wrapper').forEach(s => {
+      if (!structMatches(s)) return;
+      const [a, b] = s.assets.map(x => pos[x]);
+      const mx = (a[0]+b[0])/2, my = (a[1]+b[1])/2;
+      const dx = b[0]-a[0], dy = b[1]-a[1], len = Math.hypot(dx,dy) || 1;
+      const bend = s.type === 'curve' ? 0.12 : 0.07;
+      const cx = mx - dy/len * len * bend, cy = my + dx/len * len * bend;
+      const p = el('path', {
+        d: `M${a[0]},${a[1]} Q${cx},${cy} ${b[0]},${b[1]}`,
+        stroke: s.type === 'curve' ? '#5fc4b0' : s.type === 'wrapper' ? '#e3b34c' : '#5a8a4a',
+        'stroke-width': Math.max(1.4, Math.min(5, (s.tvl||40)/500)),
+        fill: 'none', opacity: .75, cursor: 'pointer',
+        'stroke-dasharray': (s.type === 'curve' || s.type === 'wrapper') ? (s.type === 'wrapper' ? '2 6' : '6 5') : 'none'
+      }, gEdges);
+      p.addEventListener('click', () => showDetail(s));
+      p.addEventListener('mousemove', e => tipShow(`<div class=\"tt\">${s.name}</div><div class=\"tsub\">${s.venue} · ${s.mechanism}${s.feeBps ? ' · ' + s.feeBps/100 + '%' : ''}</div><div class=\"tsub\">${s.tvl == null ? (s.type === 'wrapper' ? '1:1 wrapper rail' : 'bonding curve') : fmt(s.tvl) + ' TVL'} — click for detail</div>`, e.clientX, e.clientY));
+      p.addEventListener('mouseleave', tipHide);
+    });
+  }
+
+  /* ── ring overlay ── */
+  function drawRing(){
+    gRing.innerHTML = '';
+    if (!state.ring) return;
+    const ring = O.rings.find(r => r.id === state.ring);
+    ring.steps.forEach(st => {
+      const s = O.structures.find(x => x.id === st.via);
+      const pts = s.assets.map(a => pos[a]);
+      if (pts.length === 2){
+        el('path', { d: `M${pts[0][0]},${pts[0][1]} L${pts[1][0]},${pts[1][1]}`, stroke: '#e3b34c', 'stroke-width': 5, fill: 'none', opacity: .95, 'stroke-linecap': 'round' }, gRing);
+      } else {
+        el('polygon', { points: pts.map(p => p.join(',')).join(' '), fill: 'none', stroke: '#e3b34c', 'stroke-width': 4, opacity: .95, 'stroke-linejoin': 'round' }, gRing);
+      }
+    });
+    // direction arrows along cycle
+    ring.steps.forEach(st => {
+      const s = O.structures.find(x => x.id === st.via);
+      const from = pos[st.from], to = pos[st.to];
+      const mx = (from[0]+to[0])/2, my = (from[1]+to[1])/2;
+      const ang = Math.atan2(to[1]-from[1], to[0]-from[0]);
+      const g = el('g', { transform: `translate(${mx},${my}) rotate(${ang*180/Math.PI})` }, gRing);
+      el('path', { d: 'M-5,-4 L5,0 L-5,4 Z', fill: '#e3b34c' }, g);
+    });
+  }
+
+  /* ── draw nodes ── */
+  function drawNodes(){
+    gNodes.innerHTML = ''; gLabels.innerHTML = '';
+    Object.keys(pos).forEach(t => {
+      const d = O.tokens[t];
+      const deg = live.filter(s => structMatches(s) && s.assets.includes(t)).length;
+      const active = deg > 0;
+      const c = el('circle', {
+        cx: pos[t][0], cy: pos[t][1], r: nodeR(t),
+        fill: kindColor[d.kind] || '#8a8', opacity: active ? 1 : .25,
+        stroke: t === 'NUT' ? '#f5d78a' : t === 'WNUT' ? '#e3b34c' : 'rgba(0,0,0,.4)',
+        'stroke-width': t === 'NUT' || t === 'WNUT' ? 3 : 1.5, cursor: 'pointer'
+      }, gNodes);
+      c.addEventListener('click', () => showToken(t));
+      c.addEventListener('mousemove', e => tipShow(`<div class=\"tt\">${t}</div><div class=\"tsub\">${d.label} · ${d.kind}</div><div class=\"tsub\">${live.filter(s => s.assets.includes(t)).length} live structures — click for detail</div>`, e.clientX, e.clientY));
+      c.addEventListener('mouseleave', tipHide);
+      const label = el('text', { x: pos[t][0], y: pos[t][1] + nodeR(t) + 14, 'text-anchor': 'middle', 'font-size': t === 'NUT' ? 15 : 12, 'font-weight': t === 'NUT' || t === 'WNUT' ? 700 : 500, fill: active ? '#e8e4d8' : '#6e6a5c' }, gLabels);
+      label.textContent = t;
+      if (t === 'NUT' || t === 'WNUT'){
+        const sub = el('text', { x: pos[t][0], y: pos[t][1] + nodeR(t) + 28, 'text-anchor': 'middle', 'font-size': 9.5, 'font-weight': 700, 'letter-spacing': '1.2', fill: t === 'NUT' ? '#f5d78a' : '#e3b34c' }, gLabels);
+        sub.textContent = t === 'NUT' ? 'ROOT ASSET' : 'ROOTSTOCK';
+      }
+    });
+  }
+
+  function redraw(){ drawHyper(); drawEdges(); drawRing(); drawNodes(); }
+
+  /* ── pan & zoom ── */
+  let vb = {x:0, y:0, w:1200, h:740};
+  function applyVB(){ svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`); document.getElementById('zoomlevel').textContent = Math.round(1200/vb.w*100) + '%'; }
+  applyVB();
+  let pan = null;
+  svg.addEventListener('mousedown', e => { pan = {x: e.clientX, y: e.clientY, vx: vb.x, vy: vb.y}; svg.classList.add('panning'); });
+  window.addEventListener('mouseup', () => { pan = null; svg.classList.remove('panning'); });
+  window.addEventListener('mousemove', e => { if (!pan) return; const k = vb.w / svg.clientWidth; vb.x = pan.vx - (e.clientX - pan.x) * k; vb.y = pan.vy - (e.clientY - pan.y) * k; applyVB(); });
+  svg.addEventListener('wheel', e => { e.preventDefault(); const r = svg.getBoundingClientRect(); const mx = vb.x + (e.clientX - r.left)/r.width * vb.w, my = vb.y + (e.clientY - r.top)/r.height * vb.h; const f = e.deltaY > 0 ? 1.12 : 0.89; vb.w = Math.min(2400, Math.max(300, vb.w * f)); vb.h = vb.w * 740/1200; vb.x = mx - (mx - vb.x) * f; vb.y = my - (my - vb.y) * f; applyVB(); }, {passive:false});
+
+  /* ── filter bar ── */
+  const filters = document.getElementById('filters');
+  function chipBar(label, items, key, cls){
+    const div = document.createElement('div'); div.className = 'fgroup';
+    div.innerHTML = `<span class="gl">${label}</span>`;
+    items.forEach(it => {
+      const b = document.createElement('button'); b.className = 'chip' + (cls ? ' ' + cls : ''); b.textContent = it.label;
+      b.setAttribute('data-fkey', key); b.setAttribute('data-fval', String(it.value)); b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => {
+        state[key] = state[key] === it.value ? null : it.value;
+        div.querySelectorAll('.chip').forEach(c => { c.classList.remove('on'); c.setAttribute('aria-pressed', 'false'); });
+        if (state[key]) { b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); }
+        redraw();
+      });
+      div.appendChild(b);
+    });
+    filters.appendChild(div);
+  }
+  chipBar('grove', Object.entries(O.groves).map(([k,v]) => ({label: v.label.replace(' Grove','').replace(' Lineage',' Lineage'), value: k})), 'grove');
+  chipBar('scale', [ {label:'NUT-rooted',value:'nut'}, {label:'wNUT-rooted',value:'wnut'}, {label:'ecosystem',value:'eco'}, {label:'bridge',value:'bridge'} ], 'scale');
+  chipBar('structure', [ {label:'Branch',value:'branch'}, {label:'Graft',value:'graft'}, {label:'Whorl',value:'whorl'}, {label:'Curve',value:'curve'}, {label:'Wrapper',value:'wrapper'} ], 'type');
+  const mechs = [...new Set(live.map(s => s.mechanism))];
+  chipBar('mechanism', mechs.map(m => ({label: m, value: m})), 'mech');
+  chipBar('ring', O.rings.map(r => ({label: r.name.split(' — ')[0], value: r.id})), 'ring', 'teal');
+  const reset = document.createElement('div'); reset.className = 'fgroup';
+  const rb = document.createElement('button'); rb.className = 'chip reset'; rb.textContent = 'reset';
+  rb.addEventListener('click', () => { state.grove = state.type = state.mech = state.ring = state.scale = null; filters.querySelectorAll('.chip').forEach(c => c.classList.remove('on')); redraw(); });
+  reset.appendChild(rb); filters.appendChild(reset);
+
+  redraw();
+
+  /* ── registry ── */
+  const reg = document.getElementById('regbody');
+  const ordered = [...live].sort((a,b) => (b.tvl||0)-(a.tvl||0)).concat(O.structures.filter(s => s.status !== 'live'));
+  ordered.forEach(s => {
+    const tr = document.createElement('tr'); tr.style.cursor = 'pointer';
+    tr.addEventListener('click', () => { showDetail(s); document.getElementById('tab-graph').click(); });
+    const short = s.address.slice(0,6) + '…' + s.address.slice(-4);
+    tr.innerHTML = `
+      <td><span class="typ ${s.type}"></span></td>
+      <td><b>${s.name}</b></td>
+      <td>${s.assets.join(' · ')}${s.weights ? `<br><span style="color:var(--ink-faint);font-size:11px">${s.weights.join('/')}</span>` : ''}</td>
+      <td>${s.venue}</td>
+      <td>${s.mechanism}${s.curve ? ' (' + s.curve + ')' : ''}</td>
+      <td>${s.tvl == null ? '—' : '<span class="tvlpill">' + fmt(s.tvl) + '</span>'}</td>
+      <td>${s.groves.map(g => `<span class="gv">${g}</span>`).join('')}</td>
+      <td><a class="addr mono" href="${O.link.basescan(s.address)}" target="_blank" title="view on Basescan">${short}</a><br><a class="vlink" href="${s.venue.indexOf('Balancer') === 0 ? O.link.balancer(s.address) : O.link.dexscreener(s.address)}" target="_blank" onclick="event.stopPropagation()">${s.venue.indexOf('Balancer') === 0 ? 'Balancer pool ↗' : 'DexScreener ↗'}</a></td>
+      <td><span class="scl ${scaleOf(s)}">${SCL_NAME[scaleOf(s)]}</span></td>
+      <td>${s.status === 'live' ? '<span class="stlive">● live</span>' : '<span class="stexit">○ retired</span>'}</td>`;
+    reg.appendChild(tr);
+  });
+
+  /* ── forest walk v2 — full-resolution pure-SVG tree graphs ──
+     Graph layout first, tree rendering second: trees are node skins.
+     Canvas: 1200×700 viewBox — vector-crisp at any stage size. ── */
+  const SPECIES = {
+    NUT: 'sun', WNUT: 'sun', SNUT: 'sun', NUTINO: 'sun', SALT: 'sun', pNUT: 'violet',
+    WETH: '', CBETH: '', WSTETH: '',
+    CBBTC: 'pine', TBTC: 'pine',
+    USDC: 'rose', EURC: 'rose',
+    VVV: 'violet', DIEM: 'violet', VIRTUAL: 'violet', MOR: 'violet', PIPS: 'violet',
+    AERO: 'teal', SNUTLP: 'teal'
+  };
+  const SPECIES_FILL = { sun: '#d39e28', pine: '#2f513c', rose: '#9d5456', violet: '#6d4f91', teal: '#2e7d6e', '': '#4d6b3f' };
+  const speciesOf = s => SPECIES[s] !== undefined ? SPECIES[s] : '';
+  const uid = { n: 0 };
+
+  function svgAdd(parent, tag, attrs, title){
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs){ if (attrs[k] === null || attrs[k] === undefined) continue; e.setAttribute(k, attrs[k]); }
+    if (title){ const t = document.createElementNS(NS, 'title'); t.textContent = title; e.appendChild(t); }
+    parent.appendChild(e); return e;
+  }
+
+  function makeScene(){
+    const wrap = document.createElement('div'); wrap.className = 'fscene';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 1200 700');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    svg.style.cssText = 'width:100%;height:100%;display:block';
+    wrap.appendChild(svg);
+    const mk = 'ah' + (uid.n++);
+    const defs = document.createElementNS(NS, 'defs');
+    defs.innerHTML =
+      '<marker id="' + mk + '" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#e3b34c"/></marker>' +
+      '<linearGradient id="gg' + mk + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(90,138,74,.16)"/><stop offset="1" stop-color="rgba(16,21,13,.6)"/></linearGradient>';
+    svg.appendChild(defs);
+    svgAdd(svg, 'rect', { x: 0, y: 648, width: 1200, height: 52, fill: 'url(#gg' + mk + ')' });
+    return { wrap: wrap, svg: svg, marker: mk };
+  }
+
+  /* tree node skin — base planted at (x,y); returns crown-center coords */
+  function stree(svg, sym, x, y, s, tip){
+    s = s || 1;
+    const sp = speciesOf(sym);
+    const fill = SPECIES_FILL[sp] || SPECIES_FILL[''];
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('transform', 'translate(' + x + ',' + y + ') scale(' + s + ')');
+    if (tip){ const t = document.createElementNS(NS, 'title'); t.textContent = tip; g.appendChild(t); }
+    svgAdd(g, 'ellipse', { cx: 0, cy: 3, rx: 30, ry: 7, fill: 'rgba(0,0,0,.38)' });
+    svgAdd(g, 'rect', { x: -4.5, y: -36, width: 9, height: 39, rx: 3, fill: '#5a4630' });
+    if (sp === 'pine'){
+      svgAdd(g, 'polygon', { points: '0,-112 22,-72 14,-72 32,-40 18,-42 40,-14 -40,-14 -18,-42 -32,-40 -14,-72 -22,-72', fill: fill });
+    } else if (sp === 'sun'){
+      svgAdd(g, 'circle', { cx: 0, cy: -64, r: 34, fill: 'rgba(211,158,40,.22)' });
+      svgAdd(g, 'circle', { cx: 0, cy: -64, r: 26, fill: fill, stroke: 'rgba(255,236,190,.55)', 'stroke-width': 2 });
+    } else {
+      svgAdd(g, 'ellipse', { cx: 0, cy: -62, rx: 32, ry: 28, fill: fill });
+      svgAdd(g, 'ellipse', { cx: -9, cy: -70, rx: 12, ry: 9, fill: 'rgba(255,255,255,.09)' });
+    }
+    const ly = sp === 'pine' ? -124 : sp === 'sun' ? -108 : -100;
+    const lbl = svgAdd(g, 'text', { x: 0, y: ly, 'text-anchor': 'middle', 'font-size': 19, 'font-weight': 700, fill: '#eae4d4' });
+    lbl.textContent = sym === 'WNUT' ? 'wNUT' : sym === 'SNUTLP' ? 'SNUT-LP' : sym === 'CBBTC' ? 'cbBTC' : sym === 'CBETH' ? 'cbETH' : sym === 'WSTETH' ? 'wstETH' : sym === 'TBTC' ? 'tBTC' : sym;
+    lbl.setAttribute('stroke', 'rgba(10,14,9,.85)'); lbl.setAttribute('stroke-width', '4'); lbl.style.paintOrder = 'stroke';
+    svg.appendChild(g);
+    return { x: x, y: y - 62 * s, sym: sym };
+  }
+
+  function haloText(svg, x, y, text, size, color, weight){
+    const t = svgAdd(svg, 'text', { x: x, y: y, 'text-anchor': 'middle', 'font-size': size, 'font-weight': weight || 700, fill: color });
+    t.textContent = text;
+    t.setAttribute('stroke', 'rgba(10,14,9,.85)'); t.setAttribute('stroke-width', '4'); t.style.paintOrder = 'stroke';
+    return t;
+  }
+
+  function caption(svg, x, y, lines, size, color){
+    lines.forEach((ln, i) => {
+      const t = svgAdd(svg, 'text', { x: x, y: y + i * (size + 7), 'text-anchor': 'middle', 'font-size': size, 'font-weight': i === 0 ? 800 : 600, fill: color || '#c9b98a' });
+      t.textContent = ln;
+      t.setAttribute('stroke', 'rgba(10,14,9,.8)'); t.setAttribute('stroke-width', '3'); t.style.paintOrder = 'stroke';
+    });
+  }
+
+  /* labeled quadratic edge; bow bends the arc, labelT slides the label along it */
+  function edge(st, p1, p2, o){
+    o = o || {};
+    const dx = p2.x - p1.x, dy = p2.y - p1.y, L = Math.hypot(dx, dy) || 1;
+    const bow = o.bow || 0;
+    const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+    const px = -dy / L, py = dx / L;
+    const cx = mx + px * bow, cy = my + py * bow;
+    svgAdd(st.svg, 'path', {
+      d: 'M' + p1.x + ',' + p1.y + ' Q' + cx + ',' + cy + ' ' + p2.x + ',' + p2.y,
+      stroke: o.color || '#7fb069', 'stroke-width': o.width || 2.8, fill: 'none',
+      'stroke-dasharray': o.dash || null, 'pointer-events': 'auto', 'stroke-linecap': 'round'
+    }, o.tip);
+    if (o.label){
+      const t = o.labelT === undefined ? 0.5 : o.labelT;
+      const it = 1 - t;
+      const bx = it * it * p1.x + 2 * it * t * cx + t * t * p2.x;
+      const by = it * it * p1.y + 2 * it * t * cy + t * t * p2.y;
+      const off = o.labelOff === undefined ? 15 : o.labelOff;
+      const lt = svgAdd(st.svg, 'text', { x: bx + px * off, y: by + py * off + 4, 'text-anchor': 'middle', 'font-size': 13.5, 'font-weight': 700, fill: o.labelColor || '#a7b096' });
+      lt.textContent = o.label;
+      lt.setAttribute('stroke', 'rgba(10,14,9,.82)'); lt.setAttribute('stroke-width', '3.5'); lt.style.paintOrder = 'stroke';
+    }
+  }
+
+  const structTip = s => s.name + ' · ' + s.venue + (s.tvl ? ' · ' + fmt(s.tvl) : '') + ' · ' + s.address.slice(0, 10) + '…';
+  const tokTip = sym => { const t = O.tokens[sym] || {}; return sym + (t.label ? ' — ' + t.label : ''); };
+  const byGrove = id => { const m = {}; live.filter(s => s.groves.includes(id)).forEach(s => m[s.id] = s); return m; };
+
+  /* plant a tree with crown anchored at p */
+  const plant = (st, sym, p, s, tip) => stree(st.svg, sym, p.x, p.y + 62 * (s || 1), s || 1, tip);
+
+  /* ── Sunflower: five separated, labeled petals on one rootstock ── */
+  function sunflowerScene(){
+    const members = live.filter(s => s.groves.includes('sunflower') && s.type === 'graft');
+    const st = makeScene();
+    const HX = 600, HY = 470;
+    const hub = stree(st.svg, 'WNUT', HX, HY, 1.4, 'wNUT rootstock — shared root of all five Twin Grafts (0xBA5ED46e…E3dd3)');
+    const R = 252, RY = 0.7;
+    members.forEach((g, i) => {
+      const ang = -Math.PI / 2 + i * 2 * Math.PI / members.length;
+      const p1 = stree(st.svg, g.assets[1], HX + R * Math.cos(ang - 0.27), hub.y + R * RY * Math.sin(ang - 0.27) + 62, 1, tokTip(g.assets[1]) + ' · scion of ' + g.name);
+      const p2 = stree(st.svg, g.assets[2], HX + R * Math.cos(ang + 0.27), hub.y + R * RY * Math.sin(ang + 0.27) + 62, 1, tokTip(g.assets[2]) + ' · scion of ' + g.name);
+      svgAdd(st.svg, 'polygon', {
+        points: hub.x + ',' + hub.y + ' ' + p1.x + ',' + p1.y + ' ' + p2.x + ',' + p2.y,
+        fill: 'rgba(227,179,76,.13)', stroke: '#e3b34c', 'stroke-width': 2.4, 'pointer-events': 'auto'
+      }, structTip(g));
+      const lr = R + 92;
+      haloText(st.svg, HX + lr * Math.cos(ang), hub.y + lr * RY * Math.sin(ang) + 6, g.name.split(' ')[0], 21, '#e3b34c', 800);
+    });
+    caption(st.svg, 600, 682, ['Sunflower Grove — five Twin Grafts on one wNUT rootstock · Batch I live 2026-08-27'], 15, '#8f9a80');
+    return st.wrap;
+  }
+
+  /* ── Polyforest: a ring NETWORK, not one road — canonized, detected, wrapper-cross; every ring ⇄ ── */
+  function polyforestScene(){
+    const st = makeScene();
+    const P = {
+      NUT:    { x: 250, y: 380 }, SALT:   { x: 545, y: 170 }, USDC: { x: 845, y: 380 },
+      PIPS:   { x: 545, y: 595 }, NUTINO: { x: 150, y: 175 }, CBBTC: { x: 150, y: 585 },
+      WNUT:   { x: 1050, y: 205 }
+    };
+    const GOLD = '#e3b34c', BLUE = '#7fa8d9', TEAL = '#5fc4b0';
+    const byId = {}; O.structures.forEach(s => byId[s.id] = s);
+    /* arc with arrowheads at BOTH ends — every ring traverses both ways */
+    function arc(a, b, o){
+      const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy) || 1;
+      const ux = dx / L, uy = dy / L, px = -uy, py = ux, bow = o.bow || 0;
+      const cx = (a.x + b.x) / 2 + px * bow, cy = (a.y + b.y) / 2 + py * bow;
+      const p1x = a.x + ux * 56, p1y = a.y + uy * 56, p2x = b.x - ux * 60, p2y = b.y - uy * 60;
+      svgAdd(st.svg, 'path', {
+        d: 'M' + p1x + ',' + p1y + ' Q' + cx + ',' + cy + ' ' + p2x + ',' + p2y,
+        stroke: o.color, 'stroke-width': o.width || 3, fill: 'none',
+        'stroke-dasharray': o.dash || null, 'pointer-events': 'auto', 'stroke-linecap': 'round'
+      }, o.tip);
+      const head = (x, y, ang) => {
+        const g = svgAdd(st.svg, 'g', { transform: 'translate(' + x + ',' + y + ') rotate(' + ang * 180 / Math.PI + ')' });
+        svgAdd(g, 'path', { d: 'M-6,-4.5 L5,0 L-6,4.5 Z', fill: o.color });
+      };
+      head(p2x, p2y, Math.atan2(p2y - cy, p2x - cx));
+      head(p1x, p1y, Math.atan2(p1y - cy, p1x - cx));
+      if (o.label){
+        const t = o.labelT === undefined ? 0.5 : o.labelT, it = 1 - t;
+        const bx = it * it * p1x + 2 * it * t * cx + t * t * p2x;
+        const by = it * it * p1y + 2 * it * t * cy + t * t * p2y;
+        const off = o.labelOff === undefined ? 18 : o.labelOff;
+        const lt = svgAdd(st.svg, 'text', { x: bx + px * off, y: by + py * off + 4, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: o.labelColor || '#a7b096' });
+        lt.textContent = o.label;
+        lt.setAttribute('stroke', 'rgba(10,14,9,.82)'); lt.setAttribute('stroke-width', '3.5'); lt.style.paintOrder = 'stroke';
+      }
+    }
+    const viaTip = (id, from, to) => { const s = byId[id] || {}; return from + ' ⇄ ' + to + ' via ' + (s.name || id) + ' · ' + (s.mechanism || '') + (s.address ? ' · ' + s.address.slice(0, 10) + '…' : ''); };
+
+    /* Ring I — canonized (gold, solid) */
+    arc(P.NUT, P.SALT, { color: GOLD, bow: 26, tip: viaTip('salt-curve', 'NUT', 'SALT'), label: 'bonding curve', labelColor: '#d8c78f' });
+    arc(P.SALT, P.USDC, { color: GOLD, bow: 26, tip: viaTip('salt-usdc', 'SALT', 'USDC'), label: 'vAMM', labelColor: '#d8c78f' });
+    arc(P.USDC, P.PIPS, { color: GOLD, bow: 26, tip: viaTip('pips-usdc-rc', 'USDC', 'PIPS'), label: 'reCLAMM', labelColor: '#d8c78f' });
+    arc(P.PIPS, P.NUT, { color: GOLD, bow: 26, tip: viaTip('pips-nut', 'PIPS', 'NUT'), label: 'concentrated', labelColor: '#d8c78f' });
+
+    /* Ring II — detected (blue, dashed) */
+    arc(P.NUT, P.NUTINO, { color: BLUE, bow: 22, dash: '8 6', tip: viaTip('nutino-curve', 'NUT', 'NUTINO'), label: 'curve', labelOff: -18, labelColor: '#a8c2e8' });
+    arc(P.NUTINO, P.CBBTC, { color: BLUE, bow: 22, dash: '8 6', tip: viaTip('nutino-cbbtc', 'NUTINO', 'CBBTC'), label: 'const-product', labelOff: -18, labelColor: '#a8c2e8' });
+    arc(P.CBBTC, P.NUT, { color: BLUE, bow: 22, dash: '8 6', tip: viaTip('nut-cbbtc', 'CBBTC', 'NUT'), label: 'vAMM', labelOff: -18, labelColor: '#a8c2e8' });
+
+    /* Ring III + IV — wrapper-cross (teal); shared rail USDC→wNUT (gtFX) and wNUT→NUT (wrapper) */
+    arc(P.NUT, P.PIPS, { color: TEAL, bow: -22, dash: '8 6', tip: viaTip('pips-nut', 'NUT', 'PIPS'), label: 'concentrated', labelOff: -18, labelColor: '#7fd4c3' });
+    arc(P.PIPS, P.USDC, { color: TEAL, bow: -22, dash: '8 6', tip: viaTip('pips-usdc-rc', 'PIPS', 'USDC'), label: 'reCLAMM', labelOff: -18, labelColor: '#7fd4c3' });
+    arc(P.NUT, P.SALT, { color: TEAL, bow: -22, dash: '8 6', tip: viaTip('nut-salt-rc', 'NUT', 'SALT'), label: 'reCLAMM', labelOff: -18, labelColor: '#7fd4c3' });
+    arc(P.SALT, P.USDC, { color: TEAL, bow: -22, dash: '8 6', tip: viaTip('salt-usdc', 'SALT', 'USDC'), label: 'vAMM', labelOff: -18, labelColor: '#7fd4c3' });
+    arc(P.USDC, P.WNUT, { color: TEAL, bow: -18, width: 3.8, tip: viaTip('gt-fx', 'USDC', 'wNUT') + ' · graft route', label: 'gtFX · weighted', labelOff: 20, labelColor: '#7fd4c3' });
+    arc(P.WNUT, P.NUT, { color: TEAL, bow: 34, dash: '2 7', width: 3.8, tip: viaTip('wrapper', 'wNUT', 'NUT') + ' · the rail that unlocks 19 cross-scale rings', label: 'wrapper 1:1', labelT: 0.8, labelOff: 22, labelColor: '#7fd4c3' });
+
+    /* ring family chips */
+    const chip = (x, color, txt) => {
+      svgAdd(st.svg, 'rect', { x: x - 10, y: 22, width: 14, height: 14, rx: 3, fill: color, opacity: .9 });
+      const t = svgAdd(st.svg, 'text', { x: x + 12, y: 34, 'font-size': 13.5, 'font-weight': 700, fill: '#d8d2c2' });
+      t.textContent = txt;
+      t.setAttribute('stroke', 'rgba(10,14,9,.8)'); t.setAttribute('stroke-width', '3'); t.style.paintOrder = 'stroke';
+    };
+    chip(120, GOLD, 'Ring I — canonized · bottleneck $5');
+    chip(455, BLUE, 'Ring II — detected · bottleneck $1.5k');
+    chip(790, TEAL, 'Ring III·IV — wrapper-cross · bottleneck $2.5');
+
+    /* trees on top */
+    plant(st, 'NUT', P.NUT, 1.3, 'NUT — root asset · hub of every ring');
+    plant(st, 'SALT', P.SALT, 1.05, tokTip('SALT'));
+    plant(st, 'USDC', P.USDC, 1.05, tokTip('USDC'));
+    plant(st, 'PIPS', P.PIPS, 1.05, tokTip('PIPS'));
+    plant(st, 'NUTINO', P.NUTINO, 1, tokTip('NUTINO'));
+    plant(st, 'CBBTC', P.CBBTC, 1, tokTip('CBBTC'));
+    plant(st, 'WNUT', P.WNUT, 1.15, 'wNUT — rootstock · wrapper-connected scale');
+
+    caption(st.svg, 600, 652, ['Polyforest Grove — the ring network, not one road', '70 rings enumerated: 44 market · 19 wrapper-cross · 7 parallel-venue — every ring traversable both ways ⇄'], 15, '#8f9a80');
+    return st.wrap;
+  }
+
+
+  /* ── Heirloom: genealogy — hub branches, parallel venues labeled, pNUT whorl polygon ── */
+  function heirloomScene(){
+    const st = makeScene();
+    const byId = byGrove('heirloom');
+    const C = {
+      NUT: { x: 600, y: 355 }, SNUT: { x: 430, y: 255 }, SALT: { x: 645, y: 180 }, NUTINO: { x: 820, y: 255 },
+      WETH: { x: 165, y: 345 }, AERO: { x: 300, y: 555 }, SNUTLP: { x: 480, y: 555 }, CBETH: { x: 930, y: 195 },
+      CBBTC: { x: 930, y: 515 }
+    };
+    svgAdd(st.svg, 'polygon', {
+      points: [C.NUT, C.SNUT, C.CBETH, C.CBBTC].map(p => p.x + ',' + p.y).join(' '),
+      fill: 'rgba(181,149,217,.10)', stroke: '#b595d9', 'stroke-width': 2, 'pointer-events': 'auto'
+    }, structTip(byId['pnut']));
+    haloText(st.svg, 722, 332, 'pNUT · heirloom Whorl 25×4', 15, '#b595d9');
+    edge(st, C.NUT, C.WETH, { bow: 34, label: 'Uni V3 · ' + fmt(byId['nut-weth-v3'].tvl), labelOff: 26, tip: structTip(byId['nut-weth-v3']) });
+    edge(st, C.NUT, C.WETH, { label: 'Uni V2', labelT: 0.3, labelOff: -12, tip: structTip(byId['nut-weth-v2']) });
+    edge(st, C.NUT, C.WETH, { bow: -34, label: 'Custom CL · ' + fmt(byId['nut-weth-cl'].tvl), labelOff: -26, tip: structTip(byId['nut-weth-cl']) });
+    edge(st, C.NUT, C.CBETH, { label: 'Aero', tip: structTip(byId['nut-cbeth']) });
+    edge(st, C.NUT, C.CBBTC, { label: 'Aero', tip: structTip(byId['nut-cbbtc']) });
+    edge(st, C.NUT, C.AERO, { label: 'Aero', tip: structTip(byId['nut-aero']) });
+    edge(st, C.SNUT, C.NUT, { label: 'Aero', tip: structTip(byId['snut-nut']) });
+    edge(st, C.SNUT, C.WETH, { label: 'Uni V2', tip: structTip(byId['snut-weth']) });
+    edge(st, C.SNUTLP, C.WETH, { label: 'Uni V2', tip: structTip(byId['snutlp-weth']) });
+    edge(st, C.NUTINO, C.CBBTC, { label: 'Uni V2', tip: structTip(byId['nutino-cbbtc']) });
+    edge(st, C.NUT, C.SALT, { bow: 16, label: 'reCLAMM', labelOff: 20, tip: structTip(byId['nut-salt-rc']) });
+    edge(st, C.NUT, C.SALT, { bow: -16, dash: '7 6', color: '#5fc4b0', label: 'curve', labelOff: -20, labelColor: '#7fd4c3', tip: structTip(byId['salt-curve']) });
+    edge(st, C.NUT, C.NUTINO, { dash: '7 6', color: '#5fc4b0', label: 'curve', labelColor: '#7fd4c3', tip: structTip(byId['nutino-curve']) });
+    plant(st, 'NUT', C.NUT, 1.25, 'NUT — root asset · hub of the heirloom branches');
+    plant(st, 'SNUT', C.SNUT, 1, tokTip('SNUT'));
+    plant(st, 'SALT', C.SALT, 1, tokTip('SALT'));
+    plant(st, 'NUTINO', C.NUTINO, 1, tokTip('NUTINO'));
+    plant(st, 'WETH', C.WETH, 1, tokTip('WETH'));
+    plant(st, 'AERO', C.AERO, 1, tokTip('AERO'));
+    plant(st, 'SNUTLP', C.SNUTLP, 1, 'SNUT/WETH LP token — nested lineage');
+    plant(st, 'CBETH', C.CBETH, 1, tokTip('CBETH'));
+    plant(st, 'CBBTC', C.CBBTC, 1, tokTip('CBBTC'));
+    return st.wrap;
+  }
+
+  /* ── Reserve: NUT branches left, wNUT grafts right, pNUT whorl spanning ── */
+  function reserveScene(){
+    const st = makeScene();
+    const byId = byGrove('reserve');
+    const C = {
+      NUT: { x: 330, y: 395 }, WETH: { x: 140, y: 195 }, SNUT: { x: 195, y: 555 }, CBETH: { x: 610, y: 180 },
+      CBBTC: { x: 610, y: 555 }, WNUT: { x: 905, y: 395 }, WSTETH: { x: 1090, y: 185 }, TBTC: { x: 1090, y: 555 }
+    };
+    svgAdd(st.svg, 'polygon', {
+      points: [C.NUT, C.SNUT, C.CBETH, C.CBBTC].map(p => p.x + ',' + p.y).join(' '),
+      fill: 'rgba(181,149,217,.10)', stroke: '#b595d9', 'stroke-width': 2, 'pointer-events': 'auto'
+    }, structTip(byId['pnut']));
+    haloText(st.svg, 436, 424, 'pNUT whorl · 25×4', 15, '#b595d9');
+    svgAdd(st.svg, 'polygon', {
+      points: [C.WNUT, C.CBETH, C.WSTETH].map(p => p.x + ',' + p.y).join(' '),
+      fill: 'rgba(227,179,76,.13)', stroke: '#e3b34c', 'stroke-width': 2.4, 'pointer-events': 'auto'
+    }, structTip(byId['gt-eth']));
+    haloText(st.svg, 868, 252, 'gtETH', 18, '#e3b34c', 800);
+    svgAdd(st.svg, 'polygon', {
+      points: [C.WNUT, C.CBBTC, C.TBTC].map(p => p.x + ',' + p.y).join(' '),
+      fill: 'rgba(227,179,76,.13)', stroke: '#e3b34c', 'stroke-width': 2.4, 'pointer-events': 'auto'
+    }, structTip(byId['gt-btc']));
+    haloText(st.svg, 868, 505, 'gtBTC', 18, '#e3b34c', 800);
+    edge(st, C.NUT, C.WETH, { bow: 34, label: 'Uni V3 · ' + fmt(byId['nut-weth-v3'].tvl), labelOff: 26, tip: structTip(byId['nut-weth-v3']) });
+    edge(st, C.NUT, C.WETH, { label: 'Uni V2', labelT: 0.3, labelOff: -12, tip: structTip(byId['nut-weth-v2']) });
+    edge(st, C.NUT, C.WETH, { bow: -34, label: 'Custom CL · ' + fmt(byId['nut-weth-cl'].tvl), labelOff: -26, tip: structTip(byId['nut-weth-cl']) });
+    edge(st, C.NUT, C.CBETH, { label: 'Aero', tip: structTip(byId['nut-cbeth']) });
+    edge(st, C.NUT, C.CBBTC, { label: 'Aero', tip: structTip(byId['nut-cbbtc']) });
+    plant(st, 'NUT', C.NUT, 1.2, 'NUT — root asset');
+    plant(st, 'WETH', C.WETH, 1, tokTip('WETH'));
+    plant(st, 'SNUT', C.SNUT, 1, tokTip('SNUT') + ' · pNUT whorl member');
+    plant(st, 'CBETH', C.CBETH, 1, tokTip('CBETH'));
+    plant(st, 'CBBTC', C.CBBTC, 1, tokTip('CBBTC'));
+    plant(st, 'WNUT', C.WNUT, 1.2, 'wNUT rootstock — root of the reserve grafts');
+    plant(st, 'WSTETH', C.WSTETH, 1, tokTip('WSTETH'));
+    plant(st, 'TBTC', C.TBTC, 1, tokTip('TBTC'));
+    return st.wrap;
+  }
+
+  /* ── Settlement: USDC center, gtFX petal, SALT + PIPS branches ── */
+  function settlementScene(){
+    const st = makeScene();
+    const byId = byGrove('settlement');
+    const C = {
+      USDC: { x: 600, y: 380 }, WNUT: { x: 240, y: 190 }, EURC: { x: 240, y: 540 }, SALT: { x: 960, y: 190 }, PIPS: { x: 960, y: 540 }
+    };
+    svgAdd(st.svg, 'polygon', {
+      points: [C.WNUT, C.USDC, C.EURC].map(p => p.x + ',' + p.y).join(' '),
+      fill: 'rgba(227,179,76,.13)', stroke: '#e3b34c', 'stroke-width': 2.4, 'pointer-events': 'auto'
+    }, structTip(byId['gt-fx']));
+    haloText(st.svg, 360, 375, 'gtFX', 19, '#e3b34c', 800);
+    edge(st, C.SALT, C.USDC, { label: 'vAMM · Aerodrome', tip: structTip(byId['salt-usdc']) });
+    edge(st, C.PIPS, C.USDC, { label: 'reCLAMM', tip: structTip(byId['pips-usdc-rc']) });
+    plant(st, 'USDC', C.USDC, 1.25, tokTip('USDC') + ' — settlement hub');
+    plant(st, 'WNUT', C.WNUT, 1, 'wNUT rootstock · scion EURC');
+    plant(st, 'EURC', C.EURC, 1, tokTip('EURC'));
+    plant(st, 'SALT', C.SALT, 1, tokTip('SALT'));
+    plant(st, 'PIPS', C.PIPS, 1, tokTip('PIPS'));
+    caption(st.svg, 600, 682, ['Settlement Grove — stable denomination & FX liquidity'], 15, '#8f9a80');
+    return st.wrap;
+  }
+
+  /* ── Compute: two Twin Graft petals + PIPS branches ── */
+  function computeScene(){
+    const st = makeScene();
+    const byId = byGrove('compute');
+    const C = {
+      WNUT: { x: 620, y: 330 }, VVV: { x: 370, y: 140 }, DIEM: { x: 870, y: 140 },
+      VIRTUAL: { x: 370, y: 520 }, MOR: { x: 870, y: 520 }, PIPS: { x: 150, y: 330 },
+      NUT: { x: 150, y: 545 }, USDC: { x: 430, y: 590 }
+    };
+    svgAdd(st.svg, 'polygon', {
+      points: [C.WNUT, C.VVV, C.DIEM].map(p => p.x + ',' + p.y).join(' '),
+      fill: 'rgba(227,179,76,.13)', stroke: '#e3b34c', 'stroke-width': 2.4, 'pointer-events': 'auto'
+    }, structTip(byId['gt-inf']));
+    haloText(st.svg, 620, 205, 'gtINF', 19, '#e3b34c', 800);
+    svgAdd(st.svg, 'polygon', {
+      points: [C.WNUT, C.VIRTUAL, C.MOR].map(p => p.x + ',' + p.y).join(' '),
+      fill: 'rgba(227,179,76,.13)', stroke: '#e3b34c', 'stroke-width': 2.4, 'pointer-events': 'auto'
+    }, structTip(byId['gt-agt']));
+    haloText(st.svg, 620, 460, 'gtAGT', 19, '#e3b34c', 800);
+    edge(st, C.PIPS, C.NUT, { bow: 24, label: 'Slipstream', labelOff: 24, tip: structTip(byId['pips-nut']) });
+    edge(st, C.PIPS, C.USDC, { label: 'reCLAMM', tip: structTip(byId['pips-usdc-rc']) });
+    plant(st, 'WNUT', C.WNUT, 1.2, 'wNUT rootstock — root of the compute grafts');
+    plant(st, 'VVV', C.VVV, 1, tokTip('VVV'));
+    plant(st, 'DIEM', C.DIEM, 1, tokTip('DIEM'));
+    plant(st, 'VIRTUAL', C.VIRTUAL, 1, tokTip('VIRTUAL'));
+    plant(st, 'MOR', C.MOR, 1, tokTip('MOR'));
+    plant(st, 'PIPS', C.PIPS, 1, tokTip('PIPS'));
+    plant(st, 'NUT', C.NUT, 1, 'NUT — root asset');
+    plant(st, 'USDC', C.USDC, 1, tokTip('USDC'));
+    caption(st.svg, 820, 682, ['Compute Grove — AI, inference & agent economy'], 15, '#8f9a80');
+    return st.wrap;
+  }
+
+  /* ── Infrastructure: rails and support species across both scales ── */
+  function infraScene(){
+    const st = makeScene();
+    const byId = byGrove('infra');
+    const GOLD = '#e3b34c', TEAL = '#5fc4b0';
+    const C = {
+      WNUT: { x: 700, y: 330 }, CBETH: { x: 930, y: 180 }, WSTETH: { x: 1070, y: 350 },
+      CBBTC: { x: 950, y: 520 }, TBTC: { x: 700, y: 590 },
+      USDC: { x: 460, y: 170 }, EURC: { x: 395, y: 340 },
+      NUT: { x: 250, y: 400 }, AERO: { x: 175, y: 590 }
+    };
+    /* rail grafts as gold polygons */
+    [['gt-eth', [C.WNUT, C.CBETH, C.WSTETH], 'gtETH · cbETH + wstETH rails'],
+     ['gt-btc', [C.WNUT, C.CBBTC, C.TBTC], 'gtBTC · cbBTC + tBTC rails'],
+     ['gt-fx', [C.WNUT, C.USDC, C.EURC], 'gtFX · USDC + EURC rails']].forEach(g => {
+      svgAdd(st.svg, 'polygon', {
+        points: g[1].map(p => p.x + ',' + p.y).join(' '),
+        fill: 'rgba(227,179,76,.12)', stroke: GOLD, 'stroke-width': 2.4, 'pointer-events': 'auto'
+      }, structTip(byId[g[0]]) + ' · ' + g[2]);
+      const cx = (g[1][0].x + g[1][1].x + g[1][2].x) / 3, cy = (g[1][0].y + g[1][1].y + g[1][2].y) / 3;
+      haloText(st.svg, cx, cy, g[0] === 'gt-eth' ? 'gtETH' : g[0] === 'gt-btc' ? 'gtBTC' : 'gtFX', 16, GOLD, 800);
+    });
+    /* wrapper rail — the infrastructure edge between scales */
+    edge(st, C.NUT, C.WNUT, { dash: '2 7', color: TEAL, width: 3.4, bow: -20, label: 'wNUT wrapper · 1:1', labelOff: -22, labelColor: '#7fd4c3', tip: structTip(byId['wrapper']) });
+    /* venue rail */
+    edge(st, C.NUT, C.AERO, { label: 'Aero · vAMM', labelOff: 16, tip: structTip(byId['nut-aero']) });
+    /* zone labels */
+    haloText(st.svg, 215, 250, 'NUT-scale rails', 15, '#9db86e', 700);
+    haloText(st.svg, 860, 90, 'wNUT-scale rail grafts', 15, '#9db86e', 700);
+    /* trees */
+    plant(st, 'WNUT', C.WNUT, 1.25, 'wNUT — rootstock · hub of the rail grafts');
+    plant(st, 'CBETH', C.CBETH, 1, tokTip('CBETH') + ' · Coinbase LST rail');
+    plant(st, 'WSTETH', C.WSTETH, 1, tokTip('WSTETH') + ' · Lido rail');
+    plant(st, 'CBBTC', C.CBBTC, 1, tokTip('CBBTC') + ' · Coinbase BTC rail');
+    plant(st, 'TBTC', C.TBTC, 1, tokTip('TBTC') + ' · Threshold rail');
+    plant(st, 'USDC', C.USDC, 1, tokTip('USDC') + ' · Circle settlement rail');
+    plant(st, 'EURC', C.EURC, 1, tokTip('EURC') + ' · Circle EUR rail');
+    plant(st, 'NUT', C.NUT, 1.25, 'NUT — root asset');
+    plant(st, 'AERO', C.AERO, 1, tokTip('AERO') + ' · venue-native rail');
+    caption(st.svg, 600, 652, ['Infrastructure Grove — support species: wrapper + LST, BTC, FX and venue rails', 'every rail also grows in Sunflower, Reserve or Settlement — groves overlap by design'], 15, '#8f9a80');
+    return st.wrap;
+  }
+
+
+  /* ── NUT Lineage: the family tree ── */
+  function lineageScene(){
+    const st = makeScene();
+    const byId = byGrove('nut-lineage');
+    const C = {
+      NUT: { x: 560, y: 400 }, SNUT: { x: 280, y: 240 }, WETH: { x: 120, y: 430 }, SNUTLP: { x: 240, y: 600 },
+      SALT: { x: 560, y: 140 }, NUTINO: { x: 860, y: 240 }, CBBTC: { x: 880, y: 555 }, CBETH: { x: 1090, y: 375 }
+    };
+    svgAdd(st.svg, 'polygon', {
+      points: [C.NUT, C.SNUT, C.CBETH, C.CBBTC].map(p => p.x + ',' + p.y).join(' '),
+      fill: 'rgba(181,149,217,.10)', stroke: '#b595d9', 'stroke-width': 2, 'pointer-events': 'auto'
+    }, structTip(byId['pnut']));
+    haloText(st.svg, 702, 396, 'pNUT whorl · 25×4', 15, '#b595d9');
+    edge(st, C.SNUT, C.NUT, { label: 'Aero', tip: structTip(byId['snut-nut']) });
+    edge(st, C.SNUT, C.WETH, { label: 'Uni V2', tip: structTip(byId['snut-weth']) });
+    edge(st, C.SNUTLP, C.WETH, { label: 'Uni V2', tip: structTip(byId['snutlp-weth']) });
+    edge(st, C.NUTINO, C.CBBTC, { label: 'Uni V2', tip: structTip(byId['nutino-cbbtc']) });
+    edge(st, C.NUT, C.SALT, { bow: 16, label: 'reCLAMM', labelOff: 20, tip: structTip(byId['nut-salt-rc']) });
+    edge(st, C.NUT, C.SALT, { bow: -16, dash: '7 6', color: '#5fc4b0', label: 'curve', labelOff: -20, labelColor: '#7fd4c3', tip: structTip(byId['salt-curve']) });
+    edge(st, C.NUT, C.NUTINO, { dash: '7 6', color: '#5fc4b0', label: 'curve', labelColor: '#7fd4c3', tip: structTip(byId['nutino-curve']) });
+    plant(st, 'NUT', C.NUT, 1.25, 'NUT — root asset · parent of the lineage');
+    plant(st, 'SNUT', C.SNUT, 1, tokTip('SNUT'));
+    plant(st, 'WETH', C.WETH, 1, tokTip('WETH'));
+    plant(st, 'SNUTLP', C.SNUTLP, 1, 'SNUT/WETH LP token — nested lineage');
+    plant(st, 'SALT', C.SALT, 1, tokTip('SALT'));
+    plant(st, 'NUTINO', C.NUTINO, 1, tokTip('NUTINO'));
+    plant(st, 'CBBTC', C.CBBTC, 1, tokTip('CBBTC'));
+    plant(st, 'CBETH', C.CBETH, 1, tokTip('CBETH') + ' · pNUT whorl member');
+    caption(st.svg, 600, 682, ['NUT Lineage — the family tree: SNUT · SALT · NUTINO · pNUT'], 15, '#8f9a80');
+    return st.wrap;
+  }
+
+  /* ── Nested: second-order market ── */
+  function nestedScene(){
+    const st = makeScene();
+    const byId = byGrove('nested');
+    const C = { SNUTLP: { x: 440, y: 400 }, WETH: { x: 760, y: 400 } };
+    edge(st, C.SNUTLP, C.WETH, { label: 'Uniswap V2', tip: structTip(byId['snutlp-weth']) });
+    plant(st, 'SNUTLP', C.SNUTLP, 1.3, 'SNUT/WETH LP token — itself a liquidity position');
+    plant(st, 'WETH', C.WETH, 1.3, tokTip('WETH'));
+    caption(st.svg, 600, 676, ['Nested Lineage — a market on an LP token', 'SNUT-LP/WETH · second-order liquidity'], 15, '#8f9a80');
+    return st.wrap;
+  }
+
+  /* ── Fallback: auto hub-and-spoke for any unmapped grove ── */
+  function genericScene(groveId){
+    const st = makeScene();
+    const members = live.filter(s => s.groves.includes(groveId));
+    const deg = {};
+    members.forEach(s => s.assets.forEach(a => deg[a] = (deg[a] || 0) + 1));
+    const assets = Object.keys(deg).sort((a, b) => deg[b] - deg[a]);
+    const hub = assets[0], others = assets.slice(1);
+    const n = others.length;
+    const C = {};
+    C[hub] = { x: 600, y: 380 };
+    const R = n <= 2 ? 240 : n <= 4 ? 290 : 340;
+    others.forEach((a, i) => {
+      const th = -Math.PI / 2 + i * 2 * Math.PI / Math.max(n, 1);
+      C[a] = { x: 600 + R * Math.cos(th), y: 380 + R * 0.72 * Math.sin(th) };
+    });
+    members.forEach(s => {
+      const pts = s.assets.map(a => C[a]).filter(Boolean);
+      if (pts.length < 2) return;
+      const tip = structTip(s);
+      if (s.type === 'graft' || s.type === 'whorl'){
+        svgAdd(st.svg, 'polygon', {
+          points: pts.map(p => p.x + ',' + p.y).join(' '),
+          fill: s.type === 'whorl' ? 'rgba(181,149,217,.12)' : 'rgba(227,179,76,.12)',
+          stroke: s.type === 'whorl' ? '#b595d9' : '#e3b34c', 'stroke-width': 2.2, 'pointer-events': 'auto'
+        }, tip);
+      } else {
+        edge(st, pts[0], pts[1], { dash: s.type === 'curve' ? '7 6' : null, color: s.type === 'curve' ? '#5fc4b0' : '#7fb069', label: s.venue, tip: tip });
+      }
+    });
+    const sc = n > 5 ? 0.9 : 1.1;
+    assets.forEach(a => plant(st, a, C[a], sc, tokTip(a)));
+    return st.wrap;
+  }
+
+  /* global legend */
+  (function(){
+    const sw = (c, extra) => '<span class="li"><i class="sw" style="background:' + c + ';' + (extra || '') + '"></i>';
+    const mini = body => '<svg width="26" height="10" style="display:block">' + body + '</svg>';
+    document.getElementById('forest-legend').innerHTML =
+      sw('#d39e28', 'border-radius:50%') + 'NUT family</span>' +
+      sw('#4d6b3f') + 'ETH class</span>' +
+      sw('#2f513c', 'clip-path:polygon(50% 0,80% 50%,55% 50%,95% 100%,50% 78%,5% 100%,45% 50%,20% 50%)') + 'BTC class</span>' +
+      sw('#9d5456', 'border-radius:50%') + 'stables</span>' +
+      sw('#6d4f91') + 'AI / agents</span>' +
+      sw('#2e7d6e') + 'infra</span>' +
+      '<span class="li">' + mini('<line x1="1" y1="5" x2="25" y2="5" stroke="#7fb069" stroke-width="2"/>') + 'branch</span>' +
+      '<span class="li">' + mini('<polygon points="1,9 13,1 25,9" fill="rgba(227,179,76,.2)" stroke="#e3b34c" stroke-width="1.5"/>') + 'graft hyperedge</span>' +
+      '<span class="li">' + mini('<polygon points="1,9 13,1 25,9" fill="rgba(181,149,217,.2)" stroke="#b595d9" stroke-width="1.5"/>') + 'whorl</span>' +
+      '<span class="li">' + mini('<line x1="1" y1="5" x2="25" y2="5" stroke="#2e7d6e" stroke-width="2" stroke-dasharray="5 4"/>') + 'bonding curve</span>';
+  })();
+
+  /* ── forest carousel: one full-size grove graph at a time ── */
+  const fstageEl = document.getElementById('grove-stage');
+  const chipsEl = document.getElementById('grove-chips');
+  const headEl = document.getElementById('grove-head');
+  const GROVE_ORDER = [
+    ['sunflower', '🌻', O.docs.sunflowerDoc],
+    ['heirloom', '🏺', O.docs.heirloomDoc],
+    ['polyforest', '🌲', O.docs.polyforestDoc],
+    ['reserve', '₿', O.docs.treeGroves],
+    ['settlement', '💵', O.docs.treeGroves],
+    ['compute', '🤖', O.docs.treeGroves],
+    ['infra', '⚙️', O.docs.treeGroves],
+    ['nut-lineage', '🥜', O.docs.treeGroves],
+    ['nested', '🪺', O.docs.treeGroves]
+  ];
+  let groveIdx = 0;
+  const SCENE_BUILDERS = {
+    sunflower: sunflowerScene, heirloom: heirloomScene, polyforest: polyforestScene,
+    reserve: reserveScene, settlement: settlementScene, compute: computeScene,
+    infra: infraScene, 'nut-lineage': lineageScene, nested: nestedScene
+  };
+  function groveSceneFor(id){
+    return SCENE_BUILDERS[id] ? SCENE_BUILDERS[id]() : genericScene(id);
+  }
+  function showGrove(i){
+    groveIdx = ((i % GROVE_ORDER.length) + GROVE_ORDER.length) % GROVE_ORDER.length;
+    const id = GROVE_ORDER[groveIdx][0], ic = GROVE_ORDER[groveIdx][1], doc = GROVE_ORDER[groveIdx][2];
+    const g = O.groves[id];
+    const members = live.filter(s => s.groves.includes(id));
+    const tvlSum = members.reduce((a, s) => a + (s.tvl || 0), 0);
+    chipsEl.querySelectorAll('.gchip').forEach((c, ci) => c.classList.toggle('on', ci === groveIdx));
+    headEl.innerHTML =
+      '<span class="ic">' + ic + '</span><h3>' + g.label + '</h3>' +
+      '<span class="count"><b>' + members.length + '</b> live structures' + (tvlSum > 0 ? ' · snapshot TVL ' + fmt(tvlSum) : '') + '</span>' +
+      '<p class="desc">' + g.desc + '</p>' +
+      '<p class="desc" style="margin-top:6px"><a href="' + doc + '" target="_blank">grove documentation ↗</a> · <a href="#" class="explore">view members on graph ↗</a></p>';
+    headEl.querySelector('.explore').addEventListener('click', e => {
+      e.preventDefault(); state.grove = id; state.type = state.mech = null;
+      filters.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+      redraw(); document.getElementById('tab-graph').click();
+    });
+    fstageEl.querySelectorAll('.fscene').forEach(n => n.remove());
+    fstageEl.appendChild(groveSceneFor(id));
+    rescaleStages();
+  }
+  GROVE_ORDER.forEach((pair, i) => {
+    const b = document.createElement('button');
+    b.className = 'gchip';
+    b.textContent = pair[1] + ' ' + O.groves[pair[0]].label.replace(' Grove', '');
+    b.addEventListener('click', () => showGrove(i));
+    chipsEl.appendChild(b);
+  });
+  document.getElementById('grove-prev').addEventListener('click', () => showGrove(groveIdx - 1));
+  document.getElementById('grove-next').addEventListener('click', () => showGrove(groveIdx + 1));
+  document.addEventListener('keydown', e => {
+    if (document.getElementById('view-forest').style.display === 'none') return;
+    if (e.key === 'ArrowLeft') showGrove(groveIdx - 1);
+    else if (e.key === 'ArrowRight') showGrove(groveIdx + 1);
+  });
+  showGrove(0);
+
+  /* ── view tabs ── */
+  const views = { graph: document.getElementById('view-graph'), forest: document.getElementById('view-forest'), registry: document.getElementById('view-registry') };
+  function rescaleStages(){
+    document.querySelectorAll('.fscene').forEach(scene => {
+      const stage = scene.querySelector('.fstage');
+      if (!stage) return;
+      const w = scene.clientWidth, h = scene.clientHeight;
+      if (!w || !h) return;
+      const k = Math.min((w - 36) / 280, (h - 36) / 250);
+      stage.style.transform = 'translate(-50%,-50%) scale(' + k + ')';
+    });
+  }
+  ['graph','forest','registry'].forEach(v => {
+    document.getElementById('tab-' + v).addEventListener('click', () => {
+      Object.entries(views).forEach(([k,el]) => el.style.display = k === v ? '' : 'none');
+      ['graph','forest','registry'].forEach(x => document.getElementById('tab-' + x).classList.toggle('on', x === v));
+      if (v === 'forest') setTimeout(rescaleStages, 0);
+    });
+  });
+  window.addEventListener('resize', rescaleStages);
+  rescaleStages();
+})();
+</script>
+</body>
+</html>

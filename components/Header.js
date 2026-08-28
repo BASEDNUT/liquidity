@@ -152,6 +152,7 @@ const NAV_SECTIONS = [
     items: [
       { label: "Tree", href: "/tree" },
       { label: "Graphs", href: "/ecosystem" },
+      { label: "Orchard Atlas", href: "/atlas" },
       { label: "Department of Complaints", href: "/complaints" },
       { label: "FAQ", href: "/faq" },
       { label: "Docs", href: "https://docs.basednut.com/", external: true },
