@@ -52,8 +52,8 @@ for (const [name, html] of [["index", idx], ["data", data]]) {
   assert.equal((html.match(/<nav[ >]/g) || []).length, 1, name + ": must have exactly one nav element");
   assert.ok(!html.includes("sitenav"), name + ": sitenav residue must be gone");
   assert.ok(html.includes(`href="/"`), name + ": home link missing");
-  assert.ok(html.includes(`href="/tree"`), name + ": tree link missing");
-  assert.ok(html.includes(`href="/ecosystem"`), name + ": graphs link missing");
+  assert.ok(!html.includes(`href="/tree"`), name + ": tree link must not be in nav (home covers it)");
+  assert.ok(!html.includes(`href="/ecosystem"`), name + ": graphs link must not be in nav (home covers it)");
   assert.ok(html.includes(`href="/faq"`), name + ": faq link missing");
   assert.ok(html.includes("docs.basednut.com"), name + ": docs link missing");
   assert.ok(html.includes(`aria-label="Based Nut home"`), name + ": brand home aria-label missing");
