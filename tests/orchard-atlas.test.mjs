@@ -47,6 +47,25 @@ assert.ok(data.includes("ROOTSTOCK"), "data: wNUT sub-label missing");
 assert.ok(data.includes("aria-pressed"), "data: chip aria state missing");
 assert.ok(data.includes("data-fkey"), "data: chip data attrs missing");
 
+/* ── site nav cohesion ── */
+for (const [name, html] of [["index", idx], ["data", data]]) {
+  assert.ok(html.includes("sitenav"), name + ": site nav missing");
+  assert.ok(html.includes(`href="/"`), name + ": home link missing");
+  assert.ok(html.includes(`href="/tree"`), name + ": tree link missing");
+  assert.ok(html.includes(`href="/ecosystem"`), name + ": graphs link missing");
+  assert.ok(html.includes(`href="/faq"`), name + ": faq link missing");
+  assert.ok(html.includes("docs.basednut.com"), name + ": docs link missing");
+  assert.ok(html.includes(`aria-label="Based Nut site navigation"`), name + ": nav aria label missing");
+}
+assert.ok(idx.includes(`href="/atlas/data"`), "index: atlas-data link missing in sitenav");
+assert.ok(data.includes(`href="/atlas"`), "data: concept link missing in sitenav");
+
+/* ── nav label renames ── */
+assert.ok(header.includes(`label: "File a Complaint"`), "Header: File a Complaint rename missing");
+assert.ok(header.includes(`label: "Carbon Ledger"`), "Header: Carbon Ledger rename missing");
+assert.ok(!header.includes("Department of Complaints"), "Header: old complaints label still present");
+assert.ok(!header.includes("Carbon Pricing Exposure"), "Header: old carbon label still present");
+
 /* ── site integration ── */
 assert.ok(header.includes('href: "/atlas"'), "Header: /atlas nav entry missing");
 assert.ok(llms.includes("[Orchard Atlas](/atlas)"), "llms.txt: Atlas entry missing");

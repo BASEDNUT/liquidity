@@ -144,9 +144,34 @@
     .anatomy{grid-template-columns:1fr}
     footer .cols{grid-template-columns:1fr}
   }
+
+/* site nav — unifying bar */
+.sitenav{background:var(--paper,#F6EFE3);border-bottom:1px solid var(--ink,#2B1A10)}
+.sitenav .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:8px;padding-bottom:8px;flex-wrap:wrap}
+.sitenav .sb{font-weight:700;color:var(--ink,#2B1A10);text-decoration:none}
+.sitenav .sl{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.sitenav .sl a{font-size:13px;color:var(--ink-soft,#5D3A1A);text-decoration:none}
+.sitenav .sl a:hover{color:var(--ink,#2B1A10);text-decoration:underline}
+.sitenav .sep{color:var(--ink-soft,#5D3A1A);opacity:.5}
+@media(max-width:640px){.sitenav .wrap{justify-content:center}}
 </style>
 </head>
 <body>
+
+<nav class="sitenav" aria-label="Based Nut site navigation">
+  <div class="wrap">
+    <a class="sb" href="/">🥜 Based Nut</a>
+    <div class="sl">
+      <a href="/">Home</a>
+      <a href="/tree">Tree</a>
+      <a href="/ecosystem">Graphs</a>
+      <a href="/faq">FAQ</a>
+      <a href="https://docs.basednut.com/" rel="noopener">Docs</a>
+      <span class="sep">·</span>
+      <a href="/atlas/data">Atlas data →</a>
+    </div>
+  </div>
+</nav>
 
 <nav>
   <div class="wrap">

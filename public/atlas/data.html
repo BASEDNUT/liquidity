@@ -177,9 +177,34 @@
     footer .cols{grid-template-columns:1fr}
     nav .concept{display:none}
   }
+
+/* site nav — unifying bar */
+.sitenav{background:#0d1117;border-bottom:1px solid #21262d}
+.sitenav .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:8px;padding-bottom:8px;flex-wrap:wrap}
+.sitenav .sb{font-weight:700;color:#e6edf3;text-decoration:none}
+.sitenav .sl{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.sitenav .sl a{font-size:13px;color:#8b949e;text-decoration:none}
+.sitenav .sl a:hover{color:#e6edf3;text-decoration:underline}
+.sitenav .sep{color:#8b949e;opacity:.5}
+@media(max-width:640px){.sitenav .wrap{justify-content:center}}
 </style>
 </head>
 <body>
+
+<nav class="sitenav" aria-label="Based Nut site navigation">
+  <div class="wrap">
+    <a class="sb" href="/">🥜 Based Nut</a>
+    <div class="sl">
+      <a href="/">Home</a>
+      <a href="/tree">Tree</a>
+      <a href="/ecosystem">Graphs</a>
+      <a href="/faq">FAQ</a>
+      <a href="https://docs.basednut.com/" rel="noopener">Docs</a>
+      <span class="sep">·</span>
+      <a href="/atlas">← concept surface</a>
+    </div>
+  </div>
+</nav>
 
 <nav>
   <div class="wrap">

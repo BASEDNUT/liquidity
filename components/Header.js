@@ -118,7 +118,7 @@ const NAV_SECTIONS = [
           { label: "Nut Stocks", href: "/rwa/nut-stocks" },
         ],
       },
-      { label: "Carbon Pricing Exposure", href: "/rwa/carbon-debt" },
+      { label: "Carbon Ledger", href: "/rwa/carbon-debt" },
     ],
   },
   {
@@ -148,7 +148,7 @@ const NAV_SECTIONS = [
   {
     title: "🌰 Explore",
     items: [
-      { label: "Department of Complaints", href: "/complaints" },
+      { label: "File a Complaint", href: "/complaints" },
       { label: "FAQ", href: "/faq" },
       { label: "Docs", href: "https://docs.basednut.com/", external: true },
     ],
