@@ -86,6 +86,9 @@ const NAV_SECTIONS = [
       { label: "🔗 Pair Your Token", href: "/pair-your-token" },
       { label: "TVL", href: "/tvl" },
       { label: "Staking", href: "/staking" },
+      { label: "Tree", href: "/tree" },
+      { label: "Graphs", href: "/ecosystem" },
+      { label: "Orchard Atlas", href: "/atlas" },
     ],
   },
   {
@@ -139,20 +142,12 @@ const NAV_SECTIONS = [
           { label: "Images", href: "/images" },
         ],
       },
-      {
-        label: "Infra ▾",
-        sub: [
-          { label: "Mycelium + Taproot", href: "/infra/mycelium-taproot" },
-        ],
-      },
+      { label: "Mycelium + Taproot", href: "/infra/mycelium-taproot" },
     ],
   },
   {
     title: "🌰 Explore",
     items: [
-      { label: "Tree", href: "/tree" },
-      { label: "Graphs", href: "/ecosystem" },
-      { label: "Orchard Atlas", href: "/atlas" },
       { label: "Department of Complaints", href: "/complaints" },
       { label: "FAQ", href: "/faq" },
       { label: "Docs", href: "https://docs.basednut.com/", external: true },
