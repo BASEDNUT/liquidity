@@ -22,6 +22,8 @@
   nav{position:sticky;top:0;z-index:60;background:rgba(20,24,18,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
   nav .wrap{max-width:1400px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:16px;height:56px}
   nav .brand{font-weight:700;display:flex;align-items:center;gap:8px;font-size:16px}
+  nav a.brand{color:inherit;text-decoration:none}
+  nav .concept{margin-left:2px}
   nav .brand .sub{color:var(--ink-dim);font-weight:400;font-size:12.5px}
   nav .viewtabs{margin-left:auto;display:flex;gap:4px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:4px}
   nav .viewtabs button{border:0;background:transparent;color:var(--ink-dim);padding:6px 16px;border-radius:7px;cursor:pointer;font-size:13.5px;font-weight:600}
@@ -178,43 +180,23 @@
     nav .concept{display:none}
   }
 
-/* site nav — unifying bar */
-.sitenav{background:#0d1117;border-bottom:1px solid #21262d}
-.sitenav .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:8px;padding-bottom:8px;flex-wrap:wrap}
-.sitenav .sb{font-weight:700;color:#e6edf3;text-decoration:none}
-.sitenav .sl{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-.sitenav .sl a{font-size:13px;color:#8b949e;text-decoration:none}
-.sitenav .sl a:hover{color:#e6edf3;text-decoration:underline}
-.sitenav .sep{color:#8b949e;opacity:.5}
-@media(max-width:640px){.sitenav .wrap{justify-content:center}}
 </style>
 </head>
 <body>
 
-<nav class="sitenav" aria-label="Based Nut site navigation">
-  <div class="wrap">
-    <a class="sb" href="/">🥜 Based Nut</a>
-    <div class="sl">
-      <a href="/">Home</a>
-      <a href="/tree">Tree</a>
-      <a href="/ecosystem">Graphs</a>
-      <a href="/faq">FAQ</a>
-      <a href="https://docs.basednut.com/" rel="noopener">Docs</a>
-      <span class="sep">·</span>
-      <a href="/atlas">← concept surface</a>
-    </div>
-  </div>
-</nav>
-
 <nav>
   <div class="wrap">
-    <div class="brand">🥜 <span>Orchard Atlas</span><span class="sub">· Based Nut · Base</span></div>
+    <a class="brand" href="/" aria-label="Based Nut home">🥜 <span>Orchard Atlas</span><span class="sub">· Based Nut · Base</span></a>
     <div class="viewtabs">
       <button id="tab-graph" class="on" aria-label="Graph view — full liquidity hypergraph">Graph</button>
       <button id="tab-forest" aria-label="Forest view — grove by grove tree graphs">Forest</button>
       <button id="tab-registry" aria-label="Registry view — every structure with address and links">Registry</button>
     </div>
-    <a class="concept" href="/atlas/index.html">← concept surface</a>
+    <a class="concept" href="/atlas/index.html">← concept</a>
+    <a class="concept" href="/tree">Tree</a>
+    <a class="concept" href="/ecosystem">Graphs</a>
+    <a class="concept" href="/faq">FAQ</a>
+    <a class="concept" href="https://docs.basednut.com/" rel="noopener">Docs</a>
   </div>
 </nav>
 

@@ -22,6 +22,7 @@
   nav{position:sticky;top:0;z-index:50;background:rgba(250,246,238,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
   nav .wrap{display:flex;align-items:center;gap:18px;height:58px}
   nav .brand{font-weight:700;letter-spacing:.4px;display:flex;align-items:center;gap:8px}
+  nav a.brand{color:inherit;text-decoration:none}
   nav .brand .nut{font-size:20px}
   nav .links{margin-left:auto;display:flex;gap:18px;font-size:14px}
   nav .links a{color:var(--ink-soft)}
@@ -145,42 +146,22 @@
     footer .cols{grid-template-columns:1fr}
   }
 
-/* site nav — unifying bar */
-.sitenav{background:var(--paper,#F6EFE3);border-bottom:1px solid var(--ink,#2B1A10)}
-.sitenav .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:8px;padding-bottom:8px;flex-wrap:wrap}
-.sitenav .sb{font-weight:700;color:var(--ink,#2B1A10);text-decoration:none}
-.sitenav .sl{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-.sitenav .sl a{font-size:13px;color:var(--ink-soft,#5D3A1A);text-decoration:none}
-.sitenav .sl a:hover{color:var(--ink,#2B1A10);text-decoration:underline}
-.sitenav .sep{color:var(--ink-soft,#5D3A1A);opacity:.5}
-@media(max-width:640px){.sitenav .wrap{justify-content:center}}
 </style>
 </head>
 <body>
 
-<nav class="sitenav" aria-label="Based Nut site navigation">
-  <div class="wrap">
-    <a class="sb" href="/">🥜 Based Nut</a>
-    <div class="sl">
-      <a href="/">Home</a>
-      <a href="/tree">Tree</a>
-      <a href="/ecosystem">Graphs</a>
-      <a href="/faq">FAQ</a>
-      <a href="https://docs.basednut.com/" rel="noopener">Docs</a>
-      <span class="sep">·</span>
-      <a href="/atlas/data">Atlas data →</a>
-    </div>
-  </div>
-</nav>
-
 <nav>
   <div class="wrap">
-    <div class="brand"><span class="nut">🥜</span> The Orchard <span style="color:var(--ink-soft);font-weight:400;font-size:13px">· Based Nut</span></div>
+    <a class="brand" href="/" aria-label="Based Nut home"><span class="nut">🥜</span> The Orchard <span style="color:var(--ink-soft);font-weight:400;font-size:13px">· Based Nut</span></a>
     <div class="links">
       <a href="#ladder">Vocabulary</a>
       <a href="#structures">Structures</a>
       <a href="#groves">Groves</a>
       <a href="/atlas/data.html">Atlas →</a>
+      <a href="/tree">Tree</a>
+      <a href="/ecosystem">Graphs</a>
+      <a href="/faq">FAQ</a>
+      <a href="https://docs.basednut.com/" rel="noopener">Docs</a>
     </div>
   </div>
 </nav>

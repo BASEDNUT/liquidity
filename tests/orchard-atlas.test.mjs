@@ -47,18 +47,19 @@ assert.ok(data.includes("ROOTSTOCK"), "data: wNUT sub-label missing");
 assert.ok(data.includes("aria-pressed"), "data: chip aria state missing");
 assert.ok(data.includes("data-fkey"), "data: chip data attrs missing");
 
-/* ── site nav cohesion ── */
+/* ── site nav cohesion — ONE nav per page, site links merged inline ── */
 for (const [name, html] of [["index", idx], ["data", data]]) {
-  assert.ok(html.includes("sitenav"), name + ": site nav missing");
+  assert.equal((html.match(/<nav[ >]/g) || []).length, 1, name + ": must have exactly one nav element");
+  assert.ok(!html.includes("sitenav"), name + ": sitenav residue must be gone");
   assert.ok(html.includes(`href="/"`), name + ": home link missing");
   assert.ok(html.includes(`href="/tree"`), name + ": tree link missing");
   assert.ok(html.includes(`href="/ecosystem"`), name + ": graphs link missing");
   assert.ok(html.includes(`href="/faq"`), name + ": faq link missing");
   assert.ok(html.includes("docs.basednut.com"), name + ": docs link missing");
-  assert.ok(html.includes(`aria-label="Based Nut site navigation"`), name + ": nav aria label missing");
+  assert.ok(html.includes(`aria-label="Based Nut home"`), name + ": brand home aria-label missing");
 }
-assert.ok(idx.includes(`href="/atlas/data"`), "index: atlas-data link missing in sitenav");
-assert.ok(data.includes(`href="/atlas"`), "data: concept link missing in sitenav");
+assert.ok(idx.includes(`href="/atlas/data.html"`), "index: atlas-data link missing in nav");
+assert.ok(data.includes(`href="/atlas/index.html"`), "data: concept link missing in nav");
 
 /* ── nav label renames ── */
 assert.ok(header.includes(`label: "File a Complaint"`), "Header: File a Complaint rename missing");
