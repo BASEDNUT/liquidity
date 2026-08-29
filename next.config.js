@@ -72,6 +72,11 @@ module.exports = (phase) => {
                     destination: '/images',
                     permanent: false,
                 },
+                {
+                    source: '/ecosystem',
+                    destination: '/faq',
+                    permanent: false,
+                },
             ];
         },
   };

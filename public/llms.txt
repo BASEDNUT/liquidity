@@ -22,7 +22,7 @@ Key information:
 - [Token Tree](/tree): Visual hierarchy showing token relationships and derivation
 - [Staking](/staking): Active reward-position pools, vaults, and TVL
 - [Arb Bot War Room](/arb-bot): 8 arbitrage loops, machine-readable spec, execution doctrine, risk disclaimer
-- [FAQ](/faq): 46 questions in 6 categories (Basics, Tokens, Arbitrage, Liquidity, NFTs, Risks)
+- [FAQ](/faq): 46 questions in 6 categories (Basics, Tokens, Arbitrage, Liquidity, NFTs, Risks) plus the Ecosystem Graphs viewer (36 charts: taxonomy, token mechanics, liquidity topology, live data — formerly /ecosystem)
 - [Chat](/chat): Community chat with Peanutoshi AI assistant
 - [Images](/images): Media gallery and asset collection
 - [Agent Economy](/agent-economy): Live autonomous-agent survival dashboard — Pipshell/Peanut shared treasury, ACP income, escrow ledger, benefactor policy, on-chain alive clock (Base RPC + Blockscout + GeckoTerminal)

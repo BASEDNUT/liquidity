@@ -87,7 +87,6 @@ const NAV_SECTIONS = [
       { label: "TVL", href: "/tvl" },
       { label: "Staking", href: "/staking" },
       { label: "Tree", href: "/tree" },
-      { label: "Graphs", href: "/ecosystem" },
       { label: "Orchard Atlas", href: "/atlas" },
     ],
   },

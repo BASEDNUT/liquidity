@@ -18,7 +18,7 @@ const routes = ['/', '/token/nut', '/token/snut', '/token/pnut', '/tokens',
   '/rwa/nut-inventory-infrastructure', '/rwa/nut-trade-flows', '/rwa/nut-demand',
   '/rwa/nut-inflation', '/rwa/nut-stocks', '/rwa/carbon-debt', '/great-nut-war',
   '/warmachine', '/nut-catcher', '/agent-economy', '/agents', '/arb-bot', '/chat',
-  '/images', '/infra/mycelium-taproot', '/tree', '/ecosystem', '/complaints', '/faq',
+  '/images', '/infra/mycelium-taproot', '/tree', '/complaints', '/faq',
   '/atlas', 'https://docs.basednut.com/'];
 for (const r of routes) assert.ok(src.includes(`href: "${r}"`), `route lost: ${r}`);
 
@@ -36,16 +36,16 @@ assert.ok(src.slice(priced, src.indexOf('title: "⚔️')).includes('/rwa/nut-de
 assert.ok(src.slice(priced, src.indexOf('title: "⚔️')).includes('/rwa/nut-inflation'), 'Priced missing standard');
 assert.ok(src.slice(priced, src.indexOf('title: "⚔️')).includes('/rwa/nut-stocks'), 'Priced missing stocks');
 
-// 4. Orchard holds the visualizers: Tree / Graphs / Orchard Atlas — flat, after Staking
+// 4. Orchard holds the visualizers: Tree / Orchard Atlas — flat, after Staking (Graphs merged into FAQ)
 const orchard = src.indexOf('title: "🌳 The Orchard');
 const rwa = src.indexOf('title: "🏦 RWA');
 const orchardBlock = src.slice(orchard, rwa);
-for (const r of ['/tree', '/ecosystem', '/atlas']) {
+for (const r of ['/tree', '/atlas']) {
   assert.ok(orchardBlock.includes(`href: "${r}"`), `Orchard section missing ${r}`);
 }
+assert.ok(!orchardBlock.includes('href: "/ecosystem"'), 'Orchard must not link /ecosystem (merged into FAQ)');
 const stakingIdx = orchardBlock.indexOf('/staking');
 assert.ok(orchardBlock.indexOf('/tree', stakingIdx) > -1, 'Tree must come after Staking in Orchard');
-assert.ok(orchardBlock.indexOf('/ecosystem', stakingIdx) > -1, 'Graphs must come after Staking in Orchard');
 assert.ok(orchardBlock.indexOf('/atlas', stakingIdx) > -1, 'Orchard Atlas must come after Staking in Orchard');
 
 // 5. Agents: Playground group kept; Infra submenu REMOVED — Mycelium + Taproot promoted flat

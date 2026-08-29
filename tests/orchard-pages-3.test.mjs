@@ -48,7 +48,7 @@ assert.ok(sectionCount === 5, `expected 5 nav sections, got ${sectionCount}`);
 const routes = ['/', '/token/nut', '/token/snut', '/token/pnut', '/tokens',
   '/pool/nut-weth-uniswap-v3', '/pool/nut-salt-mintclub', '/pool/snut-nut-aerodrome',
   '/pool/salt-usdc-aerodrome', '/pool/pips-usdc-balancer-reclamm', '/pair-your-token',
-  '/tvl', '/staking', '/tree', '/ecosystem', '/great-nut-war', '/warmachine',
+  '/tvl', '/staking', '/tree', '/great-nut-war', '/warmachine',
   '/nut-catcher', '/agents', '/agent-economy', '/arb-bot', '/chat', '/images',
   '/infra/mycelium-taproot', '/rwa/carbon-debt', '/rwa/nuts-production',
   '/rwa/nut-inflation', '/rwa/nut-stocks', '/rwa/nut-atlas', '/rwa/nut-trade-flows',

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '../components/Layout';
+import EcosystemCharts from '../components/EcosystemCharts';
 import { Box, Typography, Accordion, AccordionSummary, AccordionDetails, TextField, InputAdornment, Chip, Stack, Paper } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
@@ -335,6 +336,12 @@ export default function FAQ() {
             BASED NUT is an experimental memefi project. All content is for educational and entertainment purposes only. Trade at your own risk.
           </Typography>
         </Paper>
+
+        {/* Ecosystem graphs — formerly /ecosystem, merged here 2026-08-28 */}
+        <Typography variant="h4" sx="{{ mb: 1.5, color: '#5B3A29', fontWeight: 'bold' }}">
+          🧭 Ecosystem Graphs
+        </Typography>
+        <EcosystemCharts />
 
         {/* Header */}
         <Typography variant="h3" sx={{ mb: 1, color: '#5B3A29', fontWeight: 'bold' }}>
