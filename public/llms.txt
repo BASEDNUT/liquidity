@@ -41,6 +41,7 @@ Key information:
 ## Token Pages
 
 - [NUT](/token/nut): Unity token — supply=1, no tax, anchor asset for all nested tokens
+- [wNUT](/wnut): Wrapped NUT observatory — live supply, 1:1 backing, wrap/unwrap flows, holders, distribution, and Sunflower Grove Balancer v3 markets
 - [SNUT](/token/snut): Deflationary reward-position — 1% tax, live burn tracker, recursive burn flywheel
 - [pNUT](/token/pnut): Balancer V2 index basket — 25% each cbETH/cbBTC/NUT/SNUT, inflationary counterbalance
 - [SALT](/token/salt): Mint Club bonding-curve token — arbitrage via Aerodrome SALT/USDC
