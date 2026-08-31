@@ -4,48 +4,60 @@ import { readFileSync } from 'node:fs';
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
 
-// ── Source port exists ──────────────────────────────────────────
+// ── Boss scaffold preserved as source reference ────────────────
 const wnut = JSON.parse(read('../src/data/wnut.json'));
-const all = wnut.css + wnut.html + wnut.script;
 for (const key of ['css', 'html', 'script']) {
   assert.ok(typeof wnut[key] === 'string' && wnut[key].length > 500, `missing ${key}`);
 }
 
-// ── Verbatim Boss scaffold content ──────────────────────────────
-test('scaffold content preserved', () => {
-  assert.ok(all.includes('BASED'), 'brand lost');
-  assert.ok(all.includes('Orchard'), 'way-home nav lost');
-  assert.ok(all.includes('/token/nut'), 'NUT link lost');
-  assert.ok(all.includes('/api/wnut-data'), 'live API fetch lost');
-  assert.ok(all.includes('totalSupply'), 'supply metric lost');
-  assert.ok(all.includes('state'), 'state section lost');
-  assert.ok(all.includes('gauge'), 'backing gauge lost');
-  assert.ok(all.includes('holders'), 'holders section lost');
-  assert.ok(all.includes('flows'), 'flows section lost');
-  assert.ok(all.includes('distribution'), 'distribution section lost');
-  assert.ok(all.includes('markets'), 'markets section lost');
-});
-
-// ── CSS scoping: no bare :root (styled-jsx trap) ────────────────
-test('CSS scoped under .wnut, no global leaks', () => {
-  assert.ok(!/:root\s*\{/.test(wnut.css), 'CSS still uses :root — vars would never apply');
-  assert.ok(!/^body\s*\{/m.test(wnut.css), 'CSS still styles global body');
-  assert.ok(!/^html\s*\{/m.test(wnut.css), 'CSS still styles global html');
-  assert.ok(wnut.css.includes('.wnut'), 'wrapper scoping missing');
-  assert.ok((wnut.css.match(/\.wnut/g) || []).length > 50, 'insufficient .wnut scoping');
-});
-
-// ── Data contract: script reads what the data layer emits ───────
-test('script fetches /api/wnut-data and reads wnut shape', () => {
-  assert.ok(wnut.script.includes("j?.wnut||j"), 'script must tolerate {wnut:{...}} or bare shape');
-});
-
-// ── Page component ─────────────────────────────────────────────
-test('page component loads json + executes client-side', () => {
+// ── Page is a site-native page: Layout + TokenNav, no raw scaffold injection ──
+test('page uses site chrome (Layout + TokenNav), not scaffold topbar', () => {
   const page = read('../pages/wnut.js');
-  assert.ok(page.includes('wnut.json'), 'page must load its data');
-  assert.ok(page.includes('new Function'), 'IIFE script must be executed client-side');
-  assert.ok(page.includes('className="wnut"'), 'wnut wrapper div missing');
+  assert.ok(page.includes("import Layout from '../components/Layout'"), 'Layout import missing');
+  assert.ok(page.includes('<Layout>'), 'page must render inside Layout (site Header/Footer)');
+  assert.ok(page.includes('<TokenNav dark />'), 'TokenNav missing — token family navigation broken');
+  assert.ok(!page.includes('dangerouslySetInnerHTML'), 'raw HTML injection forbidden — rebuild natively');
+  assert.ok(!page.includes('new Function'), 'eval-style script execution forbidden');
+  assert.ok(!page.includes('className="wnut"'), 'scaffold wrapper div must be gone');
+});
+
+// ── Scaffold data sections preserved in native form ────────────
+test('all scaffold observatory sections present natively', () => {
+  const page = read('../pages/wnut.js');
+  for (const s of [
+    'How much of NUT is wrapped?',
+    'Wrap / unwrap flows',
+    'Where is the wNUT?',
+    'Verified wNUT markets',
+    'Largest holders',
+    'Recent events',
+    'depositFor',
+    'withdrawTo',
+  ]) {
+    assert.ok(page.includes(s), `section "${s}" lost`);
+  }
+});
+
+// ── Live data contract ─────────────────────────────────────────
+test('page fetches /api/wnut-data and renders live keys', () => {
+  const page = read('../pages/wnut.js');
+  assert.ok(page.includes("'/api/wnut-data'"), 'live API fetch missing');
+  for (const k of ['totalSupply', 'underlyingBalance', 'backingRatio', 'wrappedPctOfNut', 'backingValueUsd', 'flows', 'distribution', 'topHolders', 'markets', 'recentEvents', 'eventsError']) {
+    assert.ok(page.includes(k), `data key ${k} not consumed`);
+  }
+});
+
+// ── Zero-fabrication discipline ────────────────────────────────
+test('no fabricated stats — unavailability is stated, not invented', () => {
+  const page = read('../pages/wnut.js');
+  assert.ok(page.includes('no fabrication'), 'no-fabrication disclosure missing');
+});
+
+// ── Canonical addresses on page ────────────────────────────────
+test('canonical contract addresses present', () => {
+  const page = read('../pages/wnut.js');
+  assert.ok(page.includes('0xBA5ED46e31F80dafF307cbf60bd422a6f62E3dd3'), 'wNUT address missing');
+  assert.ok(page.includes('0xb8de15fb529d98c93c749de63c749d48d25a30df'), 'NUT address missing');
 });
 
 // ── Header nav wiring ─────────────────────────────────────────
@@ -72,4 +84,10 @@ test('data layer has canonical addresses and zero-fabrication markets', () => {
   assert.ok((src.match(/poolAddress/g) || []).length === 5, 'must be exactly 5 graft markets');
   assert.ok(src.includes('moralis'), 'Moralis event source missing');
   assert.ok(src.includes('order=ASC'), 'chronological event ordering missing');
+});
+
+// ── Test-suite wiring ─────────────────────────────────────────
+test('wnut tests run in npm test suite', () => {
+  const pkg = read('../package.json');
+  assert.ok(pkg.includes('wnut-page.test.mjs'), 'wnut-page.test.mjs not wired into npm test');
 });

@@ -19,8 +19,11 @@ export default function TokenNav({ dark = false }) {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const data = fetchTokens();
+  // wNUT lives at /wnut (observatory page), not /token/wnut — custom href entry
+  const wnutToken = { name: 'wNUT', icon: '🎁', id: 'wnut', href: '/wnut', color: '#6B8E4E' };
   const tokens = [
     { ...data.trunk, id: (data.trunk?.name || 'trunk').toLowerCase() },
+    wnutToken,
     ...(data.branches || []).map((t, i) => ({ ...t, id: (t.name || `branch-${i}`).toLowerCase() })),
     ...(data.nestedTokens || []).map((t, i) => ({ ...t, id: (t.name || `nested-${i}`).toLowerCase() })),
     ...(data.soil || []).map((t, i) => ({ ...t, id: (t.name || `soil-${i}`).toLowerCase() })),
@@ -32,6 +35,7 @@ export default function TokenNav({ dark = false }) {
   if (path === '/token/nut') currentId = 'nut';
   else if (path === '/token/snut') currentId = 'snut';
   else if (path === '/token/pnut') currentId = 'pnut';
+  else if (path === '/wnut') currentId = 'wnut';
   else if (router.query.id) currentId = String(router.query.id).toLowerCase();
 
   const c = dark
@@ -76,7 +80,7 @@ export default function TokenNav({ dark = false }) {
           }}
         >
           {tokens.map((t) => (
-            <MenuItem key={t.id} value={t.id} component={Link} href={`/token/${t.id}`}>
+            <MenuItem key={t.id} value={t.id} component={Link} href={t.href || `/token/${t.id}`}>
               {t.icon} {t.name}
             </MenuItem>
           ))}
@@ -104,7 +108,7 @@ export default function TokenNav({ dark = false }) {
         return (
           <Button
             key={t.id}
-            href={`/token/${t.id}`}
+            href={t.href || `/token/${t.id}`}
             LinkComponent={Link}
             variant={isActive ? 'contained' : 'outlined'}
             sx={{
