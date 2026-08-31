@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import { Box, Typography, Chip } from '@mui/material';
-import Layout from '../components/Layout';
-import TokenNav from '../components/TokenNav';
+import Layout from '../../components/Layout';
+import TokenNav from '../../components/TokenNav';
 
 const WNUT_ADDR = '0xBA5ED46e31F80dafF307cbf60bd422a6f62E3dd3';
 const NUT_ADDR = '0xb8de15fb529d98c93c749de63c749d48d25a30df';

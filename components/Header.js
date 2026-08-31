@@ -68,7 +68,7 @@ const NAV_SECTIONS = [
         label: "Tokens",
         sub: [
           { label: "NUT", href: "/token/nut" },
-          { label: "wNUT", href: "/wnut" },
+          { label: "wNUT", href: "/token/wnut" },
           { label: "SNUT", href: "/token/snut" },
           { label: "pNUT", href: "/token/pnut" },
           { label: "All Tokens", href: "/tokens" },

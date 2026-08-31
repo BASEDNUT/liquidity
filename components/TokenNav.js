@@ -19,8 +19,8 @@ export default function TokenNav({ dark = false }) {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const data = fetchTokens();
-  // wNUT lives at /wnut (observatory page), not /token/wnut — custom href entry
-  const wnutToken = { name: 'wNUT', icon: '🎁', id: 'wnut', href: '/wnut', color: '#6B8E4E' };
+  // wNUT observatory page lives at /token/wnut (static route beats [id])
+  const wnutToken = { name: 'wNUT', icon: '🎁', id: 'wnut', color: '#6B8E4E' };
   const tokens = [
     { ...data.trunk, id: (data.trunk?.name || 'trunk').toLowerCase() },
     wnutToken,
@@ -35,7 +35,7 @@ export default function TokenNav({ dark = false }) {
   if (path === '/token/nut') currentId = 'nut';
   else if (path === '/token/snut') currentId = 'snut';
   else if (path === '/token/pnut') currentId = 'pnut';
-  else if (path === '/wnut') currentId = 'wnut';
+  else if (path === '/token/wnut') currentId = 'wnut';
   else if (router.query.id) currentId = String(router.query.id).toLowerCase();
 
   const c = dark

@@ -3,7 +3,7 @@
   <url><loc>https://liquidity-six.vercel.app/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
   <url><loc>https://liquidity-six.vercel.app/tokens</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://liquidity-six.vercel.app/token/nut</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://orchard.basednut.com/wnut</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://orchard.basednut.com/token/wnut</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
   <url><loc>https://liquidity-six.vercel.app/token/snut</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
   <url><loc>https://liquidity-six.vercel.app/token/pnut</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
   <url><loc>https://liquidity-six.vercel.app/token/salt</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>

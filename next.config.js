@@ -77,6 +77,11 @@ module.exports = (phase) => {
                     destination: '/faq',
                     permanent: false,
                 },
+                {
+                    source: '/wnut',
+                    destination: '/token/wnut',
+                    permanent: true,
+                },
             ];
         },
   };

@@ -17,6 +17,7 @@ kanban
     siteupdates[Site updates — continuous portal maintenance and content refresh]@{priority: "Low", assigned: "agent"}
   watch[Watch]
     reclamm[PIPS/USDC reCLAMM page + pool tracking]@{priority: "Medium", assigned: "agent"}
+    tokenstyle[Token pages style refresh — unify /token/* visual design with wNUT observatory standard]@{priority: "Medium", assigned: "agent"}
 ```
 
 ---
@@ -40,3 +41,5 @@ kanban
    Keep PIPS/USDC reCLAMM pool data current on the portal; reflect the blocked 7.75M PIPS LP need (~$120 USDC).
 3. **S-3 — Continuous maintenance** · Low · agent
    Portal content refresh and upkeep.
+4. **S-4 — Token pages style refresh** · Medium · agent
+   Unify all /token/* page visual design to the wNUT observatory standard (Layout + TokenNav + section cards, earth palette per token). Boss request 2026-08-30.
