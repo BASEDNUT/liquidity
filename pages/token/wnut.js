@@ -205,6 +205,7 @@ export default function WNut() {
           </Box>
           <StatRow label="Wrapped share of NUT" value={fmtPct(data?.wrappedPctOfNut)} source="Base RPC" />
           <StatRow label="Backing surplus" value={fmtNum(data?.backingSurplus) + ' NUT'} source="must stay 0" />
+          <StatRow label="Est. market cap" value={fmtUsd(data?.estMarketCapUsd)} source="wNUT supply × NUT price" />
           <StatRow label="Data source" value={src || '—'} source={data?.lastCheckedAt ? 'updated ' + timeAgo(data.lastCheckedAt) : null} />
           {data?.blockNumber != null && (
             <Typography sx={{ fontSize: '0.65rem', color: C.textFaint, mt: 1, textAlign: 'right' }}>Block {data.blockNumber} · verified live</Typography>

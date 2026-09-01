@@ -50,6 +50,18 @@ Key information:
 - [ALMD](/token/almd): Almond War Generals NFT — 424 supply, exponential bonding curve
 - [sALMD](/token/salmd): Almond Soldiers NFT — 6,238 supply
 - [PNUTRMY](/token/pnutrmy): Peanut Soldiers NFT — 5,013 supply
+- [gtINF](/token/gtinf): Inference Twin Graft — Balancer v3 BPT, 20% wNUT / 40% VVV / 40% DIEM (Sunflower Grove)
+- [gtAGT](/token/gtagt): Agent Twin Graft — Balancer v3 BPT, 20% wNUT / 40% VIRTUAL / 40% MOR (Sunflower Grove)
+- [gtETH](/token/gteth): Ether Twin Graft — Balancer v3 BPT, 20% wNUT / 40% cbETH / 40% wstETH (Sunflower Grove)
+- [gtBTC](/token/gtbtc): Bitcoin Twin Graft — Balancer v3 BPT, 20% wNUT / 40% cbBTC / 40% tBTC (Sunflower Grove)
+- [gtFX](/token/gtfx): FX Twin Graft — Balancer v3 BPT, 20% wNUT / 40% USDC / 40% EURC (Sunflower Grove)
+- [VVV](/token/vvv): Venice AI — inference scion grafted with wNUT in gtINF
+- [DIEM](/token/diem): DIEM — inference scion grafted with wNUT in gtINF
+- [VIRTUAL](/token/virtual): Virtuals Protocol — agent scion grafted with wNUT in gtAGT
+- [MOR](/token/mor): Morpheus — agent scion grafted with wNUT in gtAGT
+- [wstETH](/token/wsteth): Lido wrapped staked ETH — ether scion grafted with wNUT in gtETH
+- [tBTC](/token/tbtc): Threshold Bitcoin — bitcoin scion grafted with wNUT in gtBTC
+- [EURC](/token/eurc): Circle euro stablecoin — FX scion grafted with wNUT in gtFX
 
 ## Lore & Community
 

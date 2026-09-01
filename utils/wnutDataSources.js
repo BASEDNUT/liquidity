@@ -1,10 +1,11 @@
 // wNUT On-Chain Data Fetcher
 // Wrapped NUT Observatory — live state + event history on Base mainnet.
-// State (supply/backing/block) from Base RPC; event history from Moralis ERC20 transfers.
+// State (supply/backing/block) from Base RPC; event history from Moralis (keyed) or keyless eth_getLogs tape.
 // Zero hard-coded numbers: every metric derived from live reads, verified contracts, or the event tape.
 
 const RPC_URLS = [
   'https://mainnet.base.org',
+  'https://base.drpc.org', // keyless getLogs-capable fallback (verified 2026-09-01)
   'https://base.publicnode.com',
 ];
 
@@ -22,6 +23,11 @@ const TOTAL_SUPPLY = '0x18160ddd';
 
 // Moralis API key from the Vercel environment.
 const MORALIS_KEY = process.env.MORALIS_API_KEY || '';
+
+// Keyless event-tape fallback — eth_getLogs Transfer logs from the wNUT deploy block.
+const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const WNUT_DEPLOY_BLOCK = 50507871; // wNUT deploy block — first wrap tx 0xbfc0...2ef75
+const LOG_CHUNK = 10000; // mainnet.base.org rejects wider ranges (HTTP 413)
 
 // Verified wNUT markets — Sunflower Grove Batch I (Balancer v3 WEIGHTED 20/40/40).
 // Addresses canonical from config.py. Live liquidity/volume/price intentionally null:
@@ -123,7 +129,7 @@ async function fetchNutPriceUsd() {
 // ── Event history (Moralis) ──────────────────────────────────────────────────
 // wNUT is young: single wrap + market movements. Full tape fits one page.
 // from=ZERO -> mint (wrap); to=ZERO -> burn (unwrap); else transfer.
-async function fetchEvents() {
+async function fetchEventsMoralis() {
   if (!MORALIS_KEY) return { events: [], error: 'missing_moralis_key' };
   const url = `https://deep-index.moralis.io/api/v2.2/erc20/${WNUT}/transfers?chain=base&limit=100&order=ASC`;
   const res = await fetchWithTimeout(url, {
@@ -152,6 +158,86 @@ async function fetchEvents() {
 
   return { events, error: null };
 }
+
+// ── Event tape: Moralis (keyed) with keyless RPC fallback ────────────────────
+// Moralis first when a key exists; otherwise (or on Moralis failure) the full
+// tape is rebuilt from eth_getLogs Transfer logs, chunked from the deploy block.
+// Zero fabrication: if both paths fail we report the error and show nothing.
+async function fetchEvents() {
+  if (MORALIS_KEY) {
+    const moralis = await fetchEventsMoralis();
+    if (!moralis.error) return moralis;
+  }
+  return fetchEventsRpc();
+}
+
+function logToEvent(log) {
+  const from = '0x' + String(log.topics[1] || '').slice(-40).toLowerCase();
+  const to = '0x' + String(log.topics[2] || '').slice(-40).toLowerCase();
+  let type = 'transfer';
+  if (from === ZERO) type = 'wrap';
+  else if (to === ZERO) type = 'unwrap';
+  let amount = null;
+  try { amount = Number(BigInt(log.data)) / DECIMALS; } catch { /* keep null */ }
+  return {
+    type,
+    amount,
+    from,
+    to,
+    txHash: log.transactionHash || null,
+    blockNumber: log.blockNumber != null ? Number(BigInt(log.blockNumber)) : null,
+    timestamp: null, // filled from block headers below
+  };
+}
+
+async function fetchEventsRpc() {
+  const latestRaw = await rpcCall('eth_blockNumber', []);
+  if (latestRaw == null) return { events: [], error: 'rpc_tape_failed' };
+  const latest = Number(BigInt(latestRaw));
+
+  const chunks = [];
+  for (let from = WNUT_DEPLOY_BLOCK; from <= latest; from += LOG_CHUNK) {
+    chunks.push([from, Math.min(from + LOG_CHUNK - 1, latest)]);
+  }
+
+  const logs = [];
+  let answered = 0;
+  for (let i = 0; i < chunks.length; i += 4) {
+    const batch = chunks.slice(i, i + 4);
+    const results = await Promise.all(batch.map(([f, t]) =>
+      rpcCall('eth_getLogs', [{
+        address: WNUT,
+        fromBlock: '0x' + f.toString(16),
+        toBlock: '0x' + t.toString(16),
+        topics: [TRANSFER_TOPIC],
+      }]),
+    ));
+    for (const r of results) {
+      if (Array.isArray(r)) { answered += 1; logs.push(...r); }
+    }
+  }
+  if (answered === 0) return { events: [], error: 'rpc_tape_failed' };
+
+  const events = logs
+    .map(logToEvent)
+    .sort((a, b) => (a.blockNumber || 0) - (b.blockNumber || 0));
+
+  // Timestamps: one block header per distinct block (the tape is small).
+  const blocks = [...new Set(events.map((e) => e.blockNumber).filter((n) => n != null))];
+  const headers = await Promise.all(blocks.map((b) =>
+    rpcCall('eth_getBlockByNumber', ['0x' + b.toString(16), false]),
+  ));
+  const tsByBlock = new Map();
+  blocks.forEach((b, i) => {
+    const h = headers[i];
+    const ts = h && h.timestamp ? Number(BigInt(h.timestamp)) * 1000 : null;
+    if (ts != null) tsByBlock.set(b, new Date(ts).toISOString());
+  });
+  for (const e of events) e.timestamp = tsByBlock.get(e.blockNumber) || null;
+
+  return { events, error: null };
+}
+
 
 // ── Holder balances + distribution (RPC for known distinct addresses) ────────
 async function deriveHolders(events) {
@@ -258,9 +344,16 @@ export async function fetchWnutData() {
     ? state.underlyingBalance * nutPriceUsd
     : null;
 
+  // Estimated market cap: wNUT circulating supply × live NUT price.
+  // Equals backing value while the 1:1 invariant holds; kept separate for honesty.
+  const estMarketCapUsd = state.totalSupply != null && nutPriceUsd != null
+    ? state.totalSupply * nutPriceUsd
+    : null;
+
   return {
     ...state,
     backingValueUsd,
+    estMarketCapUsd,
     nutPriceUsd,
     holders: holdersData.holders,
     topHolders: holdersData.topHolders || [],

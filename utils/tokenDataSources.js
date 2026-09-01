@@ -28,6 +28,12 @@ export const TOKEN_ADDRESSES = {
   wstETH:  '0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452',
   tBTC:    '0x236aa50979D5f3De3Bd1Eeb40E81137F22ab794b',
   EURC:    '0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42',
+  // Sunflower Grove Batch I graft pool tokens (Balancer v3 BPTs — pool contract IS the ERC-20)
+  gtINF:   '0x6a0a1B7428d543524592eD22023A09BdE05aA466',
+  gtAGT:   '0x5dA95cC31C840Fd33180e4C7f879e3F3d8Eca200',
+  gtETH:   '0xd156d51219B3a7A590670d655E8740Ad404e8835',
+  gtBTC:   '0xb2a63935e1391Ee49E5cfB6cc4f184C285fE29b4',
+  gtFX:    '0x1cCB8c61b62b9c7a9d4e66C9c824C1539B8b1f2E',
 };
 
 // Helper: fetch with timeout using AbortController

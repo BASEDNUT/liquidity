@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 
 const FilterTokens = ({ activeFilter, onFilterChange }) => {
-    const filters = ["All", "Trunk", "Branch", "Nested", "Soil"];
+    const filters = ["All", "Roots", "Branch", "Nested", "Soil"];
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 

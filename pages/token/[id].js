@@ -15,7 +15,7 @@ function getHeroTheme(token) {
   const isNFT = (token.tags || []).some(t => String(t).toUpperCase() === 'NFT');
   if (isNFT) return { gradient: 'linear-gradient(135deg, #4A1A1A 0%, #6B2D2D 50%, #8B3D3D 100%)', color: '#FAF3E6' };
   switch (token.category) {
-    case 'Trunk': return { gradient: 'linear-gradient(135deg, #4A2F1A 0%, #6B3D20 50%, #8B5A2B 100%)', color: '#FAF3E6' };
+    case 'Roots': return { gradient: 'linear-gradient(135deg, #4A2F1A 0%, #6B3D20 50%, #8B5A2B 100%)', color: '#FAF3E6' };
     case 'Branch': return { gradient: 'linear-gradient(135deg, #2D5016 0%, #4A7C2F 50%, #6B9B37 100%)', color: '#FAF3E6' };
     case 'Nested':
       if (token.name === 'SALT') return { gradient: 'linear-gradient(135deg, #3D3D3D 0%, #5D5D5D 50%, #8A8A8A 100%)', color: '#FAF3E6' };
@@ -52,6 +52,12 @@ const TOKEN_DESCRIPTIONS = {
   pNUT: 'Balancer V2 index basket holding 25% each of cbETH, cbBTC, NUT, and SNUT. NAV drift from market price creates arbitrage.',
   SALT: 'Mint Club bonding curve token backed by NUT. Two-venue arb loop: mint with NUT → sell for USDC on Aerodrome.',
   NUTINO: 'Mint Club bonding curve token backed by NUT. Two-venue arb loop: mint with NUT → sell for cbBTC on Uniswap V2.',
+  gtINF: 'Balancer v3 weighted pool token (BPT) of the Inference Twin Graft — 20% wNUT rootstock, 40% VVV, 40% DIEM. Sunflower Grove Batch I: the pool contract itself is the ERC-20, so token and pool share one address.',
+  gtAGT: 'Balancer v3 weighted pool token (BPT) of the Agent Twin Graft — 20% wNUT rootstock, 40% VIRTUAL, 40% MOR. Sunflower Grove Batch I: the pool contract itself is the ERC-20, so token and pool share one address.',
+  gtETH: 'Balancer v3 weighted pool token (BPT) of the Ether Twin Graft — 20% wNUT rootstock, 40% cbETH, 40% wstETH. Sunflower Grove Batch I: the pool contract itself is the ERC-20, so token and pool share one address.',
+  gtBTC: 'Balancer v3 weighted pool token (BPT) of the Bitcoin Twin Graft — 20% wNUT rootstock, 40% cbBTC, 40% tBTC. Sunflower Grove Batch I: the pool contract itself is the ERC-20, so token and pool share one address.',
+  gtFX: 'Balancer v3 weighted pool token (BPT) of the FX Twin Graft — 20% wNUT rootstock, 40% USDC, 40% EURC. Sunflower Grove Batch I: the pool contract itself is the ERC-20, so token and pool share one address.',
+
   PNUTS: 'P-NUTS — Peanut War Generals. 251 officer NFTs bonded to NUT. Mint to enlist, burn to reclaim. 200 SALT airdropped per General. Whole-NFT trading on Sudoswap in USDC.',
   ALMD: 'ALMONDS — Almond War Generals. 424 officer NFTs bonded to NUT. Golden Salted Swarm. 200 SALT airdropped per General. Whole-NFT trading on Sudoswap in cbETH.',
   SALMD: 'S-ALMONDS — Almond Soldiers. 6,238 infantry NFTs bonded to NUT. Sky-Seasoned Crunch. 80 SALT airdropped per Soldier. Whole-NFT trading on Sudoswap in cbETH.',
@@ -343,7 +349,7 @@ export default function TokenProfile({ token: initialToken }) {
   const tokens = useMemo(() => {
     if (!data) return [];
     return [
-      { ...data.trunk, id: (data.trunk?.name || 'trunk').toLowerCase(), category: 'Trunk' },
+      { ...data.trunk, id: (data.trunk?.name || 'trunk').toLowerCase(), category: 'Roots' },
       ...(data.branches || []).map((t, i) => ({ ...t, id: (t.name || `branch-${i}`).toLowerCase(), category: 'Branch' })),
       ...(data.nestedTokens || []).map((t, i) => ({ ...t, id: (t.name || `nested-${i}`).toLowerCase(), category: 'Nested' })),
       ...(data.soil || []).map((t, i) => ({ ...t, id: (t.name || `soil-${i}`).toLowerCase(), category: 'Soil' })),
@@ -1070,7 +1076,7 @@ export async function getStaticProps({ params }) {
     data = fetchTokens(); // Fallback to static token data without marketData
   }
   const tokens = [
-    { ...data.trunk, id: (data.trunk?.name || 'trunk').toLowerCase(), category: 'Trunk' },
+    { ...data.trunk, id: (data.trunk?.name || 'trunk').toLowerCase(), category: 'Roots' },
     ...(data.branches || []).map((t, i) => ({ ...t, id: (t.name || `branch-${i}`).toLowerCase(), category: 'Branch' })),
     ...(data.nestedTokens || []).map((t, i) => ({ ...t, id: (t.name || `nested-${i}`).toLowerCase(), category: 'Nested' })),
     ...(data.soil || []).map((t, i) => ({ ...t, id: (t.name || `soil-${i}`).toLowerCase(), category: 'Soil' })),

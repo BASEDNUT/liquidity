@@ -1390,7 +1390,7 @@ function LegendPanel({ visible }) {
           color: BRAND.ink,
         }}
       >
-        <span>🌰 Trunk / roots = NUT anchor</span>
+        <span>🌰 Roots = NUT anchor</span>
         <span>🔥 Left branch = SNUT burn pressure</span>
         <span>🌰 Right branch = pNUT liquidity balance</span>
         <span>🍃 Canopy = nested token layers</span>

@@ -222,7 +222,7 @@ export async function getStaticProps() {
     const t = fetchTokens();
 
     const flatTokens = [
-      { ...t.trunk, id: (t.trunk?.name || "trunk").toLowerCase(), category: "Trunk" },
+      { ...t.trunk, id: (t.trunk?.name || "trunk").toLowerCase(), category: "Roots" },
       ...(t.branches || []).map((item, i) => ({ ...item, id: (item.name || `branch-${i}`).toLowerCase(), category: "Branch" })),
       ...(t.nestedTokens || []).map((item, i) => ({ ...item, id: (item.name || `nested-${i}`).toLowerCase(), category: "Nested" })),
       ...(t.soil || []).map((item, i) => ({ ...item, id: (item.name || `soil-${i}`).toLowerCase(), category: "Soil" })),

@@ -357,7 +357,7 @@ export function fetchPools() {
       dexscreenerUrl:
         "https://dexscreener.com/base/0xd156d51219B3a7A590670d655E8740Ad404e8835",
       status: "Grafted",
-      icon: "🌻🌀",
+      icon: "🌻💧",
     },
     {
       name: "gtBTC wNUT/cbBTC/tBTC",
