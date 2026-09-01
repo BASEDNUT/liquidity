@@ -62,6 +62,14 @@ const TOKEN_DESCRIPTIONS = {
   AERO: 'Aerodrome Finance token. Governance and emissions token for Aerodrome DEX. Used as a quote token in the NUT/AERO Aerodrome pool. Aerodrome gauge emissions may incentivize NUT liquidity.',
   wETH: 'Wrapped Ether. The primary ETH base asset on Base chain. Used as the quote token in the NUT/wETH and SNUT/wETH pools — the main price discovery venues for the ecosystem.',
   PIPS: 'What is PIPS? It is the electricity bill of the Orchard, paid in a token. Pipshell is a computer that runs the front desk — it guards, monitors, and backs up everything. Every PIPS trade fee pays for that machine, so it never sleeps. 1B supply, 18 decimals. The contract configures a 1%/1% transfer tax, but only the official Virtuals pair is registered — our external pools are untaxed today and could be registered by the owner anytime.',
+  wNUT: 'Wrapped NUT — the canonical ERC20Wrapper, 1:1 with NUT. Deposit 1 NUT, mint 1 wNUT; withdraw anytime. wNUT is the rootstock of the Sunflower Grove: every Balancer v3 graft pool holds 20% wNUT with two 40% scions across AI, ETH, BTC, and FX themes. Supply mirrors wrapped NUT exactly.',
+  VVV: 'Venice Token — Venice.ai inference network. Grafted as a 40% scion with wNUT and DIEM in the gtINF Inference Twin Graft on Balancer v3.',
+  DIEM: 'Diem — Venice compute credit. Grafted as a 40% scion with wNUT and VVV in the gtINF Inference Twin Graft on Balancer v3.',
+  VIRTUAL: 'Virtuals Protocol token — the agent launchpad. Grafted as a 40% scion with wNUT and MOR in the gtAGT Agent Twin Graft on Balancer v3.',
+  MOR: 'Morpheus AI network token. Grafted as a 40% scion with wNUT and VIRTUAL in the gtAGT Agent Twin Graft on Balancer v3.',
+  wstETH: 'Lido Wrapped Staked ETH on Base — staking yield baked into the token. Grafted as a 40% scion with wNUT and cbETH in the gtETH Ether Twin Graft on Balancer v3.',
+  tBTC: 'Threshold tBTC — decentralized wrapped Bitcoin. Grafted as a 40% scion with wNUT and cbBTC in the gtBTC Bitcoin Twin Graft on Balancer v3.',
+  EURC: 'Circle EURC — the euro stablecoin. Grafted as a 40% scion with wNUT and USDC in the gtFX FX Twin Graft on Balancer v3.',
 };
 
 // Tokenomics data — structured for clean card rendering
@@ -1045,7 +1053,8 @@ export async function getStaticPaths() {
     ...(data.soil || []).map((t, i) => ({ ...t, id: (t.name || `soil-${i}`).toLowerCase() })),
   ];
   // Exclude 'snut' and 'nut' — they have dedicated pages at /token/snut.js and /token/nut.js
-  const paths = tokens.filter((t) => t.id !== 'snut' && t.id !== 'nut' && t.id !== 'pnut').map((t) => ({ params: { id: t.id } }));
+  // Exclude 'wnut' — dedicated observatory page at /token/wnut.js (static route wins)
+  const paths = tokens.filter((t) => t.id !== 'snut' && t.id !== 'nut' && t.id !== 'pnut' && t.id !== 'wnut').map((t) => ({ params: { id: t.id } }));
   return { paths, fallback: 'blocking' };
 }
 

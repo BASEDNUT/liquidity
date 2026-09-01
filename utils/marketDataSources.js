@@ -16,6 +16,13 @@ const POOL_CONFIG = [
   { id: 'salt-usdc-aerodrome', pairAddress: '0x64ca0b147f625007b6f082abbb3ba217930eccb2', type: 'dex' },
   { id: 'pips-nut-aerodrome-slipstream-cl', pairAddress: '0x7f8e532cf1be9ed688adb9e6585bc69f017201b5', type: 'dex' },
   { id: 'pips-usdc-balancer-reclamm', pairAddress: '0xb19e3af68bb307369e8772a9e157431fcfe9dd44', type: 'dex' },
+  // === Sunflower Grove Batch I — Balancer v3 Twin Grafts (5) ===
+  // ids MUST equal slugify(name)-slugify(platform) from fetchPools.js (live-data merge contract)
+  { id: 'gtinf-wnut-vvv-diem-balancer-v3', pairAddress: '0x6a0a1B7428d543524592eD22023A09BdE05aA466', type: 'dex' },
+  { id: 'gtagt-wnut-virtual-mor-balancer-v3', pairAddress: '0x5dA95cC31C840Fd33180e4C7f879e3F3d8Eca200', type: 'dex' },
+  { id: 'gteth-wnut-cbeth-wsteth-balancer-v3', pairAddress: '0xd156d51219B3a7A590670d655E8740Ad404e8835', type: 'dex' },
+  { id: 'gtbtc-wnut-cbbtc-tbtc-balancer-v3', pairAddress: '0xb2a63935e1391Ee49E5cfB6cc4f184C285fE29b4', type: 'dex' },
+  { id: 'gtfx-wnut-usdc-eurc-balancer-v3', pairAddress: '0x1cCB8c61b62b9c7a9d4e66C9c824C1539B8b1f2E', type: 'dex' },
   // === MintClub Bonding Curve Pools (2 main) ===
   { id: 'nutino-nut-mintclub', tokenAddress: '0x30421e2d18dFF60B298eEF427cF868cA65f1476B', type: 'mintclub', label: 'NUTINO/NUT' },
   { id: 'nut-salt-mintclub', tokenAddress: '0x1ede2afc985f6d7aeb3f4c84b95a103c00d5de81', type: 'mintclub', label: 'NUT/SALT' },

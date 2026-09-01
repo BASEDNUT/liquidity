@@ -311,6 +311,84 @@ export function fetchPools() {
       icon: "💻🥜💵",
       note: "Partial LP — needs ~$120 USDC to complete the PIPS side",
     },
+    // === Sunflower Grove Batch I — Balancer v3 Twin Grafts (5), live 2026-08-27 ===
+    // Each graft: 20% wNUT rootstock + two 40% scions. Zero swaps observed yet —
+    // no fabricated numbers; live sources return null until pools are indexed.
+    {
+      name: "gtINF wNUT/VVV/DIEM",
+      tvl: null,
+      flavor: "Inference Twin Graft",
+      platform: "Balancer v3",
+      role: "Sunflower Grove Batch I — 20/40/40",
+      category: ["TKNs", "wNUT"],
+      url: "https://basescan.org/address/0x6a0a1B7428d543524592eD22023A09BdE05aA466",
+      checkPoolUrl:
+        "https://balancer.fi/pools/base/v3/0x6a0a1B7428d543524592eD22023A09BdE05aA466",
+      dexscreenerUrl:
+        "https://dexscreener.com/base/0x6a0a1B7428d543524592eD22023A09BdE05aA466",
+      status: "Grafted",
+      icon: "🌻🧠",
+    },
+    {
+      name: "gtAGT wNUT/VIRTUAL/MOR",
+      tvl: null,
+      flavor: "Agent Twin Graft",
+      platform: "Balancer v3",
+      role: "Sunflower Grove Batch I — 20/40/40",
+      category: ["TKNs", "wNUT"],
+      url: "https://basescan.org/address/0x5dA95cC31C840Fd33180e4C7f879e3F3d8Eca200",
+      checkPoolUrl:
+        "https://balancer.fi/pools/base/v3/0x5dA95cC31C840Fd33180e4C7f879e3F3d8Eca200",
+      dexscreenerUrl:
+        "https://dexscreener.com/base/0x5dA95cC31C840Fd33180e4C7f879e3F3d8Eca200",
+      status: "Grafted",
+      icon: "🌻🤖",
+    },
+    {
+      name: "gtETH wNUT/cbETH/wstETH",
+      tvl: null,
+      flavor: "Ether Twin Graft",
+      platform: "Balancer v3",
+      role: "Sunflower Grove Batch I — 20/40/40",
+      category: ["TKNs", "wNUT"],
+      url: "https://basescan.org/address/0xd156d51219B3a7A590670d655E8740Ad404e8835",
+      checkPoolUrl:
+        "https://balancer.fi/pools/base/v3/0xd156d51219B3a7A590670d655E8740Ad404e8835",
+      dexscreenerUrl:
+        "https://dexscreener.com/base/0xd156d51219B3a7A590670d655E8740Ad404e8835",
+      status: "Grafted",
+      icon: "🌻🌀",
+    },
+    {
+      name: "gtBTC wNUT/cbBTC/tBTC",
+      tvl: null,
+      flavor: "Bitcoin Twin Graft",
+      platform: "Balancer v3",
+      role: "Sunflower Grove Batch I — 20/40/40",
+      category: ["TKNs", "wNUT"],
+      url: "https://basescan.org/address/0xb2a63935e1391Ee49E5cfB6cc4f184C285fE29b4",
+      checkPoolUrl:
+        "https://balancer.fi/pools/base/v3/0xb2a63935e1391Ee49E5cfB6cc4f184C285fE29b4",
+      dexscreenerUrl:
+        "https://dexscreener.com/base/0xb2a63935e1391Ee49E5cfB6cc4f184C285fE29b4",
+      status: "Grafted",
+      icon: "🌻₿",
+    },
+    {
+      name: "gtFX wNUT/USDC/EURC",
+      tvl: null,
+      flavor: "FX Twin Graft",
+      platform: "Balancer v3",
+      role: "Sunflower Grove Batch I — 20/40/40",
+      category: ["TKNs", "wNUT"],
+      url: "https://basescan.org/address/0x1cCB8c61b62b9c7a9d4e66C9c824C1539B8b1f2E",
+      checkPoolUrl:
+        "https://balancer.fi/pools/base/v3/0x1cCB8c61b62b9c7a9d4e66C9c824C1539B8b1f2E",
+      dexscreenerUrl:
+        "https://dexscreener.com/base/0x1cCB8c61b62b9c7a9d4e66C9c824C1539B8b1f2E",
+      status: "Grafted",
+      icon: "🌻€",
+    },
   ];
 
   // Add a stable id by slugifying name + platform

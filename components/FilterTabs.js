@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 
 const FilterTabs = ({ filter, setFilter, pools }) => {
-  const filters = ["All", "NFTs", "TKNs", "NUT", "SNUT", "pNUT", "NUTcoins"];
+  const filters = ["All", "NFTs", "TKNs", "NUT", "SNUT", "pNUT", "wNUT", "PIPS", "NUTcoins"];
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
