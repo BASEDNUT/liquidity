@@ -11,12 +11,13 @@ const ORCHARD = {
   meta: {
     chain: "Base",
     chainId: 8453,
-    snapshot: "2026-08-28",
+    snapshot: "2026-09-01",
     sources: [
       "config.py (canonical addresses)",
       "nut_cache.db — pool_market_producer",
       "Base RPC (verified 2026-08-27)",
-      "Balancer v3 pool state (verified 2026-08-27)"
+      "Balancer v3 pool state (verified 2026-08-27)",
+      "gtSIL B20 scions + pool state (verified 2026-09-01)"
     ],
     note: "Static snapshot. No live feed is claimed. Adapter-ready: replace this file with an endpoint."
   },
@@ -39,6 +40,8 @@ const ORCHARD = {
     DIEM:    { addr: "0xF4d97F2da56e8c3098f3a8D538DB630A2606a024", decimals: 18, kind: "compute",    label: "Diem (Venice compute)" },
     VIRTUAL: { addr: "0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b", decimals: 18, kind: "compute",    label: "Virtuals Protocol" },
     MOR:     { addr: "0x7431aDa8a591C955a994a21710752EF9b882b8e3", decimals: 18, kind: "compute",    label: "Morpheus AI" },
+    NVDAC:   { addr: "0xb20000000000000000000078ee7ce2fE4908108C", decimals: 8,  kind: "rwa",        label: "NVIDIA tokenized stock (Coinbase B20)" },
+    AAPLC:   { addr: "0xb200000000000000000000C2e324d24d7eEcd1fb", decimals: 8,  kind: "rwa",        label: "Apple tokenized stock (Coinbase B20)" },
     AERO:    { addr: "0x940181a94A35A4569E4529A3CDfB74e38FD98631", decimals: 18, kind: "infra",      label: "Aerodrome" },
     SNUTLP:  { addr: "0x82bbadb9d6b2c0a59ed01809e30323f89f6faa1c", decimals: 18, kind: "meta",       label: "SNUT/WETH LP token" }
   },
@@ -67,6 +70,7 @@ const ORCHARD = {
     { id: "gt-eth", type: "graft", assets: ["WNUT","CBETH","WSTETH"],   weights: [20,40,40], name: "gtETH Ether Twin Graft",      venue: "Balancer v3", mechanism: "weighted", feeBps: null, tvl: 2.49, address: "0xd156d51219B3a7A590670d655E8740Ad404e8835", status: "live", groves: ["sunflower","reserve","infra"] },
     { id: "gt-btc", type: "graft", assets: ["WNUT","CBBTC","TBTC"],     weights: [20,40,40], name: "gtBTC Bitcoin Twin Graft",    venue: "Balancer v3", mechanism: "weighted", feeBps: null, tvl: 2.49, address: "0xb2a63935e1391Ee49E5cfB6cc4f184C285fE29b4", status: "live", groves: ["sunflower","reserve","infra"] },
     { id: "gt-fx",  type: "graft", assets: ["WNUT","USDC","EURC"],      weights: [20,40,40], name: "gtFX FX Twin Graft",          venue: "Balancer v3", mechanism: "weighted", feeBps: null, tvl: 2.50, address: "0x1cCB8c61b62b9c7a9d4e66C9c824C1539B8b1f2E", status: "live", groves: ["sunflower","settlement","infra"] },
+    { id: "gt-sil", type: "graft", assets: ["WNUT","NVDAC","AAPLC"],   weights: [20,40,40], name: "gtSIL Silicon Twin Graft",   venue: "Balancer v3", mechanism: "weighted", feeBps: null, tvl: null, address: "0xA669275f92e49aff80aBA7AaD86E5AFDDe3540B0", status: "live", groves: ["sunflower","rwa"] },
 
     /* ── Whorls (unrooted multi-asset hyperedges, n>=3) ── */
     { id: "pnut", type: "whorl", assets: ["NUT","SNUT","CBETH","CBBTC"], weights: [25,25,25,25], name: "pNUT (heirloom Whorl)", venue: "Balancer V2", mechanism: "weighted", feeBps: 100, tvl: 4180, address: "0x2a5757b60987ff10385de1d4d923792f6fdcfff1", status: "live", groves: ["heirloom","reserve","nut-lineage"] },
@@ -129,16 +133,17 @@ const ORCHARD = {
     }
   ],
 
-  /* Ring census — computed 2026-08-28 by full vertex-simple cycle enumeration
+  /* Ring census — computed 2026-09-01 by full vertex-simple cycle enumeration
      over the live structure graph (pools treated as all-pairs routes).
      Structural existence ≠ executability: bottlenecks gate real flow. */
   census: {
-    method: "vertex-simple cycle enumeration over live structures (pools as all-pairs routes, parallel venues counted separately)",
-    computed: "2026-08-28",
-    marketRings: 44,            /* multi-vertex rings without the wrapper edge */
-    wrapperCrossRings: 19,      /* rings that exist only because NUT↔wNUT connects the two scales */
+    method: "vertex-simple + pool-simple cycle enumeration over live structures (pools as all-pairs routes, parallel venues counted separately; wrapper-cross = rings impossible without the NUT↔wNUT edge)",
+    computed: "2026-09-01",
+    recompute: "full-graph recount over all 24 live structures (incl. the five Aerodrome vAMM venues). Session-70 census (44/19/7) undercounted: its enumerator mechanism regex silently skipped vAMM pools. True counts: 180 market / 32 wrapper-cross / 7 parallel. gtSIL adds zero rings — B20 scions (NVDAC, AAPLC) are leaf vertices.",
+    marketRings: 180,            /* multi-vertex rings without the wrapper edge */
+    wrapperCrossRings: 32,      /* rings that exist only because NUT↔wNUT connects the two scales */
     parallelVenueLoops: 7,      /* two-way loops between the same asset pair on distinct venues */
-    total: 70,                  /* market + wrapper-cross + parallel-venue */
+    total: 219,                  /* market + wrapper-cross + parallel-venue */
     canonical: 1,               /* documented in docs v21 */
     documentedHere: 4,          /* ring-1..ring-4 above */
     fattestBottleneck: { ring: "Ring II", minTvl: 1451, via: "NUTINO/cbBTC" },
@@ -146,12 +151,13 @@ const ORCHARD = {
   },
 
   groves: {
-    sunflower:   { label: "Sunflower Grove",   desc: "Five rooted Twin Grafts on wNUT rootstock — Batch I, live 2026-08-27" },
+    sunflower:   { label: "Sunflower Grove",   desc: "Six rooted Twin Grafts on wNUT rootstock — Batch I live 2026-08-27 · gtSIL RWA graft live 2026-09-01" },
     heirloom:    { label: "Heirloom Grove",    desc: "Foundational Branches, Whorls and curves accumulated since genesis" },
     polyforest:  { label: "Polyforest Grove",  desc: "The heterogeneous liquidity region — where different assets, protocols, pricing mechanisms and structures grow together. Membership is economic interconnection, not origin: cross-protocol routing, multi-mechanism arbitrage, settlement paths, cross-Crop liquidity, price propagation" },
     reserve:     { label: "Reserve Grove",     desc: "BTC/ETH-class reserve exposure" },
     settlement:  { label: "Settlement Grove",  desc: "Stable denomination and FX liquidity" },
     compute:     { label: "Compute Grove",     desc: "AI, inference and agent-economy exposure" },
+    rwa:         { label: "RWA Grove",         desc: "Real-world asset exposure — tokenized equities grafted onto wNUT rootstock via the Coinbase B20 standard (NVDAc · AAPLc)" },
     infra:       { label: "Infrastructure Grove", desc: "The support species — rails and utilities that let the crop grow: the wNUT wrapper, canonical LST/BTC/FX rails (cbETH · wstETH · cbBTC · tBTC · USDC · EURC) and the venue-native AERO rail. Members overlap other groves by design" },
     "nut-lineage": { label: "NUT Lineage",   desc: "SNUT · NUTINO · SALT — the derivative family" },
     nested:      { label: "Nested Lineage",    desc: "Markets on LP tokens — second-order liquidity" }

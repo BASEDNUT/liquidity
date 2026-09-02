@@ -30,7 +30,7 @@ assert.ok(data.includes('href="/atlas/index.html"'), "data.html: absolute concep
 /* ── dataset parses and carries the live census ── */
 new Function(ds);
 assert.ok(ds.includes('"sunflower"'), "dataset: sunflower grove missing");
-assert.ok(/census\s*:\s*\{/.test(ds) && /marketRings:\s*44/.test(ds), "dataset: ring census missing");
+assert.ok(/census\s*:\s*\{/.test(ds) && /marketRings:\s*180/.test(ds), "dataset: ring census missing");
 assert.ok(ds.includes("0xBA5ED46e31F80dafF307cbf60bd422a6f62E3dd3"), "dataset: wNUT wrapper address missing");
 
 /* ── concept surface markers ── */
@@ -74,5 +74,27 @@ assert.ok(sitemap.includes("https://orchard.basednut.com/atlas"), "sitemap: /atl
 assert.ok(sitemap.includes("https://orchard.basednut.com/atlas/data"), "sitemap: /atlas/data URL missing");
 assert.ok(cfg.includes("source: '/atlas'"), "next.config: /atlas rewrite missing");
 assert.ok(cfg.includes("source: '/atlas/data'"), "next.config: /atlas/data rewrite missing");
+
+
+/* ── gtSIL RWA graft + census truth repair (2026-09-01) ── */
+assert.ok(ds.includes('id: "gt-sil"'), "dataset: gtSIL structure missing");
+assert.ok(ds.includes("0xA669275f92e49aff80aBA7AaD86E5AFDDe3540B0"), "dataset: gtSIL pool address missing");
+assert.ok(ds.includes("0xb20000000000000000000078ee7ce2fE4908108C"), "dataset: NVDAc B20 address missing");
+assert.ok(ds.includes("0xb200000000000000000000C2e324d24d7eEcd1fb"), "dataset: AAPLc B20 address missing");
+assert.ok(/NVDAC:\s*\{[^}]*decimals: 8/.test(ds) && /AAPLC:\s*\{[^}]*decimals: 8/.test(ds), "dataset: B20 scion decimals wrong");
+assert.ok(/rwa:\s*\{ label: "RWA Grove"/.test(ds), "dataset: RWA grove missing");
+assert.ok(/total:\s*219/.test(ds), "dataset: census total 219 missing");
+assert.ok(/wrapperCrossRings:\s*32/.test(ds), "dataset: wrapper-cross 32 missing");
+assert.ok(/recompute:/.test(ds), "dataset: census recompute provenance missing");
+assert.ok(data.includes("all six Twin Grafts"), "data: sunflower hub tooltip still says five");
+assert.ok(data.includes("six Twin Grafts on one wNUT rootstock"), "data: sunflower caption not updated to six");
+assert.ok(data.includes("219 rings enumerated: 180 market \u00b7 32 wrapper-cross \u00b7 7 parallel-venue"), "data: polyforest census caption stale");
+assert.ok(data.includes("rwa:'#b8c0cc'"), "data: rwa kind color missing");
+assert.ok(data.includes("['rwa',"), "data: rwa grove chip missing");
+assert.ok(idx.includes("Six rooted Twin Grafts"), "index: sunflower card still says Five");
+assert.ok(idx.includes("gtSIL Silicon Twin Graft (RWA \u2014 NVIDIA \u00b7 Apple) live 2026-09-01"), "index: gtSIL sunflower card mention missing");
+assert.ok(idx.includes("all six pools"), "index: rootstock anatomy note still says five");
+assert.ok(idx.includes("219 rings total"), "index: polyforest ring count stale");
+assert.ok(idx.includes("v=live2") && data.includes("v=live2"), "atlas: dataset cache-bust not bumped");
 
 console.log("orchard-atlas.test: all assertions passed");

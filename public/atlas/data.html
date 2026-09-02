@@ -280,14 +280,14 @@
   </footer>
 </div>
 
-<script src="/atlas/orchard-data.js?v=live1"></script>
+<script src="/atlas/orchard-data.js?v=live2"></script>
 <script>
 (function(){
   const O = ORCHARD;
   const NS = 'http://www.w3.org/2000/svg';
   const live = O.structures.filter(s => s.status === 'live');
   const fmt = n => n == null ? '—' : '$' + (n >= 1000 ? (n/1000).toFixed(1) + 'k' : n.toFixed(n < 10 ? 2 : 0));
-  const kindColor = { core:'#e3b34c', family:'#d98e5f', reserve:'#7fa8d9', settlement:'#5fc4b0', compute:'#e08eb0', infra:'#9db86e', meme:'#b595d9', meta:'#7fa8d9' };
+  const kindColor = { core:'#e3b34c', family:'#d98e5f', reserve:'#7fa8d9', settlement:'#5fc4b0', compute:'#e08eb0', infra:'#9db86e', meme:'#b595d9', meta:'#7fa8d9', rwa:'#b8c0cc' };
 
   /* ── stats ── */
   const counts = {branch:0,graft:0,whorl:0,curve:0};
@@ -662,12 +662,12 @@
   /* plant a tree with crown anchored at p */
   const plant = (st, sym, p, s, tip) => stree(st.svg, sym, p.x, p.y + 62 * (s || 1), s || 1, tip);
 
-  /* ── Sunflower: five separated, labeled petals on one rootstock ── */
+  /* ── Sunflower: six separated, labeled petals on one rootstock ── */
   function sunflowerScene(){
     const members = live.filter(s => s.groves.includes('sunflower') && s.type === 'graft');
     const st = makeScene();
     const HX = 600, HY = 470;
-    const hub = stree(st.svg, 'WNUT', HX, HY, 1.4, 'wNUT rootstock — shared root of all five Twin Grafts (0xBA5ED46e…E3dd3)');
+    const hub = stree(st.svg, 'WNUT', HX, HY, 1.4, 'wNUT rootstock — shared root of all six Twin Grafts (0xBA5ED46e…E3dd3)');
     const R = 252, RY = 0.7;
     members.forEach((g, i) => {
       const ang = -Math.PI / 2 + i * 2 * Math.PI / members.length;
@@ -680,7 +680,7 @@
       const lr = R + 92;
       haloText(st.svg, HX + lr * Math.cos(ang), hub.y + lr * RY * Math.sin(ang) + 6, g.name.split(' ')[0], 21, '#e3b34c', 800);
     });
-    caption(st.svg, 600, 682, ['Sunflower Grove — five Twin Grafts on one wNUT rootstock · Batch I live 2026-08-27'], 15, '#8f9a80');
+    caption(st.svg, 600, 682, ['Sunflower Grove — six Twin Grafts on one wNUT rootstock · Batch I 2026-08-27 · gtSIL RWA 2026-09-01'], 15, '#8f9a80');
     return st.wrap;
   }
 
@@ -762,7 +762,7 @@
     plant(st, 'CBBTC', P.CBBTC, 1, tokTip('CBBTC'));
     plant(st, 'WNUT', P.WNUT, 1.15, 'wNUT — rootstock · wrapper-connected scale');
 
-    caption(st.svg, 600, 652, ['Polyforest Grove — the ring network, not one road', '70 rings enumerated: 44 market · 19 wrapper-cross · 7 parallel-venue — every ring traversable both ways ⇄'], 15, '#8f9a80');
+    caption(st.svg, 600, 652, ['Polyforest Grove — the ring network, not one road', '219 rings enumerated: 180 market · 32 wrapper-cross · 7 parallel-venue — every ring traversable both ways ⇄'], 15, '#8f9a80');
     return st.wrap;
   }
 
@@ -1052,6 +1052,7 @@
     ['reserve', '₿', O.docs.treeGroves],
     ['settlement', '💵', O.docs.treeGroves],
     ['compute', '🤖', O.docs.treeGroves],
+    ['rwa', '💽', O.docs.treeGroves],
     ['infra', '⚙️', O.docs.treeGroves],
     ['nut-lineage', '🥜', O.docs.treeGroves],
     ['nested', '🪺', O.docs.treeGroves]

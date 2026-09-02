@@ -244,7 +244,7 @@
       <div class="notes">
         <h3>How a graft grows</h3>
         <ol>
-          <li><b>Rootstock (20%)</b> — wNUT sits at the base of every graft, the shared root that connects all five pools of the Sunflower Grove.</li>
+          <li><b>Rootstock (20%)</b> — wNUT sits at the base of every graft, the shared root that connects all six pools of the Sunflower Grove.</li>
           <li><b>Scions (40/40)</b> — two external assets, joined as equals. For gtINF: VVV (Venice) and DIEM (Venice compute).</li>
           <li><b>One invariant</b> — three tokens, one pool, one continuous function. Swaps price all three against each other directly.</li>
           <li><b>Weights are form</b> — 20/40/40 is the <i>Twin</i> form. Future forms (Equal 33/33/33, Rootstock 70/15/15) change the geometry, never the arity.</li>
@@ -272,7 +272,7 @@
       <div class="prac sun">
         <div class="icon">🌻</div>
         <h3>Sunflower Grove</h3>
-        <p>Five rooted Twin Grafts on one wNUT rootstock — the standardized planting. Batch I went live 2026-08-27: Inference, Agent, Ether, Bitcoin, FX.</p>
+        <p>Six rooted Twin Grafts on one wNUT rootstock — the standardized planting. Batch I went live 2026-08-27: Inference, Agent, Ether, Bitcoin, FX. gtSIL Silicon Twin Graft (RWA — NVIDIA · Apple) live 2026-09-01.</p>
         <div class="meta"><span><b id="n-sun">–</b> grafts</span><span><b>20/40/40</b> Twin form</span></div>
         <p style="margin-top:10px"><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/sunflower-grove">grove docs ↗</a></p>
       </div>
@@ -286,7 +286,7 @@
       <div class="prac poly">
         <div class="icon">🌲</div>
         <h3>Polyforest Grove</h3>
-        <p>The wild mixed forest — heterogeneous cross-mechanism routes. Ring I closes a loop through four different pricing functions: bonding curve → vAMM → reCLAMM → concentrated liquidity. Cycle enumeration since found 70 rings total — 19 exist only because the NUT↔wNUT wrapper connects the two scales. Every ring traverses both ways.</p>
+        <p>The wild mixed forest — heterogeneous cross-mechanism routes. Ring I closes a loop through four different pricing functions: bonding curve → vAMM → reCLAMM → concentrated liquidity. Cycle enumeration since found 219 rings total — 32 exist only because the NUT↔wNUT wrapper connects the two scales. Every ring traverses both ways.</p>
         <div class="meta"><span><b id="n-poly">–</b> structures</span><span><b id="n-rings">–</b></span></div>
         <p style="margin-top:10px"><a href="https://docs.basednut.com/~/changes/21/liquidity/tree-groves/polyforest-grove">grove docs ↗</a></p>
       </div>
@@ -343,7 +343,7 @@
   </div>
 </footer>
 
-<script src="/atlas/orchard-data.js?v=live1"></script>
+<script src="/atlas/orchard-data.js?v=live2"></script>
 <script>
 (function(){
   const O = ORCHARD;
@@ -377,9 +377,9 @@
   });
 
   /* Grove class member counts (live only) */
-  const crop = ['reserve','settlement','compute','infra'].map(g =>
+  const crop = ['reserve','settlement','compute','rwa','infra'].map(g =>
     live.filter(s => s.groves.includes(g)).length);
-  document.getElementById('m-crop').textContent = `Reserve ${crop[0]} · Settlement ${crop[1]} · Compute ${crop[2]} · Infrastructure ${crop[3]}`;
+  document.getElementById('m-crop').textContent = `Reserve ${crop[0]} · Settlement ${crop[1]} · Compute ${crop[2]} · RWA ${crop[3]} · Infrastructure ${crop[4]}`;
   const mechs = {};
   live.forEach(s => mechs[s.mechanism] = (mechs[s.mechanism] || 0) + 1);
   document.getElementById('m-cult').textContent = Object.entries(mechs).map(([k,v]) => `${k} ${v}`).join(' · ');
@@ -494,11 +494,11 @@
     }
     document.querySelectorAll('[data-form]').forEach(svg => {
       const f = svg.dataset.form;
-      if (f === 'sunflower'){ // center + 5 petals
+      if (f === 'sunflower'){ // center + 6 petals
         const cx=45,cy=32,R=20;
-        for(let i=0;i<5;i++){ const a=i*2*Math.PI/5-Math.PI/2;
+        for(let i=0;i<6;i++){ const a=i*2*Math.PI/6-Math.PI/2;
           svg.appendChild(svgEl('line',{x1:cx,y1:cy,x2:cx+R*Math.cos(a),y2:cy+R*Math.sin(a),stroke:'#c9a227','stroke-width':1.6}));
-          svg.appendChild(svgEl('ellipse',{cx:cx+R*Math.cos(a),cy:cy+R*Math.sin(a),rx:7,ry:4,fill:'rgba(201,162,39,.5)',transform:`rotate(${i*72} ${cx+R*Math.cos(a)} ${cy+R*Math.sin(a)})`}));
+          svg.appendChild(svgEl('ellipse',{cx:cx+R*Math.cos(a),cy:cy+R*Math.sin(a),rx:7,ry:4,fill:'rgba(201,162,39,.5)',transform:`rotate(${i*60} ${cx+R*Math.cos(a)} ${cy+R*Math.sin(a)})`}));
         }
         svg.appendChild(svgEl('circle',{cx:cx,cy:cy,r:7,fill:'#8a5220'}));
       }
