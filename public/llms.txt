@@ -27,6 +27,7 @@ Key information:
 - [Images](/images): Media gallery and asset collection
 - [Agent Economy](/agent-economy): Live autonomous-agent survival dashboard — Pipshell/Peanut shared treasury, ACP income, escrow ledger, benefactor policy, on-chain alive clock (Base RPC + Blockscout + GeckoTerminal)
 - [Orchard Atlas](/atlas): Liquidity framework concept surface — five-layer ladder (Asset → Structure → Grove → Canopy → Orchard), graft anatomy, grove taxonomy, canopy forms. Instrument surface at /atlas/data: live hypergraph with 23 structures, scale filters (NUT-rooted vs wNUT-rooted), forest carousel, ring census (70 rings), and address-linked registry
+- [Sunflower Grove](/sunflower-grove): the six Balancer v3 Twin Grafts rooted in wNUT — graft anatomy, 12-scion registry, zero-fabrication links
 - [File a Complaint](/complaints): Satirical local-only grievance office — file complaints against the market, escalate to the manager, receive Peanutoshi's ruling
 - [The Nut Standard](/rwa/nut-inflation): Purchasing-power experiment — the U.S. economy priced in nuts vs dollars, gold, bitcoin; BLS CPI/PPI, USDA producer prices, two centuries of data
 - [Nut Stocks](/rwa/nut-stocks): Nuts, publicly traded — global nut-economy equities: growers, farmland, processors, brands, small caps, with issuer filings and market sources
@@ -55,6 +56,7 @@ Key information:
 - [gtETH](/token/gteth): Ether Twin Graft — Balancer v3 BPT, 20% wNUT / 40% cbETH / 40% wstETH (Sunflower Grove)
 - [gtBTC](/token/gtbtc): Bitcoin Twin Graft — Balancer v3 BPT, 20% wNUT / 40% cbBTC / 40% tBTC (Sunflower Grove)
 - [gtFX](/token/gtfx): FX Twin Graft — Balancer v3 BPT, 20% wNUT / 40% USDC / 40% EURC (Sunflower Grove)
+- [gtSIL](/token/gtsil): Silicon Twin Graft — Balancer v3 BPT, 20% wNUT / 40% NVDAc / 40% AAPLc (Sunflower Grove RWA)
 - [VVV](/token/vvv): Venice AI — inference scion grafted with wNUT in gtINF
 - [DIEM](/token/diem): DIEM — inference scion grafted with wNUT in gtINF
 - [VIRTUAL](/token/virtual): Virtuals Protocol — agent scion grafted with wNUT in gtAGT
@@ -62,6 +64,8 @@ Key information:
 - [wstETH](/token/wsteth): Lido wrapped staked ETH — ether scion grafted with wNUT in gtETH
 - [tBTC](/token/tbtc): Threshold Bitcoin — bitcoin scion grafted with wNUT in gtBTC
 - [EURC](/token/eurc): Circle euro stablecoin — FX scion grafted with wNUT in gtFX
+- [NVDAc](/token/nvdac): NVIDIA tokenized stock (Coinbase B20) — RWA scion grafted with wNUT in gtSIL
+- [AAPLc](/token/aaplc): Apple tokenized stock (Coinbase B20) — RWA scion grafted with wNUT in gtSIL
 
 ## Lore & Community
 

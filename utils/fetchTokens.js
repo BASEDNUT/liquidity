@@ -215,6 +215,16 @@ const nutTreeData = {
       link: "https://basescan.org/address/0x1cCB8c61b62b9c7a9d4e66C9c824C1539B8b1f2E",
       tags: ["Graft", "Balancer v3", "BPT", "wNUT"],
     },
+    {
+      name: "gtSIL",
+      role: "Silicon Twin Graft BPT",
+      utility: "Balancer v3 weighted pool token — 20% wNUT rootstock / 40% NVDAc / 40% AAPLc. Coinbase B20 tokenized equities grafted onto NUT rootstock.",
+      color: "#76B900",
+      icon: "🌻💽",
+      address: "0xA669275f92e49aff80aBA7AaD86E5AFDDe3540B0",
+      link: "https://basescan.org/address/0xA669275f92e49aff80aBA7AaD86E5AFDDe3540B0",
+      tags: ["Graft", "Balancer v3", "BPT", "wNUT"],
+    },
   ],
   soil: [
     {
@@ -334,6 +344,26 @@ const nutTreeData = {
       address: "0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
       link: "https://basescan.org/token/0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42",
   tags: ["ERC-20", "Stablecoin", "Grove Scion"],
+    },
+    {
+      name: "NVDAc",
+      role: "NVIDIA — Coinbase B20 Tokenized Stock",
+      utility: "Tokenized NVIDIA equity, issuer Coinbase Onchain SPV, Chainlink-fed. RWA scion grafted with wNUT and AAPLc in the gtSIL Silicon Twin Graft.",
+      color: "#76B900",
+      icon: "💽",
+      address: "0xb20000000000000000000078ee7ce2fE4908108C",
+      link: "https://basescan.org/token/0xb20000000000000000000078ee7ce2fE4908108C",
+      tags: ["ERC-20", "RWA", "Grove Scion"],
+    },
+    {
+      name: "AAPLc",
+      role: "Apple — Coinbase B20 Tokenized Stock",
+      utility: "Tokenized Apple equity, issuer Coinbase Onchain SPV, Chainlink-fed. RWA scion grafted with wNUT and NVDAc in the gtSIL Silicon Twin Graft.",
+      color: "#A2AAAD",
+      icon: "🍎",
+      address: "0xb200000000000000000000C2e324d24d7eEcd1fb",
+      link: "https://basescan.org/token/0xb200000000000000000000C2e324d24d7eEcd1fb",
+      tags: ["ERC-20", "RWA", "Grove Scion"],
     },
   ],
 };

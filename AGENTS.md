@@ -126,7 +126,7 @@ Authority is unified. Roles are lenses.
 - Vercel deployment (liquidity-six.vercel.app)
 
 ### Structure
-- `pages/` — Next.js pages (index, tokens, token/[id], token/snut, staking, arb-bot, tree, faq, chat, great-nut-war, warmachine, nutinoMemes, images, 404, 429, 500)
+- `pages/` — Next.js pages (index, tokens, token/[id], token/nut, token/snut, token/pnut, token/wnut, sunflower-grove, staking, arb-bot, tree, faq, chat, great-nut-war, warmachine, nutinoMemes, images, 404, 429, 500)
 - `pages/api/` — API routes for token data, chat, images
 - `components/` — Layout, Header, Footer, TokenCard, PoolCard, etc.
 - `utils/` — Data fetchers (fetchTokens, fetchPools, marketDataSources, tokenDataSources, snutDataSources, validateEnv)

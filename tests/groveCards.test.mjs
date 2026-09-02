@@ -59,8 +59,8 @@ for (const g of GRAFTS) {
   ok(fetchPoolsSrc.includes(`name: "${g.name}"`), `pool card missing: ${g.name}`);
   ok(fetchPoolsSrc.includes(g.addr), `pool address missing: ${g.name}`);
 }
-ok((fetchPoolsSrc.match(/platform: "Balancer v3"/g) || []).length === 5, 'exactly 5 Balancer v3 platform entries expected');
-ok((fetchPoolsSrc.match(/category: \["TKNs", "wNUT"\]/g) || []).length === 5, 'grafts must carry [TKNs, wNUT] category');
+ok((fetchPoolsSrc.match(/platform: "Balancer v3"/g) || []).length === 6, 'exactly 6 Balancer v3 platform entries expected');
+ok((fetchPoolsSrc.match(/category: \["TKNs", "wNUT"\]/g) || []).length === 6, 'grafts must carry [TKNs, wNUT] category — 6 now');
 
 // 4. POOL_CONFIG id contract — live-data merge requires exact id match with fetchPools
 for (const g of GRAFTS) {

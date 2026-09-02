@@ -269,7 +269,7 @@ export default function WNut() {
         {/* 4. MARKETS */}
         <Section title="Verified wNUT markets" icon="🌻">
           <Typography sx={{ color: C.textDim, fontSize: '0.9rem', lineHeight: 1.7, mb: 2, maxWidth: 700 }}>
-            Sunflower Grove Batch I — five Balancer v3 weighted pools, each grafting 20% wNUT rootstock with two 40% scions. Verified on Base; experiment-scale seeds, zero-fabrication rule: no observed swaps yet, so no liquidity/volume numbers shown.
+            Sunflower Grove — six Balancer v3 weighted pools, each grafting 20% wNUT rootstock with two 40% scions. Verified on Base; experiment-scale seeds, zero-fabrication rule: no observed swaps yet, so no liquidity/volume numbers shown.
           </Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 0.75 }}>
             {markets.map((m, i) => (

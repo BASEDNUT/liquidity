@@ -389,6 +389,21 @@ export function fetchPools() {
       status: "Grafted",
       icon: "🌻€",
     },
+    {
+      name: "gtSIL wNUT/NVDAc/AAPLc",
+      tvl: null,
+      flavor: "Silicon Twin Graft",
+      platform: "Balancer v3",
+      role: "Sunflower Grove RWA graft — 20/40/40",
+      category: ["TKNs", "wNUT"],
+      url: "https://basescan.org/address/0xA669275f92e49aff80aBA7AaD86E5AFDDe3540B0",
+      checkPoolUrl:
+        "https://balancer.fi/pools/base/v3/0xA669275f92e49aff80aBA7AaD86E5AFDDe3540B0",
+      dexscreenerUrl:
+        "https://dexscreener.com/base/0xA669275f92e49aff80aBA7AaD86E5AFDDe3540B0",
+      status: "Grafted",
+      icon: "🌻💽",
+    },
   ];
 
   // Add a stable id by slugifying name + platform

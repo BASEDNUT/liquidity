@@ -38,6 +38,7 @@ const VERIFIED_MARKETS = [
   { pair: 'wNUT/cbETH/wstETH', venue: 'Balancer v3 · Beets', poolAddress: '0xd156d51219B3a7A590670d655E8740Ad404e8835' },
   { pair: 'wNUT/cbBTC/tBTC', venue: 'Balancer v3 · Beets', poolAddress: '0xb2a63935e1391Ee49E5cfB6cc4f184C285fE29b4' },
   { pair: 'wNUT/USDC/EURC', venue: 'Balancer v3 · Beets', poolAddress: '0x1cCB8c61b62b9c7a9d4e66C9c824C1539B8b1f2E' },
+  { pair: 'wNUT/NVDAc/AAPLc', venue: 'Balancer v3 · Beets', poolAddress: '0xA669275f92e49aff80aBA7AaD86E5AFDDe3540B0' },
 ];
 
 function pad32(addr) {

@@ -57,6 +57,9 @@ const TOKEN_DESCRIPTIONS = {
   gtETH: 'Balancer v3 weighted pool token (BPT) of the Ether Twin Graft — 20% wNUT rootstock, 40% cbETH, 40% wstETH. Sunflower Grove Batch I: the pool contract itself is the ERC-20, so token and pool share one address.',
   gtBTC: 'Balancer v3 weighted pool token (BPT) of the Bitcoin Twin Graft — 20% wNUT rootstock, 40% cbBTC, 40% tBTC. Sunflower Grove Batch I: the pool contract itself is the ERC-20, so token and pool share one address.',
   gtFX: 'Balancer v3 weighted pool token (BPT) of the FX Twin Graft — 20% wNUT rootstock, 40% USDC, 40% EURC. Sunflower Grove Batch I: the pool contract itself is the ERC-20, so token and pool share one address.',
+  gtSIL: 'Balancer v3 weighted pool token (BPT) of the Silicon Twin Graft — 20% wNUT rootstock, 40% NVDAc, 40% AAPLc (Coinbase B20 tokenized equities). The pool contract itself is the ERC-20, so token and pool share one address.',
+  NVDAc: 'NVIDIA tokenized stock — Coinbase B20, issuer Coinbase Onchain SPV, Chainlink-fed, 8 decimals. RWA scion grafted with wNUT and AAPLc in the gtSIL Silicon Twin Graft on Balancer v3.',
+  AAPLc: 'Apple tokenized stock — Coinbase B20, issuer Coinbase Onchain SPV, Chainlink-fed, 8 decimals. RWA scion grafted with wNUT and NVDAc in the gtSIL Silicon Twin Graft on Balancer v3.',
 
   PNUTS: 'P-NUTS — Peanut War Generals. 251 officer NFTs bonded to NUT. Mint to enlist, burn to reclaim. 200 SALT airdropped per General. Whole-NFT trading on Sudoswap in USDC.',
   ALMD: 'ALMONDS — Almond War Generals. 424 officer NFTs bonded to NUT. Golden Salted Swarm. 200 SALT airdropped per General. Whole-NFT trading on Sudoswap in cbETH.',

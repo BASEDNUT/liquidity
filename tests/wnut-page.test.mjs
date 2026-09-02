@@ -81,7 +81,7 @@ test('data layer has canonical addresses and zero-fabrication markets', () => {
   assert.ok(src.includes('0xBA5ED46e31F80dafF307cbf60bd422a6f62E3dd3'), 'wNUT address missing');
   assert.ok(src.includes('0xb8de15fb529d98c93c749de63c749d48d25a30df'), 'NUT address missing');
   assert.ok(src.includes('VERIFIED_MARKETS'), 'verified markets const missing');
-  assert.ok((src.match(/poolAddress/g) || []).length === 5, 'must be exactly 5 graft markets');
+  assert.ok((src.match(/poolAddress/g) || []).length === 6, 'must be exactly 6 graft markets');
   assert.ok(src.includes('moralis'), 'Moralis event source missing');
   assert.ok(src.includes('order=ASC'), 'chronological event ordering missing');
 });
