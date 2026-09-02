@@ -84,12 +84,18 @@ const NAV_SECTIONS = [
           { label: "PIPS/USDC · reCLAMM", href: "/pool/pips-usdc-balancer-reclamm" },
         ],
       },
-      { label: "🔗 Pair Your Token", href: "/pair-your-token" },
+      { label: "Pair Your Token", href: "/pair-your-token" },
       { label: "TVL", href: "/tvl" },
       { label: "Staking", href: "/staking" },
-      { label: "Tree", href: "/tree" },
-      { label: "Orchard Atlas", href: "/atlas" },
-      { label: "🌻 Sunflower Grove", href: "/sunflower-grove" },
+      {
+        label: "Maps ▾",
+        sub: [
+          { label: "Orchard Atlas", href: "/atlas" },
+          { label: "Atlas Data", href: "/atlas/data" },
+          { label: "Tree", href: "/tree" },
+          { label: "Sunflower Grove", href: "/sunflower-grove" },
+        ],
+      },
     ],
   },
   {

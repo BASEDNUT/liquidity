@@ -19,7 +19,7 @@ const routes = ['/', '/token/nut', '/token/snut', '/token/pnut', '/tokens',
   '/rwa/nut-inflation', '/rwa/nut-stocks', '/rwa/carbon-debt', '/great-nut-war',
   '/warmachine', '/nut-catcher', '/agent-economy', '/agents', '/arb-bot', '/chat',
   '/images', '/infra/mycelium-taproot', '/tree', '/complaints', '/faq',
-  '/atlas', 'https://docs.basednut.com/'];
+  '/atlas', '/atlas/data', '/sunflower-grove', 'https://docs.basednut.com/'];
 for (const r of routes) assert.ok(src.includes(`href: "${r}"`), `route lost: ${r}`);
 
 // 3. RWA phases: Grown / Traded / Priced groups exist with correct members
@@ -36,17 +36,28 @@ assert.ok(src.slice(priced, src.indexOf('title: "⚔️')).includes('/rwa/nut-de
 assert.ok(src.slice(priced, src.indexOf('title: "⚔️')).includes('/rwa/nut-inflation'), 'Priced missing standard');
 assert.ok(src.slice(priced, src.indexOf('title: "⚔️')).includes('/rwa/nut-stocks'), 'Priced missing stocks');
 
-// 4. Orchard holds the visualizers: Tree / Orchard Atlas — flat, after Staking (Graphs merged into FAQ)
-const orchard = src.indexOf('title: "🌳 The Orchard');
-const rwa = src.indexOf('title: "🏦 RWA');
+// 4. Orchard: visualizers organized under Maps group (Orchard Atlas / Atlas Data / Tree / Sunflower Grove)
+const titlesAll = [...src.matchAll(/title: "([^"]+)"/g)].map((m) => m[1]);
+const orchardTitle = titlesAll.find((t) => t.includes('The Orchard'));
+const rwaTitle = titlesAll.find((t) => t.includes('RWA'));
+assert.ok(orchardTitle && rwaTitle, 'Orchard/RWA section titles not found');
+const orchard = src.indexOf('title: "' + orchardTitle);
+const rwa = src.indexOf('title: "' + rwaTitle);
+assert.ok(orchard > -1 && rwa > orchard, 'section title anchors not found');
 const orchardBlock = src.slice(orchard, rwa);
-for (const r of ['/tree', '/atlas']) {
+for (const r of ['/tree', '/atlas', '/atlas/data', '/sunflower-grove']) {
   assert.ok(orchardBlock.includes(`href: "${r}"`), `Orchard section missing ${r}`);
 }
 assert.ok(!orchardBlock.includes('href: "/ecosystem"'), 'Orchard must not link /ecosystem (merged into FAQ)');
+const mapsIdx = orchardBlock.indexOf('label: "Maps');
+assert.ok(mapsIdx > -1, 'Maps group missing in Orchard');
 const stakingIdx = orchardBlock.indexOf('/staking');
-assert.ok(orchardBlock.indexOf('/tree', stakingIdx) > -1, 'Tree must come after Staking in Orchard');
-assert.ok(orchardBlock.indexOf('/atlas', stakingIdx) > -1, 'Orchard Atlas must come after Staking in Orchard');
+assert.ok(mapsIdx > stakingIdx, 'Maps group must come after Staking');
+for (const r of ['/tree', '/atlas', '/atlas/data', '/sunflower-grove']) {
+  assert.ok(orchardBlock.indexOf(`href: "${r}"`) > mapsIdx, `${r} must live inside Maps, not flat`);
+}
+assert.ok(orchardBlock.includes('label: "Pair Your Token"'), 'Pair Your Token nav label must be exact (emoji stripped)');
+assert.ok(orchardBlock.includes('label: "Sunflower Grove"'), 'Sunflower Grove nav label must be exact (emoji stripped)');
 
 // 5. Agents: Playground group kept; Infra submenu REMOVED — Mycelium + Taproot promoted flat
 const agents = src.indexOf('title: "🤖 Agents');
@@ -65,4 +76,4 @@ for (const r of ['/tree', '/ecosystem', '/atlas']) {
   assert.ok(!exploreBlock.includes(`href: "${r}"`), `Explore must not hold ${r} anymore`);
 }
 
-console.log('orchard-menu-elegant: 5 sections — Orchard visualizers flat, infra promoted — ALL PASS');
+console.log('orchard-menu-elegant: 5 sections — visualizers nested under Maps ▾, infra promoted — ALL PASS');
