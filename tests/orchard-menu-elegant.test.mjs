@@ -19,7 +19,7 @@ const routes = ['/', '/token/nut', '/token/snut', '/token/pnut', '/tokens',
   '/rwa/nut-inflation', '/rwa/nut-stocks', '/rwa/carbon-debt', '/great-nut-war',
   '/warmachine', '/nut-catcher', '/agent-economy', '/agents', '/arb-bot', '/chat',
   '/images', '/infra/mycelium-taproot', '/tree', '/complaints', '/faq',
-  '/atlas', '/atlas/data', '/sunflower-grove', 'https://docs.basednut.com/'];
+  '/atlas', '/atlas/data', '/sunflower-grove', '/security', 'https://docs.basednut.com/'];
 for (const r of routes) assert.ok(src.includes(`href: "${r}"`), `route lost: ${r}`);
 
 // 3. RWA phases: Grown / Traded / Priced groups exist with correct members
@@ -67,9 +67,9 @@ assert.ok(agentsBlock.includes('label: "Playground'), 'Playground group missing'
 assert.ok(!agentsBlock.includes('label: "Infra'), 'Infra submenu must be removed (single-item nesting)');
 assert.ok(agentsBlock.includes('href: "/infra/mycelium-taproot"'), 'Mycelium + Taproot link missing from Agents');
 
-// 6. Explore: Complaints / FAQ / Docs only — visualizers moved out
+// 6. Explore: Complaints / FAQ / Docs / Security — visualizers moved out
 const exploreBlock = src.slice(exploreIdx);
-for (const r of ['/complaints', '/faq', 'https://docs.basednut.com/']) {
+for (const r of ['/complaints', '/faq', '/security', 'https://docs.basednut.com/']) {
   assert.ok(exploreBlock.includes(r), `Explore missing ${r}`);
 }
 for (const r of ['/tree', '/ecosystem', '/atlas']) {

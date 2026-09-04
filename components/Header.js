@@ -158,6 +158,7 @@ const NAV_SECTIONS = [
       { label: "File a Complaint", href: "/complaints" },
       { label: "FAQ", href: "/faq" },
       { label: "Docs", href: "https://docs.basednut.com/", external: true },
+      { label: "Security", href: "/security" },
     ],
   },
 ];

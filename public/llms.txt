@@ -29,6 +29,7 @@ Key information:
 - [Orchard Atlas](/atlas): Liquidity framework concept surface — five-layer ladder (Asset → Structure → Grove → Canopy → Orchard), graft anatomy, grove taxonomy, canopy forms. Instrument surface at /atlas/data: live hypergraph with 23 structures, scale filters (NUT-rooted vs wNUT-rooted), forest carousel, ring census (70 rings), and address-linked registry
 - [Sunflower Grove](/sunflower-grove): the six Balancer v3 Twin Grafts rooted in wNUT — graft anatomy, 12-scion registry, zero-fabrication links
 - [File a Complaint](/complaints): Satirical local-only grievance office — file complaints against the market, escalate to the manager, receive Peanutoshi's ruling
+- [Security](/security): BASED NUT security doctrine — defense in layers, incident path, operational security, gated agent execution, structured threat intelligence, private disclosure, SEAL 911 escalation
 - [The Nut Standard](/rwa/nut-inflation): Purchasing-power experiment — the U.S. economy priced in nuts vs dollars, gold, bitcoin; BLS CPI/PPI, USDA producer prices, two centuries of data
 - [Nut Stocks](/rwa/nut-stocks): Nuts, publicly traded — global nut-economy equities: growers, farmland, processors, brands, small caps, with issuer filings and market sources
 - [Nut Atlas](/rwa/nut-atlas): SHOW ME THE NUTS — USA + territories nut map, 2025 harvest ledger, growers on the ground, wild mast density (USDA NASS + FIA)
