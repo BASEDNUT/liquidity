@@ -6,109 +6,118 @@ import { Box, Typography, Grid, IconButton, Collapse } from '@mui/material';
 import { ExpandMore, ExpandLess, ContentCopy } from '@mui/icons-material';
 
 // ═══════════════════════════════════════════════════════════════
-// ECOSYSTEM MODEL — TECHNICAL FACTS FOR PRICING AGENTS
+// ECOSYSTEM MODEL — 8 CRITICAL INVARIANTS
 // ═══════════════════════════════════════════════════════════════
 const MODEL_NOTES = [
-  { note: 'NUT total supply is exactly 1 whole token (fixed at deployment — no mint, no burn, no admin on the root contract). Whole-token price equals fully-diluted valuation by construction; standard market-cap APIs are not meaningful for it.', severity: 'high' },
-  { note: 'The primary NUT venue (NUT/WETH Uniswap V3) is not indexed by DEX Screener. Price it on-chain via slot0() against Base RPC.', severity: 'high' },
-  { note: 'pNUT pool contracts and their ERC-20 are the same address — the Balancer Pool Token (BPT) pattern. This applies to pNUT Quad (V2) and pNUT Whorl (V3).', severity: 'info' },
-  { note: 'Decimals vary across the ecosystem: SNUT 9, cbBTC 8, USDC 6, EURC 6, NVDAc and AAPLc 8 — all others 18. Always read decimals() before pricing. Wrong decimals = wrong prices.', severity: 'high' },
-  { note: 'Mint Club curves price mint (buy) and burn (sell) separately; the buy/sell spread is protocol revenue by design and varies with curve position.', severity: 'info' },
-  { note: 'Always verify token0()/token1() ordering before deriving prices from reserves — orderings differ per pool. Wrong ordering = inverted price.', severity: 'high' },
-  { note: 'Balancer V2 uses a singleton vault: pNUT Quad constituents sit in the Vault (0xBA122…F2C8), not in the pool contract. balanceOf(pNUT) is not the basket — use getPoolTokens(poolId) or balanceOf(VAULT).', severity: 'high' },
-  { note: 'The NUT/WETH Uniswap V3 pool is a 1% fee tier (fee=10000). Include it in any profitability model. Read via fee().', severity: 'info' },
-  { note: 'Aerodrome pools use a proxy pattern that does not implement token1() — the selector reverts. Use token0() plus the pair listing here to resolve ordering.', severity: 'high' },
-  { note: 'Base public RPCs rate-limit aggressively. Rotate endpoints (mainnet.base.org, base.publicnode.com, 1rpc.io/base) with backoff.', severity: 'medium' },
-  { note: 'wNUT is a 1:1 wrapped NUT (ERC-20 wrapper, audited, no admin key). Wrapping does not change NUT supply — wNUT represents NUT already held by the wrapper.', severity: 'info' },
+  { id: 'SUPPLY', note: 'NUT total supply is exactly 1 whole token — fixed at deployment, no mint, no burn, no admin on the root contract. Whole-token price equals fully-diluted valuation by construction; standard market-cap APIs are not meaningful for it.', severity: 'high' },
+  { id: 'PRIMARY_VENUE', note: 'The primary NUT venue (NUT/WETH Uniswap V3) is not indexed by DEX Screener — price it on-chain via slot0() only — and carries a 1% fee tier (fee=10000). Include both in any profitability model.', severity: 'high' },
+  { id: 'DECIMALS', note: 'Decimals vary across the ecosystem: SNUT 9, cbBTC 8, USDC/EURC 6, NVDAc/AAPLc 8 — all others 18. Always read decimals() before pricing. Wrong decimals = wrong prices.', severity: 'high' },
+  { id: 'TOKEN_ORDER', note: 'Always verify token0()/token1() ordering before deriving prices from reserves — orderings differ per pool. Wrong ordering = inverted price.', severity: 'high' },
+  { id: 'BALANCER_VAULT', note: 'Balancer uses singleton vaults (V2 0xBA122…F2C8, V3 0xBA133…9ba9) — pool tokens sit in the Vault, not the pool contract, and pool contracts share their address with their ERC-20 (the BPT pattern). balanceOf(pool) is not the basket — use getPoolTokens(poolId).', severity: 'high' },
+  { id: 'MINTCLUB_SPREAD', note: 'Mint Club curves price mint (buy) and burn (sell) separately; the buy/sell spread is protocol revenue by design and varies with curve position.', severity: 'info' },
+  { id: 'AERO_TOKEN1', note: 'Aerodrome pools use a proxy pattern that does not implement token1() — the selector reverts. Resolve ordering via token0() plus the pair listing in the registry.', severity: 'high' },
+  { id: 'WNUT_1TO1', note: 'wNUT is a 1:1 wrapped NUT (ERC-20 wrapper, audited, no admin key). Wrapping does not change NUT supply — wNUT represents NUT already held by the wrapper.', severity: 'info' },
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// VERIFIED TOKEN REGISTRY — ADDRESSES SNAPSHOT-VERIFIED ON BASE
+// START HERE — MINIMAL ARB-SCANNER BUILD PATH
+// ═══════════════════════════════════════════════════════════════
+const QUICKSTART = [
+  { label: 'Connect Base RPC', desc: 'Endpoint rotation with backoff — public RPCs rate-limit.', href: '#reads' },
+  { label: 'Read NUT/WETH V3', desc: 'slot0() → sqrtPriceX96 → price ratio; verify token0.', href: '#reads' },
+  { label: 'Read V2 / Aerodrome pools', desc: 'getReserves() → verify ordering → apply decimals.', href: '#reads' },
+  { label: 'Normalize quotes to USD', desc: 'CoinGecko for ETH, BTC, cbETH, AERO — never for NUT assets.', href: '#venues' },
+  { label: 'Calculate executable spread', desc: 'Flag when spread > 2 × gas + slippage (~$0.20-0.40 on Base).', href: '#reads' },
+  { label: 'Add specialized routes', desc: 'Mint Club curves, Balancer NAV, wNUT parity — as needed.', href: '#mechanics' },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// TOKEN REGISTRY — scan row + expandable detail
 // ═══════════════════════════════════════════════════════════════
 const TOKEN_GROUPS = [
   {
     group: 'Core Ecosystem Tokens',
     tokens: [
-      { emoji: '🥜', name: 'NUT', address: '0xb8de15fb529d98c93c749de63c749d48d25a30df', decimals: 18, supply: '1 (unity)', role: 'Root token. Fixed supply of exactly 1 whole token — no mint, no burn, no admin. Price = FDV by construction. Base asset for all Mint Club curves.', href: '/token/nut' },
-      { emoji: '📦', name: 'wNUT', address: '0xBA5ED46e31F80dafF307cbf60bd422a6f62E3dd3', decimals: 18, supply: '1:1 with wrapped NUT', role: 'ERC-20 wrapper for NUT — every wNUT is a receipt for exactly one NUT locked in the wrapper. Audited, no admin key. Opens NUT to Balancer v3 composability via Sunflower Grove.', href: '/token/wnut' },
-      { emoji: '🥥', name: 'SNUT', address: '0xAC130701aa31c284c36609E2489f150F419AD7AD', decimals: 9, supply: '100,000 initial, decreasing', role: 'Liquid non-escrow NUT reward-position token — hold SNUT to earn NUT. 1% fee per transfer, split four ways (liquidity, manager, buyback/burn, NUT rewards). Supply decreases monotonically.', href: '/token/snut' },
-      { emoji: '🧺', name: 'pNUT (Quad)', address: '0x2a5757b60987ff10385de1d4d923792f6fdcfff1', decimals: 18, supply: '~6.66 BPT', role: 'Balancer V2 WeightedPool BPT — 25% each cbETH, cbBTC, NUT, SNUT. Pool and token share one address. Mint by depositing the basket, redeem to withdraw.', href: '/token/pnut' },
-      { emoji: '🌸', name: 'pNUT (Whorl)', address: '0x252b1E49D1d1E42657d028703e8c37fe5B5cACF5', decimals: 18, supply: 'early-stage', role: 'Balancer V3 WeightedPool BPT — 25% each cbETH, SNUT, wNUT, cbBTC. Immutable deployment (all roles renounced). Based Peanut Whorl.', href: '/sunflower-grove' },
-      { emoji: '🧂', name: 'SALT', address: '0x1EDe2AFC985F6D7aEb3F4c84B95A103c00D5dE81', decimals: 18, supply: '~18.2B', role: 'Mint Club bonding-curve token backed by NUT. Trades on Aerodrome vs USDC and on a Balancer v3 reCLAMM pool vs NUT.', href: '/token/salt' },
-      { emoji: '🍫', name: 'NUTINO', address: '0x30421e2d18dFF60B298eEF427cF868cA65f1476B', decimals: 18, supply: '~9.4B', role: 'Mint Club bonding-curve token backed by NUT. Trades on Uniswap V2 vs cbBTC.', href: '/token/nutino' },
-      { emoji: '💻', name: 'PIPS', address: '0x3f2327221dd4f0bae660172606d6b288a1cf8ad9', decimals: 18, supply: '1,000,000,000', role: 'Compute token for Pipshell — the ecosystem DevOps agent. Trading fees fund its servers. 1%/1% transfer tax on the official Virtuals pair only; external venues untaxed today.', href: '/token/pips' },
-      { emoji: '🌰', name: 'DEEZ', address: '0x477B096A5f3321B3a1a300a025104be5f82f0092', decimals: 18, supply: '10,000 (70% burned)', role: 'Retired memorabilia — the first nested-token experiment. Not used in current products; listed for completeness.', href: null },
+      { name: 'NUT', tag: 'CORE', address: '0xb8de15fb529d98c93c749de63c749d48d25a30df', decimals: 18, supply: '1 (unity)', roleShort: 'Fixed root token · price = FDV', role: 'Root token. Fixed supply of exactly 1 whole token — no mint, no burn, no admin. Price = FDV by construction. Base asset for all Mint Club curves.', href: '/token/nut' },
+      { name: 'wNUT', tag: 'WRAPPER', address: '0xBA5ED46e31F80dafF307cbf60bd422a6f62E3dd3', decimals: 18, supply: '1:1 with wrapped NUT', roleShort: 'Audited 1:1 NUT wrapper, no admin key', role: 'ERC-20 wrapper for NUT — every wNUT is a receipt for exactly one NUT locked in the wrapper. Audited, no admin key. Opens NUT to Balancer v3 composability via Sunflower Grove.', href: '/token/wnut' },
+      { name: 'SNUT', tag: 'CORE', address: '0xAC130701aa31c284c36609E2489f150F419AD7AD', decimals: 9, supply: '100,000 initial, decreasing', roleShort: 'Reward-position token · hold to earn NUT · 1% fee', role: 'Liquid non-escrow NUT reward-position token — hold SNUT to earn NUT. 1% fee per transfer, split four ways (liquidity, manager, buyback/burn, NUT rewards). Supply decreases monotonically.', href: '/token/snut' },
+      { name: 'pNUT (Quad)', tag: 'BASKET', address: '0x2a5757b60987ff10385de1d4d923792f6fdcfff1', decimals: 18, supply: '~6.66 BPT', roleShort: 'Balancer V2 4-asset BPT · 25% each', role: 'Balancer V2 WeightedPool BPT — 25% each cbETH, cbBTC, NUT, SNUT. Pool and token share one address. Mint by depositing the basket, redeem to withdraw.', href: '/token/pnut' },
+      { name: 'pNUT (Whorl)', tag: 'BASKET', address: '0x252b1E49D1d1E42657d028703e8c37fe5B5cACF5', decimals: 18, supply: 'early-stage', roleShort: 'Balancer V3 BPT · immutable · wNUT-based basket', role: 'Balancer V3 WeightedPool BPT — 25% each cbETH, SNUT, wNUT, cbBTC. Immutable deployment (all roles renounced). Based Peanut Whorl.', href: '/sunflower-grove' },
+      { name: 'SALT', tag: 'CURVE', address: '0x1EDe2AFC985F6D7aEb3F4c84B95A103c00D5dE81', decimals: 18, supply: '~18.2B', roleShort: 'Mint Club curve token backed by NUT', role: 'Mint Club bonding-curve token backed by NUT. Trades on Aerodrome vs USDC and on a Balancer v3 reCLAMM pool vs NUT.', href: '/token/salt' },
+      { name: 'NUTINO', tag: 'CURVE', address: '0x30421e2d18dFF60B298eEF427cF868cA65f1476B', decimals: 18, supply: '~9.4B', roleShort: 'Mint Club curve token backed by NUT', role: 'Mint Club bonding-curve token backed by NUT. Trades on Uniswap V2 vs cbBTC.', href: '/token/nutino' },
+      { name: 'PIPS', tag: 'AGENT', address: '0x3f2327221dd4f0bae660172606d6b288a1cf8ad9', decimals: 18, supply: '1,000,000,000', roleShort: 'Pipshell compute token · 1%/1% tax on official pair', role: 'Compute token for Pipshell — the ecosystem DevOps agent. Trading fees fund its servers. 1%/1% transfer tax on the official Virtuals pair only; external venues untaxed today.', href: '/token/pips' },
+      { name: 'DEEZ', tag: 'RETIRED', address: '0x477B096A5f3321B3a1a300a025104be5f82f0092', decimals: 18, supply: '10,000 (70% burned)', roleShort: 'Retired memorabilia — first nested-token experiment', role: 'Retired memorabilia — the first nested-token experiment. Not used in current products; listed for completeness.', href: null },
     ],
   },
   {
     group: 'Quote & Reserve Assets',
     tokens: [
-      { emoji: '⚡', name: 'WETH', address: '0x4200000000000000000000000000000000000006', decimals: 18, supply: 'variable', role: 'Wrapped ETH. Quote token for the NUT and SNUT pools.', href: null },
-      { emoji: '🛡️', name: 'AERO', address: '0x940181a94A35A4569E4529A3CDfB74e38FD98631', decimals: 18, supply: '~1.93B', role: 'Aerodrome token. Quote for the NUT/AERO pool.', href: null },
-      { emoji: '₿', name: 'cbBTC', address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', decimals: 8, supply: '~42.5K', role: 'Coinbase Wrapped BTC. Quote for NUT/cbBTC and NUTINO/cbBTC; gtBTC scion.', href: null },
-      { emoji: '⟠', name: 'cbETH', address: '0x2Ae3F1Ec7F1f5012CFEab0185bfc7aa3cf0DEc22', decimals: 18, supply: '~55.5K', role: 'Coinbase Wrapped Staked ETH. pNUT basket constituent; gtETH scion.', href: null },
-      { emoji: '💵', name: 'USDC', address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', decimals: 6, supply: '~4.28B', role: 'USD stablecoin. Quote for SALT/USDC and PIPS/USDC; gtFX scion.', href: null },
-      { emoji: '💧', name: 'wstETH', address: '0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452', decimals: 18, supply: '~28.2K', role: 'Lido wrapped staked ETH (Base). gtETH scion.', href: null },
-      { emoji: '🪙', name: 'tBTC', address: '0x236aa50979D5f3De3Bd1Eeb40E81137F22ab794b', decimals: 18, supply: '~46.7', role: 'Threshold tBTC (Base). gtBTC scion.', href: null },
-      { emoji: '💶', name: 'EURC', address: '0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42', decimals: 6, supply: '~50.5M', role: 'Circle euro stablecoin. gtFX scion.', href: null },
-      { emoji: '📈', name: 'NVDAc', address: '0xb20000000000000000000078ee7ce2fE4908108C', decimals: 8, supply: '~13.7K', role: 'Tokenized NVIDIA stock (Coinbase B20). gtSIL scion.', href: null },
-      { emoji: '🍎', name: 'AAPLc', address: '0xb200000000000000000000C2e324d24d7eEcd1fb', decimals: 8, supply: '~6.2K', role: 'Tokenized Apple stock (Coinbase B20). gtSIL scion.', href: null },
-      { emoji: '🧠', name: 'VVV', address: '0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf', decimals: 18, supply: '~114.8M', role: 'Venice Token. gtINF scion.', href: null },
-      { emoji: '🔮', name: 'DIEM', address: '0xF4d97F2da56e8c3098f3a8D538DB630A2606a024', decimals: 18, supply: '~37K', role: 'Venice compute asset. gtINF scion.', href: null },
-      { emoji: '🤖', name: 'VIRTUAL', address: '0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b', decimals: 18, supply: '~497M', role: 'Virtuals Protocol token. gtAGT scion.', href: null },
-      { emoji: '⚙️', name: 'MOR', address: '0x7431aDa8a591C955a994a21710752EF9b882b8e3', decimals: 18, supply: '~5.88M', role: 'Morpheus AI token. gtAGT scion.', href: null },
+      { name: 'WETH', tag: 'QUOTE', address: '0x4200000000000000000000000000000000000006', decimals: 18, supply: 'variable', roleShort: 'Wrapped ETH — quote for NUT/SNUT pools', role: 'Wrapped ETH. Quote token for the NUT and SNUT pools.', href: null },
+      { name: 'AERO', tag: 'QUOTE', address: '0x940181a94A35A4569E4529A3CDfB74e38FD98631', decimals: 18, supply: '~1.93B', roleShort: 'Aerodrome token — quote for NUT/AERO', role: 'Aerodrome token. Quote for the NUT/AERO pool.', href: null },
+      { name: 'cbBTC', tag: 'QUOTE', address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', decimals: 8, supply: '~42.5K', roleShort: 'Coinbase Wrapped BTC · 8 decimals', role: 'Coinbase Wrapped BTC. Quote for NUT/cbBTC and NUTINO/cbBTC; gtBTC scion.', href: null },
+      { name: 'cbETH', tag: 'QUOTE', address: '0x2Ae3F1Ec7F1f5012CFEab0185bfc7aa3cf0DEc22', decimals: 18, supply: '~55.5K', roleShort: 'Coinbase Wrapped Staked ETH · pNUT constituent', role: 'Coinbase Wrapped Staked ETH. pNUT basket constituent; gtETH scion.', href: null },
+      { name: 'USDC', tag: 'QUOTE', address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', decimals: 6, supply: '~4.28B', roleShort: 'USD stablecoin · 6 decimals', role: 'USD stablecoin. Quote for SALT/USDC and PIPS/USDC; gtFX scion.', href: null },
+      { name: 'wstETH', tag: 'QUOTE', address: '0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452', decimals: 18, supply: '~28.2K', roleShort: 'Lido wrapped staked ETH · gtETH scion', role: 'Lido wrapped staked ETH (Base). gtETH scion.', href: null },
+      { name: 'tBTC', tag: 'QUOTE', address: '0x236aa50979D5f3De3Bd1Eeb40E81137F22ab794b', decimals: 18, supply: '~46.7', roleShort: 'Threshold tBTC · gtBTC scion', role: 'Threshold tBTC (Base). gtBTC scion.', href: null },
+      { name: 'EURC', tag: 'QUOTE', address: '0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42', decimals: 6, supply: '~50.5M', roleShort: 'Circle euro stablecoin · gtFX scion', role: 'Circle euro stablecoin. gtFX scion.', href: null },
+      { name: 'NVDAc', tag: 'QUOTE', address: '0xb20000000000000000000078ee7ce2fE4908108C', decimals: 8, supply: '~13.7K', roleShort: 'Tokenized NVIDIA stock (B20) · gtSIL scion', role: 'Tokenized NVIDIA stock (Coinbase B20). gtSIL scion.', href: null },
+      { name: 'AAPLc', tag: 'QUOTE', address: '0xb200000000000000000000C2e324d24d7eEcd1fb', decimals: 8, supply: '~6.2K', roleShort: 'Tokenized Apple stock (B20) · gtSIL scion', role: 'Tokenized Apple stock (Coinbase B20). gtSIL scion.', href: null },
+      { name: 'VVV', tag: 'QUOTE', address: '0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf', decimals: 18, supply: '~114.8M', roleShort: 'Venice Token · gtINF scion', role: 'Venice Token. gtINF scion.', href: null },
+      { name: 'DIEM', tag: 'QUOTE', address: '0xF4d97F2da56e8c3098f3a8D538DB630A2606a024', decimals: 18, supply: '~37K', roleShort: 'Venice compute asset · gtINF scion', role: 'Venice compute asset. gtINF scion.', href: null },
+      { name: 'VIRTUAL', tag: 'QUOTE', address: '0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b', decimals: 18, supply: '~497M', roleShort: 'Virtuals Protocol token · gtAGT scion', role: 'Virtuals Protocol token. gtAGT scion.', href: null },
+      { name: 'MOR', tag: 'QUOTE', address: '0x7431aDa8a591C955a994a21710752EF9b882b8e3', decimals: 18, supply: '~5.88M', roleShort: 'Morpheus AI token · gtAGT scion', role: 'Morpheus AI token. gtAGT scion.', href: null },
     ],
   },
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// VERIFIED POOL REGISTRY — GROUPED BY ROLE
+// POOL REGISTRY — scan row + expandable detail
 // ═══════════════════════════════════════════════════════════════
 const POOL_GROUPS = [
   {
     group: 'NUT Venues',
     pools: [
-      { name: 'NUT/WETH', platform: 'Uniswap V3', address: '0xe3ce00e2ed742b142c15eedc208657dd22aa987e', type: 'V3', pair: 'WETH/NUT', flavor: 'Extra Crunchy Delight', notes: 'Primary NUT venue. 1% fee tier. Read via slot0(); not indexed by DEX Screener.' },
-      { name: 'NUT/WETH', platform: 'Uniswap V2', address: '0x997bad8e9f5c34d5e9784caaa8a554a5e6192f53', type: 'V2', pair: 'WETH/NUT', flavor: 'Mega Crunchy Madness', notes: 'Secondary NUT venue. Read via getReserves().' },
-      { name: 'NUT/WETH', platform: 'Custom CL', address: '0x0416a0d0Ce17F23DAA9D3f852470fe91f0a69c71', type: 'CL', pair: 'WETH/NUT', flavor: 'Genesis Concentrate', notes: 'Concentrated pool from the custom CL factory (0xade6…716a). Read via slot0().' },
-      { name: 'NUT/AERO', platform: 'Aerodrome', address: '0x38630fede5e2032652640d98b2d3f9c6296eea5d', type: 'V2', pair: 'AERO/NUT', flavor: 'Sky-Seasoned Crisp', notes: 'AERO-denominated NUT price. token0=AERO, token1=NUT.' },
-      { name: 'NUT/cbBTC', platform: 'Aerodrome', address: '0x15385c9281bc12d2e9bf5c081621944b0ee2acca', type: 'V2', pair: 'NUT/cbBTC', flavor: 'Golden Butter Drizzle', notes: 'BTC-denominated NUT price. cbBTC has 8 decimals.' },
+      { name: 'NUT / WETH', platform: 'UNI V3', badge: 'PRIMARY', fee: '1%', read: 'slot0()', address: '0xe3ce00e2ed742b142c15eedc208657dd22aa987e', pair: 'WETH → NUT', flavor: 'Extra Crunchy Delight', notes: 'Primary NUT venue. 1% fee tier. Read via slot0(); not indexed by DEX Screener.' },
+      { name: 'NUT / WETH', platform: 'UNI V2', badge: 'SECONDARY', fee: '0.3%', read: 'getReserves()', address: '0x997bad8e9f5c34d5e9784caaa8a554a5e6192f53', pair: 'WETH → NUT', flavor: 'Mega Crunchy Madness', notes: 'Secondary NUT venue. Read via getReserves().' },
+      { name: 'NUT / WETH', platform: 'CUSTOM CL', badge: 'SECONDARY', fee: '—', read: 'slot0()', address: '0x0416a0d0Ce17F23DAA9D3f852470fe91f0a69c71', pair: 'WETH → NUT', flavor: 'Genesis Concentrate', notes: 'Concentrated pool from the custom CL factory (0xade6…716a). Read via slot0().' },
+      { name: 'NUT / AERO', platform: 'AERODROME', badge: 'SECONDARY', fee: 'var', read: 'getReserves()', address: '0x38630fede5e2032652640d98b2d3f9c6296eea5d', pair: 'AERO → NUT', flavor: 'Sky-Seasoned Crisp', notes: 'AERO-denominated NUT price. token0=AERO, token1=NUT.' },
+      { name: 'NUT / cbBTC', platform: 'AERODROME', badge: 'SECONDARY', fee: 'var', read: 'getReserves()', address: '0x15385c9281bc12d2e9bf5c081621944b0ee2acca', pair: 'NUT → cbBTC', flavor: 'Golden Butter Drizzle', notes: 'BTC-denominated NUT price. cbBTC has 8 decimals.' },
     ],
   },
   {
     group: 'SNUT Venues',
     pools: [
-      { name: 'SNUT/NUT', platform: 'Aerodrome', address: '0x893faaa7baf7a8247fc7142afb28e13d51a5aae8', type: 'V2', pair: 'SNUT/NUT', flavor: 'Cloud-Salted Breeze', notes: 'Primary SNUT venue. Pairs the reward-position token directly against the root token. SNUT has 9 decimals.' },
-      { name: 'SNUT/WETH', platform: 'Uniswap V2', address: '0xB22895d2ee6e29395F30Ec47c8D9FE0d55355AE1', type: 'V2', pair: 'WETH/SNUT', flavor: 'Honey-Roasted Frenzy', notes: 'Secondary SNUT venue.' },
-      { name: 'SNUT/ETH-LP', platform: 'Uniswap V2 (meta)', address: '0x82bbadb9d6b2c0a59ed01809e30323f89f6faa1c', type: 'V2', pair: 'SNUT/ETH-LP/WETH', flavor: 'Palm Grove Graft Market', notes: 'Meta-pool — SNUT/WETH LP tokens traded against WETH. Secondary market for liquidity claims.' },
+      { name: 'SNUT / NUT', platform: 'AERODROME', badge: 'PRIMARY', fee: 'var', read: 'getReserves()', address: '0x893faaa7baf7a8247fc7142afb28e13d51a5aae8', pair: 'SNUT → NUT', flavor: 'Cloud-Salted Breeze', notes: 'Primary SNUT venue. Pairs the reward-position token directly against the root token. SNUT has 9 decimals.' },
+      { name: 'SNUT / WETH', platform: 'UNI V2', badge: 'SECONDARY', fee: '0.3%', read: 'getReserves()', address: '0xB22895d2ee6e29395F30Ec47c8D9FE0d55355AE1', pair: 'WETH → SNUT', flavor: 'Honey-Roasted Frenzy', notes: 'Secondary SNUT venue.' },
+      { name: 'SNUT / ETH-LP', platform: 'UNI V2 META', badge: 'META', fee: '0.3%', read: 'getReserves()', address: '0x82bbadb9d6b2c0a59ed01809e30323f89f6faa1c', pair: 'WETH → SNUT/ETH-LP', flavor: 'Palm Grove Graft Market', notes: 'Meta-pool — SNUT/WETH LP tokens traded against WETH. Secondary market for liquidity claims.' },
     ],
   },
   {
     group: 'Nested-Token Venues',
     pools: [
-      { name: 'NUTINO/cbBTC', platform: 'Uniswap V2', address: '0xeafde67d470480d14139e3d91164c158b82b38e2', type: 'V2', pair: 'NUTINO/cbBTC', flavor: 'Buttery Mint Explosion', notes: 'Primary NUTINO DEX venue. cbBTC has 8 decimals.' },
-      { name: 'SALT/USDC', platform: 'Aerodrome', address: '0x64ca0b147f625007b6f082abbb3ba217930eccb2', type: 'V2', pair: 'SALT/USDC', flavor: 'Savory Stable Seasoning', notes: 'Primary SALT DEX venue. USDC has 6 decimals.' },
-      { name: 'NUT/SALT', platform: 'Balancer v3 reCLAMM', address: '0x4f924d20773D21a80E58ba929613BeB74f51BeD6', type: 'reCLAMM', pair: 'NUT/SALT', flavor: 'Curve-to-AMM Bridge', notes: 'reCLAMM — recently-liquidity-concentrated AMM. SALT build-out venue.' },
-      { name: 'PIPS/NUT', platform: 'Aerodrome Slipstream CL', address: '0x7f8e532cf1be9ed688adb9e6585bc69f017201b5', type: 'CL', pair: 'PIPS/NUT', flavor: 'Shell-Spice Crossbreed', notes: 'Concentrated liquidity, 1% fee. Read via slot0(). PIPS transfer tax is not registered here — untaxed on this venue.' },
-      { name: 'PIPS/USDC', platform: 'Balancer v3 reCLAMM', address: '0xb19e3af68BB307369e8772A9E157431FcFE9Dd44', type: 'reCLAMM', pair: 'PIPS/USDC', flavor: 'Stable Shell Reservoir', notes: 'reCLAMM on Balancer v3, 1% fee.' },
+      { name: 'NUTINO / cbBTC', platform: 'UNI V2', badge: 'PRIMARY', fee: '0.3%', read: 'getReserves()', address: '0xeafde67d470480d14139e3d91164c158b82b38e2', pair: 'NUTINO → cbBTC', flavor: 'Buttery Mint Explosion', notes: 'Primary NUTINO DEX venue. cbBTC has 8 decimals.' },
+      { name: 'SALT / USDC', platform: 'AERODROME', badge: 'PRIMARY', fee: 'var', read: 'getReserves()', address: '0x64ca0b147f625007b6f082abbb3ba217930eccb2', pair: 'SALT → USDC', flavor: 'Savory Stable Seasoning', notes: 'Primary SALT DEX venue. USDC has 6 decimals.' },
+      { name: 'NUT / SALT', platform: 'BALANCER V3', badge: 'RECLAMM', fee: 'var', read: 'Balancer API', address: '0x4f924d20773D21a80E58ba929613BeB74f51BeD6', pair: 'NUT ↔ SALT', flavor: 'Curve-to-AMM Bridge', notes: 'reCLAMM — recently-liquidity-concentrated AMM (Balancer v3). SALT build-out venue.' },
+      { name: 'PIPS / NUT', platform: 'SLIPSTREAM', badge: 'PRIMARY', fee: '1%', read: 'slot0()', address: '0x7f8e532cf1be9ed688adb9e6585bc69f017201b5', pair: 'PIPS → NUT', flavor: 'Shell-Spice Crossbreed', notes: 'Concentrated liquidity, 1% fee. Read via slot0(). PIPS transfer tax is not registered here — untaxed on this venue.' },
+      { name: 'PIPS / USDC', platform: 'BALANCER V3', badge: 'RECLAMM', fee: '1%', read: 'Balancer API', address: '0xb19e3af68BB307369e8772A9E157431FcFE9Dd44', pair: 'PIPS ↔ USDC', flavor: 'Stable Shell Reservoir', notes: 'reCLAMM on Balancer v3, 1% fee.' },
     ],
   },
   {
-    group: 'Index Baskets (Balancer)',
+    group: 'Index Baskets',
     pools: [
-      { name: 'pNUT Quad', platform: 'Balancer V2 WeightedPool', address: '0x2a5757b60987ff10385de1d4d923792f6fdcfff1', type: 'Balancer', pair: 'cbETH/cbBTC/NUT/SNUT', flavor: 'Quad-Core Basket', notes: '25% each. Pool = BPT address. Read basket via getPoolTokens(poolId) on the V2 Vault.' },
-      { name: 'pNUT Whorl', platform: 'Balancer V3 WeightedPool', address: '0x252b1E49D1d1E42657d028703e8c37fe5B5cACF5', type: 'Balancer', pair: 'cbETH/SNUT/wNUT/cbBTC', flavor: 'Based Peanut Whorl', notes: '25% each. Immutable — all roles renounced. Live in the V3 Vault; composition via Balancer API.' },
+      { name: 'pNUT Quad', platform: 'BALANCER V2', badge: 'BASKET', fee: 'var', read: 'getPoolTokens()', address: '0x2a5757b60987ff10385de1d4d923792f6fdcfff1', pair: 'cbETH/cbBTC/NUT/SNUT · 25×4', flavor: 'Quad-Core Basket', notes: '25% each. Pool = BPT address. Read basket via getPoolTokens(poolId) on the V2 Vault.' },
+      { name: 'pNUT Whorl', platform: 'BALANCER V3', badge: 'BASKET', fee: '0.3%', read: 'Balancer API', address: '0x252b1E49D1d1E42657d028703e8c37fe5B5cACF5', pair: 'cbETH/SNUT/wNUT/cbBTC · 25×4', flavor: 'Based Peanut Whorl', notes: '25% each. Immutable — all roles renounced. Live in the V3 Vault; composition via Balancer API.' },
     ],
   },
   {
-    group: 'Sunflower Grove Grafts — Balancer v3, 20% wNUT rootstock + 40/40 scions',
+    group: 'Sunflower Grove Grafts — 20% wNUT rootstock + 40/40 scions',
     pools: [
-      { name: 'gtINF', platform: 'Balancer v3 WeightedPool', address: '0x6a0a1B7428d543524592eD22023A09BdE05aA466', type: 'Balancer', pair: 'wNUT/VVV/DIEM', flavor: 'Inference Twin Graft', notes: 'AI-inference economics on NUT rootstock. Batch I · 2026-08-27.' },
-      { name: 'gtAGT', platform: 'Balancer v3 WeightedPool', address: '0x5dA95cC31C840Fd33180e4C7f879e3F3d8Eca200', type: 'Balancer', pair: 'wNUT/VIRTUAL/MOR', flavor: 'Agent Twin Graft', notes: 'Agent-launchpad rails on NUT rootstock. Batch I.' },
-      { name: 'gtETH', platform: 'Balancer v3 WeightedPool', address: '0xd156d51219B3a7A590670d655E8740Ad404e8835', type: 'Balancer', pair: 'wNUT/cbETH/wstETH', flavor: 'Ether Twin Graft', notes: 'Staked and liquid ether scions on NUT rootstock. Batch I.' },
-      { name: 'gtBTC', platform: 'Balancer v3 WeightedPool', address: '0xb2a63935e1391Ee49E5cfB6cc4f184C285fE29b4', type: 'Balancer', pair: 'wNUT/cbBTC/tBTC', flavor: 'Bitcoin Twin Graft', notes: 'Bitcoin scions on NUT rootstock. Batch I.' },
-      { name: 'gtFX', platform: 'Balancer v3 WeightedPool', address: '0x1cCB8c61b62b9c7a9d4e66C9c824C1539B8b1f2E', type: 'Balancer', pair: 'wNUT/USDC/EURC', flavor: 'FX Twin Graft', notes: 'Dollar/euro scions on NUT rootstock. Batch I.' },
-      { name: 'gtSIL', platform: 'Balancer v3 WeightedPool', address: '0xA669275f92e49aff80aBA7AaD86E5AFDDe3540B0', type: 'Balancer', pair: 'wNUT/NVDAc/AAPLc', flavor: 'Silicon Twin Graft', notes: 'Tokenized-equity scions on NUT rootstock. Batch I.' },
+      { name: 'gtINF', platform: 'BALANCER V3', badge: 'GRAFT', fee: 'var', read: 'Balancer API', address: '0x6a0a1B7428d543524592eD22023A09BdE05aA466', pair: 'wNUT/VVV/DIEM · 20/40/40', flavor: 'Inference Twin Graft', notes: 'AI-inference economics on NUT rootstock. Batch I · 2026-08-27.' },
+      { name: 'gtAGT', platform: 'BALANCER V3', badge: 'GRAFT', fee: 'var', read: 'Balancer API', address: '0x5dA95cC31C840Fd33180e4C7f879e3F3d8Eca200', pair: 'wNUT/VIRTUAL/MOR · 20/40/40', flavor: 'Agent Twin Graft', notes: 'Agent-launchpad rails on NUT rootstock. Batch I.' },
+      { name: 'gtETH', platform: 'BALANCER V3', badge: 'GRAFT', fee: 'var', read: 'Balancer API', address: '0xd156d51219B3a7A590670d655E8740Ad404e8835', pair: 'wNUT/cbETH/wstETH · 20/40/40', flavor: 'Ether Twin Graft', notes: 'Staked and liquid ether scions on NUT rootstock. Batch I.' },
+      { name: 'gtBTC', platform: 'BALANCER V3', badge: 'GRAFT', fee: 'var', read: 'Balancer API', address: '0xb2a63935e1391Ee49E5cfB6cc4f184C285fE29b4', pair: 'wNUT/cbBTC/tBTC · 20/40/40', flavor: 'Bitcoin Twin Graft', notes: 'Bitcoin scions on NUT rootstock. Batch I.' },
+      { name: 'gtFX', platform: 'BALANCER V3', badge: 'GRAFT', fee: 'var', read: 'Balancer API', address: '0x1cCB8c61b62b9c7a9d4e66C9c824C1539B8b1f2E', pair: 'wNUT/USDC/EURC · 20/40/40', flavor: 'FX Twin Graft', notes: 'Dollar/euro scions on NUT rootstock. Batch I.' },
+      { name: 'gtSIL', platform: 'BALANCER V3', badge: 'GRAFT', fee: 'var', read: 'Balancer API', address: '0xA669275f92e49aff80aBA7AaD86E5AFDDe3540B0', pair: 'wNUT/NVDAc/AAPLc · 20/40/40', flavor: 'Silicon Twin Graft', notes: 'Tokenized-equity scions on NUT rootstock. Batch I.' },
     ],
   },
 ];
@@ -128,24 +137,24 @@ const INFRA = [
 ];
 
 const NFTS = [
-  { emoji: '🌰', name: 'PNUTS', label: 'Peanut War Generals', address: '0x794fcD89357C1CcF04a1a9A441ad4dB2Cd5EE387', supply: '251', sudoswap: '0x262bEaa785a0eF65f5D9C1b8BA5c41980D087ff3' },
-  { emoji: '🌰', name: 'ALMD', label: 'Almond War Generals', address: '0x1A160456005AED47994E1c13C9bc31F274413927', supply: '424', sudoswap: '0x308C9BC0546723d6e4905c971cd34feBF1f94031' },
-  { emoji: '🧂', name: 'SALMD', label: 'Almond Soldiers', address: '0x1E0f80529593185C021043ffcbfDcB8f4279C649', supply: '6,238', sudoswap: '0xeE7243F0E02e5890c6415B5CbAe58e0D0fb758a5' },
-  { emoji: '⚔️', name: 'PNUTRMY', label: 'Peanut Soldiers', address: '0xF075300b8C2EF500d8Ce4f783F910C500B9A3512', supply: '5,013', sudoswap: null },
+  { name: 'PNUTS', label: 'Peanut War Generals', address: '0x794fcD89357C1CcF04a1a9A441ad4dB2Cd5EE387', supply: '251', sudoswap: '0x262bEaa785a0eF65f5D9C1b8BA5c41980D087ff3' },
+  { name: 'ALMD', label: 'Almond War Generals', address: '0x1A160456005AED47994E1c13C9bc31F274413927', supply: '424', sudoswap: '0x308C9BC0546723d6e4905c971cd34feBF1f94031' },
+  { name: 'SALMD', label: 'Almond Soldiers', address: '0x1E0f80529593185C021043ffcbfDcB8f4279C649', supply: '6,238', sudoswap: '0xeE7243F0E02e5890c6415B5CbAe58e0D0fb758a5' },
+  { name: 'PNUTRMY', label: 'Peanut Soldiers', address: '0xF075300b8C2EF500d8Ce4f783F910C500B9A3512', supply: '5,013', sudoswap: null },
 ];
 
 const pNUT_POOL_ID = '0x2a5757b60987ff10385de1d4d923792f6fdcfff100010000000000000000019e';
 const BALANCER_URL = 'https://balancer.fi/pools/base/v2/0x2a5757b60987ff10385de1d4d923792f6fdcfff100010000000000000000019e';
 
 // ═══════════════════════════════════════════════════════════════
-// READ REFERENCE — FUNCTION SELECTORS (PRICING SUBSET, NOT FULL ABI)
+// READ REFERENCE — FUNCTION SELECTORS (PRICING SUBSET)
 // ═══════════════════════════════════════════════════════════════
 const FUNCTION_SIGS = [
   { sig: '0x3850c7bd', name: 'slot0()', desc: 'Uniswap V3 / CL pools — returns sqrtPriceX96 and tick. Price derivation for concentrated pools.', returns: 'uint160 sqrtPriceX96, int24 tick, …' },
   { sig: '0x0902f1ac', name: 'getReserves()', desc: 'Uniswap V2 / Aerodrome — returns reserve0 and reserve1 for price derivation.', returns: 'uint112, uint112, uint32' },
   { sig: '0x0dfe1681', name: 'token0()', desc: 'Pool — returns token0. Resolve price direction before dividing reserves.', returns: 'address' },
-  { sig: '0xd21220a7', name: 'token1()', desc: 'Pool — returns token1. Reverts on Aerodrome proxies; use the pair listing above instead.', returns: 'address' },
-  { sig: '0x70a08231', name: 'balanceOf(address)', desc: 'ERC20/ERC721 — token balance of an address. Used for pool TVL and basket composition.', returns: 'uint256', args: '32-byte padded address' },
+  { sig: '0xd21220a7', name: 'token1()', desc: 'Pool — returns token1. Reverts on Aerodrome proxies; use the pair listing here instead.', returns: 'address' },
+  { sig: '0x70a08231', name: 'balanceOf(address)', desc: 'ERC20/ERC721 — token balance of an address. Used for pool TVL and basket composition.', returns: 'uint256' },
   { sig: '0x18160ddd', name: 'totalSupply()', desc: 'ERC20/ERC721 — total token supply. Used for NAV per share and NFT minted counts.', returns: 'uint256' },
   { sig: '0x313ce567', name: 'decimals()', desc: 'ERC20 — token decimals. SNUT 9, cbBTC 8, USDC/EURC 6, NVDAc/AAPLc 8, others 18.', returns: 'uint8' },
   { sig: '0x95d89b41', name: 'symbol()', desc: 'ERC20 — token symbol. Useful for contract verification.', returns: 'string' },
@@ -156,7 +165,7 @@ const FUNCTION_SIGS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// RPC IMPLEMENTATION — COPY-PASTEABLE PYTHON (no Web3 lib required)
+// RPC IMPLEMENTATION — COPY-PASTEABLE PYTHON
 // ═══════════════════════════════════════════════════════════════
 const CODE_BLOCKS = [
   {
@@ -193,20 +202,6 @@ const CODE_BLOCKS = [
       '            time.sleep(0.5 * (attempt + 1))',
       '    _rpc_index = (_rpc_index + 1) % len(RPC_ENDPOINTS)',
       '    return "0x"',
-      '',
-      'def has_code(addr):',
-      '    """Check if a contract exists at address."""',
-      '    for rpc in RPC_ENDPOINTS:',
-      '        try:',
-      '            code = requests.post(rpc, json={',
-      '                "jsonrpc": "2.0", "id": 1,',
-      '                "method": "eth_getCode",',
-      '                "params": [addr, "latest"],',
-      '            }, timeout=10).json().get("result", "0x")',
-      '            return len(code) > 2',
-      '        except Exception:',
-      '            continue',
-      '    return False',
     ].join('\n'),
   },
   {
@@ -423,28 +418,51 @@ const CODE_BLOCKS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// STRATEGY CATALOG — HONEST ASSESSMENTS, FULL DETAIL
+// MARKET MECHANICS — MINT CLUB / pNUT NAV / wNUT PARITY
+// ═══════════════════════════════════════════════════════════════
+const MINT_CLUB_FACTS = [
+  { label: 'Mechanism', value: 'Mint/burn (NOT AMM swap). New tokens are minted when buying, burned when selling. No LP deposits needed — the curve IS the liquidity.' },
+  { label: 'Price Formula', value: 'Bonding curve price = NUT_locked / token_supply. Price increases as supply mints, decreases as supply burns.' },
+  { label: 'Buy ≠ Sell', value: 'BUY (mint) price is always higher than SELL (burn) price. The spread is protocol revenue and varies with curve position.' },
+  { label: 'Royalty', value: '1% creator royalty on BOTH mint and burn transactions. Deducted from the base asset (NUT).' },
+  { label: 'Curve Types', value: 'Exponential (most common), Linear, Logarithmic, Flat. Mint Club uses a Discrete Bonding Curve (DBC) with step arrays.' },
+  { label: 'Token Specs', value: 'Max Minting Supply, Initial Minting Price, Final Minting Price, Price Intervals (steps). More steps = smoother price curve.' },
+  { label: 'Base Asset', value: 'NUT is the base/reserve asset for all BASED NUT bonding curves. SALT and NUTINO are both backed by NUT.' },
+  { label: 'SDK', value: 'npm i mint.club-v2-sdk — official SDK for programmatic interaction. Docs: https://sdk.mint.club/' },
+  { label: 'Price Retrieval', value: 'Mint Club tokens are minimal proxy contracts. Direct RPC price queries are unreliable. Use browser automation or the V2 SDK for accurate prices.' },
+  { label: 'Why Loops Are Challenging', value: 'Forward: DEX price tends below MC buy price → squeezed. Reverse: MC sell price tends below DEX price → squeezed. The spread captures value from BOTH directions. Windows open during volatility or external liquidity events — monitor for 5-10%+ divergence.' },
+];
+
+const WNUT_PARITY_FACTS = [
+  'Every wNUT is a receipt for exactly one NUT locked in the wrapper — backing ratio must always read exactly 1.00.',
+  'The wrapper is audited with no admin key: wrap/unwrap enforces parity mechanically, so venue price deviations are self-correcting.',
+  'wNUT opens NUT to Balancer v3 composability — the Whorl basket and all six grafts use wNUT as rootstock.',
+  'Check code: wNUT Wrap Ratio block in Reads. Trade it: wNUT Parity Loop in Strategies.',
+];
+
+// ═══════════════════════════════════════════════════════════════
+// STRATEGY CATALOG — fixed grammar, verdict pills, expandable detail
 // ═══════════════════════════════════════════════════════════════
 const STRATEGY_GROUPS = [
   {
     group: 'Cross-Venue',
     strategies: [
       {
-        id: 1, emoji: '🔄', name: 'Cross-Venue NUT Arbitrage',
+        id: 1, name: 'Cross-Venue NUT Arbitrage',
+        pill: 'VIABLE', pillTone: 'green',
+        difficulty: 'INTERMEDIATE', freqShort: 'EVENT-DRIVEN', capShort: '$500+',
         routeIds: ['NUT-UNI3-UNI2', 'NUT-UNI3-AERO-AERO', 'NUT-UNI3-AERO-CBBTC'],
         venues: 'Uniswap V3 ↔ Uniswap V2 ↔ Aerodrome (NUT/AERO) ↔ Aerodrome (NUT/cbBTC)',
+        trigger: 'After large directional trades on one venue · volatility spikes · liquidity adds/removes · AERO or cbBTC moving sharply vs ETH.',
         formula: 'profit = NUT_price_venueB - NUT_price_venueA - 2 × gas - slippage',
+        profitCondition: 'Spread between any 2 venues > 2 × gas + slippage + quote token conversion cost.',
+        risks: 'Quote-token movement · depth varies by venue · execution lag between legs.',
         verdict: 'VIABLE in principle — profitability depends on the LIVE spread clearing fees + gas. Past spreads are not guarantees; measure the current spread and execute only when positive after all costs.',
-        verdictColor: 'success',
         whatIsIt: 'Classic cross-venue price arbitrage. NUT trades on 4 different DEXs with different quote tokens. When the same token has different prices on different venues, you buy low and sell high.',
         howToUse: '1. Poll all 4 venues every block (Base block time ~2s). 2. Normalize all prices to USD using CoinGecko for quote tokens. 3. Calculate spread between every pair. 4. If spread > threshold, execute buy on cheap venue + sell on expensive venue in same block or next. 5. Use multicall to atomic-execute both legs.',
-        whenToUse: 'After large directional trades on one venue. During volatility spikes. When new liquidity is added/removed from one pool. When AERO or cbBTC prices move sharply vs ETH.',
-        difficulty: 'Intermediate',
         frequency: 'Event-driven — no fixed cadence. Poll venues, measure the live spread, execute only when positive after all costs.',
         capitalNeeded: '$500+ recommended. Gas is cheap on Base (~$0.10-0.20 per tx) but slippage on small sizes eats profit.',
         prerequisites: 'Base RPC access, USD price feeds for ETH/AERO/cbBTC, understanding of Uniswap V3 slot0 vs V2 getReserves, wallet funded with ETH for gas.',
-        profitCondition: 'Spread between any 2 venues > 2 × gas + slippage + quote token conversion cost.',
-        risks: 'Different quote tokens complicate comparison. Price moves during cross-venue execution. Liquidity depth varies. V3 pool has deepest liquidity.',
         steps: [
           'Monitor NUT price across all 4 venues via Base RPC',
           'Normalize all prices to USD (WETH→ETH, AERO→AERO, cbBTC→BTC)',
@@ -455,21 +473,21 @@ const STRATEGY_GROUPS = [
         tokens: ['NUT', 'WETH', 'AERO', 'cbBTC'],
       },
       {
-        id: 2, emoji: '🥥', name: 'SNUT Cross-Venue Arbitrage',
+        id: 2, name: 'SNUT Cross-Venue Arbitrage',
+        pill: 'CAUTION', pillTone: 'amber',
+        difficulty: 'ADVANCED', freqShort: 'EVENT-DRIVEN', capShort: '$1k+',
         routeIds: ['SNUT-WETH-UNI2', 'SNUT-NUT-AERO', 'SNUT-BALANCER-BASKET'],
         venues: 'Uniswap V2 (SNUT/WETH) ↔ Aerodrome (SNUT/NUT) ↔ Balancer V2 (pNUT basket)',
+        trigger: 'SNUT volatility · large buys/sells on one venue · NUT moves but SNUT lags on another venue.',
         formula: 'profit = SNUT_price_venueB - SNUT_price_venueA - 2 × gas - slippage - 1% tax (if applicable)',
+        profitCondition: 'Spread between any 2 venues > 2 × gas + slippage + 1% tax (if applicable). Tax-exempt routes only need spread > gas + slippage.',
+        risks: '1% transfer tax on taxable routes · thin SNUT/WETH liquidity · pNUT basket price is implied, not directly tradeable.',
         verdict: 'VIABLE WITH CAUTION — SNUT has multiple venues creating real cross-venue spread opportunities. The 1% transfer tax is one cost factor — verify which addresses are tax-exempt before executing. Spreads can exceed 2% during volatility. The pNUT basket provides an additional price reference.',
-        verdictColor: 'success',
         whatIsIt: 'SNUT trades on 2 direct venues plus the pNUT basket as an implied reference. When SNUT prices diverge across venues, you buy on the cheapest and sell on the most expensive.',
         howToUse: '1. Get SNUT/WETH price from UniV2 (getReserves). 2. Get SNUT/NUT price from Aerodrome (getReserves). 3. Get SNUT implied price from pNUT basket (NAV component). 4. Normalize all to USD. 5. Buy low, sell high across venues. 6. Account for the 1% SNUT transfer tax on non-exempt addresses.',
-        whenToUse: 'During SNUT volatility, after large buys/sells on one venue, when NUT price moves but SNUT lags on one venue.',
-        difficulty: 'Advanced',
         frequency: 'Event-driven — occurs when SNUT diverges across venues enough to clear fees + gas + tax.',
         capitalNeeded: '$1,000+ recommended. Tax-exempt routes need less capital but require verification.',
         prerequisites: 'Base RPC for multi-venue price monitoring, SNUT tax-exempt address list, understanding of 9 decimals (NOT 18), NUT price feed, Balancer API for pNUT component.',
-        profitCondition: 'Spread between any 2 venues > 2 × gas + slippage + 1% tax (if applicable). Tax-exempt routes only need spread > gas + slippage.',
-        risks: 'SNUT 1% transfer tax erodes profits on taxable transfers. SNUT uses 9 decimals (NOT 18). Thin liquidity on SNUT/WETH UniV2. pNUT basket price is implied, not directly tradeable.',
         steps: [
           'Get SNUT/WETH price from UniV2 pool — reserves → SNUT_per_WETH, convert via ETH_USD',
           'Get SNUT/NUT price from Aerodrome pool — reserves → SNUT_per_NUT, convert via NUT_USD',
@@ -486,21 +504,21 @@ const STRATEGY_GROUPS = [
     group: 'Wrapper Parity',
     strategies: [
       {
-        id: 3, emoji: '📦', name: 'wNUT Parity Loop',
+        id: 3, name: 'wNUT Parity Loop',
+        pill: 'VIABLE', pillTone: 'green',
+        difficulty: 'BEGINNER', freqShort: 'EVENT-DRIVEN', capShort: 'SMALL',
         routeIds: ['WNUT-WRAP-UNWRAP'],
         venues: 'NUT ↔ wNUT wrapper (1:1) ↔ Balancer v3 venues (Whorl, grafts)',
+        trigger: 'Whenever a wNUT venue price deviates from NUT by more than gas + venue fee. Early-stage graft liquidity makes windows more frequent.',
         formula: 'profit = |venue_wNUT_price - NUT_price| - gas - venue fee',
+        profitCondition: 'Deviation > gas + venue swap fee.',
+        risks: 'Thin early-stage liquidity on graft venues limits size · venue fees vary.',
         verdict: 'VIABLE — the cleanest loop in the ecosystem. Wrap/unwrap enforces 1:1 parity mechanically; the wrapper has no admin key, so venue price deviations are self-correcting.',
-        verdictColor: 'success',
         whatIsIt: 'wNUT is a 1:1 ERC-20 wrapper for NUT with no admin key (audit passed). Any wNUT venue price that deviates from NUT can be corrected by wrapping or unwrapping at exactly 1:1.',
         howToUse: '1. Compare wNUT venue price (Whorl, grafts) vs NUT price. 2. If wNUT trades below NUT: buy wNUT, unwrap for NUT, sell NUT. 3. If wNUT trades above NUT: buy NUT, wrap, sell wNUT. 4. The wrap ratio is a conservation invariant — it should always read exactly 1.00.',
-        whenToUse: 'Whenever a wNUT venue price deviates from NUT by more than gas + venue fee. Early-stage graft liquidity makes windows more frequent.',
-        difficulty: 'Beginner',
         frequency: 'Event-driven — watch graft and Whorl BPT prices vs NUT.',
         capitalNeeded: 'Small — gas + enough to move the thin venue liquidity.',
-        prerequisites: 'Base RPC for the wrap-ratio check (see code block), a wNUT venue to execute against.',
-        profitCondition: 'Deviation > gas + venue swap fee.',
-        risks: 'Thin early-stage liquidity on graft venues limits size. Venue fees vary. The wrapper itself carries no admin risk (roles renounced, audit passed).',
+        prerequisites: 'Base RPC for the wrap-ratio check (see wNUT Wrap Ratio code block), a wNUT venue to execute against.',
         steps: [
           'Check the wrap ratio on-chain — NUT backing / wNUT supply should be exactly 1.00',
           'Compare wNUT venue price vs NUT price',
@@ -516,21 +534,21 @@ const STRATEGY_GROUPS = [
     group: 'Basket / NAV',
     strategies: [
       {
-        id: 4, emoji: '🧺', name: 'pNUT Quad NAV Drift',
+        id: 4, name: 'pNUT Quad NAV Drift',
+        pill: 'THEORETICAL', pillTone: 'amber',
+        difficulty: 'ADVANCED', freqShort: 'RARE', capShort: '$2k+',
         routeIds: ['PNUT-NAV-MINT', 'PNUT-NAV-REDEEM'],
         venues: 'Balancer V2 (mint/redeem BPT) ↔ market',
+        trigger: 'NUT or SNUT makes a sharp move vs ETH/BTC · cbETH/cbBTC drift changes weights · after large pNUT mints/redeems.',
         formula: 'profit = |market_price - NAV| × pNUT_amount - gas - slippage - exit fees',
+        profitCondition: '|market_price - NAV| > gas + slippage + basket liquidation cost + Balancer exit fee.',
+        risks: 'NAV moves with components · redemption requires selling 4 assets · join/exit fees · low pNUT volume.',
         verdict: 'THEORETICALLY VIABLE — most complex arb. Requires monitoring 4 component prices plus the BPT price. Best executed when NUT or SNUT makes a sharp move vs ETH/BTC, causing basket weight drift.',
-        verdictColor: 'warning',
         whatIsIt: 'pNUT is a Balancer WeightedPool token (BPT) holding 4 assets at 25% each. Its market price can drift from its Net Asset Value (NAV) when component prices move. You mint or redeem BPT against the basket to capture the premium/discount.',
         howToUse: '1. Monitor pNUT BPT price on Balancer vs calculated NAV. 2. NAV = sum(component_balance × price) / totalSupply — read balances from the V2 Vault. 3. If BPT trades ABOVE NAV: deposit the 4-asset basket to mint BPT, then sell BPT. 4. If BPT trades BELOW NAV: buy BPT, redeem for components, sell components. 5. Account for Balancer swap fees on join/exit.',
-        whenToUse: 'When NUT or SNUT makes a sharp move (the volatile components). When cbETH/cbBTC drift changes basket weights. After large pNUT mints or redeems. Low frequency but high value when triggered.',
-        difficulty: 'Advanced',
         frequency: 'Rare — a few times per week during volatile periods. Requires 4-component price divergence > 2%.',
         capitalNeeded: '$2,000+ recommended. Must hold or source all 4 basket components (cbETH, cbBTC, NUT, SNUT).',
         prerequisites: 'Balancer V2 SDK or API access, real-time price feeds for all 4 components, understanding of weighted pool math, ability to source and liquidate basket components.',
-        profitCondition: '|market_price - NAV| > gas + slippage + basket liquidation cost + Balancer exit fee.',
-        risks: 'NAV changes as components move. Redeeming requires selling 4 tokens. Balancer join/exit fees. Low pNUT trading volume.',
         steps: [
           'Calculate NAV from Vault balances (not balanceOf(pNUT) — that is not the basket)',
           'If market > NAV: mint BPT by depositing the basket, sell BPT',
@@ -540,21 +558,21 @@ const STRATEGY_GROUPS = [
         tokens: ['pNUT', 'cbETH', 'cbBTC', 'NUT', 'SNUT'],
       },
       {
-        id: 5, emoji: '🌸', name: 'pNUT Whorl NAV',
+        id: 5, name: 'pNUT Whorl NAV',
+        pill: 'EARLY-STAGE', pillTone: 'amber',
+        difficulty: 'ADVANCED', freqShort: 'EVENT-DRIVEN', capShort: 'COMPONENTS',
         routeIds: ['PNUT-WHORL-NAV'],
         venues: 'Balancer V3 (add/remove liquidity) ↔ market',
+        trigger: 'Same pattern as the Quad — when basket components diverge. Early liquidity means wider windows but smaller capacity.',
         formula: 'profit = |BPT_price - NAV| × amount - gas - fees',
+        profitCondition: 'BPT deviation from NAV > gas + V3 fees.',
+        risks: 'Early-stage liquidity · component sourcing for 4 assets · no admin recourse by design.',
         verdict: 'EARLY-STAGE — same NAV mechanics as the Quad on the wNUT-based basket. Immutable deployment (all roles renounced). Monitor as liquidity builds.',
-        verdictColor: 'warning',
         whatIsIt: 'The Based Peanut Whorl is the Balancer v3 successor basket: 25% each cbETH, SNUT, wNUT, cbBTC. BPT price vs NAV drift creates the same mint/redeem arb pattern as the Quad.',
         howToUse: '1. Read composition via the Balancer API (V3 Vault). 2. Compute NAV per BPT. 3. Add liquidity proportionally when BPT trades over NAV; remove when under. 4. No admin parameters exist — the deployment is immutable.',
-        whenToUse: 'Same pattern as the Quad — when basket components diverge. Early liquidity means wider windows but smaller capacity.',
-        difficulty: 'Advanced',
         frequency: 'Event-driven, early-stage.',
         capitalNeeded: 'Component sourcing for proportional adds.',
         prerequisites: 'Balancer v3 router familiarity, component price feeds.',
-        profitCondition: 'BPT deviation from NAV > gas + V3 fees.',
-        risks: 'Early-stage liquidity. Component sourcing for 4 assets. No admin recourse by design.',
         steps: [
           'Read Whorl composition via the Balancer API',
           'Compute NAV per BPT',
@@ -564,21 +582,21 @@ const STRATEGY_GROUPS = [
         tokens: ['pNUT', 'wNUT', 'SNUT', 'cbETH', 'cbBTC'],
       },
       {
-        id: 6, emoji: '🌻', name: 'Grove Graft NAV',
+        id: 6, name: 'Grove Graft NAV',
+        pill: 'EARLY-STAGE', pillTone: 'amber',
+        difficulty: 'ADVANCED', freqShort: 'EVENT-DRIVEN', capShort: 'SCIONS',
         routeIds: ['GRAFT-NAV'],
         venues: 'Six Balancer v3 grafts — 20% wNUT rootstock + 40/40 scions',
+        trigger: 'Scion markets move but graft BPT prices lag. Early liquidity = wider windows, smaller capacity.',
         formula: 'profit = |graft_BPT_price - NAV| × amount - gas - fees',
+        profitCondition: 'Graft BPT deviation from NAV > gas + fees.',
+        risks: 'Early-stage liquidity on all grafts · scion sourcing varies (tokenized equities have their own market hours).',
         verdict: 'EARLY-STAGE — the same NAV mechanics on each graft. Grafts link NUT (via wNUT rootstock) to each scion market: inference (VVV/DIEM), agents (VIRTUAL/MOR), ether, bitcoin, FX, and tokenized equity. Monitor first; size accordingly.',
-        verdictColor: 'warning',
         whatIsIt: 'Sunflower Grove grafts are Balancer v3 weighted pools binding wNUT at 20% rootstock with two 40% scions each. Each graft BPT can drift from NAV — same add/remove pattern as the baskets, on smaller venues.',
         howToUse: '1. Track each graft BPT price vs computed NAV. 2. Divergence beyond fees + gas marks an add/remove window. 3. See /sunflower-grove for the live registry and graft pages.',
-        whenToUse: 'When scion markets move but graft BPT prices lag. Early liquidity = wider windows, smaller capacity.',
-        difficulty: 'Advanced',
         frequency: 'Event-driven, early-stage.',
         capitalNeeded: 'Scion sourcing for proportional adds.',
         prerequisites: 'Balancer v3 router, scion market price feeds (varies per graft).',
-        profitCondition: 'Graft BPT deviation from NAV > gas + fees.',
-        risks: 'Early-stage liquidity on all grafts. Scion sourcing varies (tokenized equities have their own market hours).',
         steps: [
           'Track each graft BPT price vs computed NAV',
           'Grafts link NUT (via wNUT rootstock) to each scion market',
@@ -593,21 +611,21 @@ const STRATEGY_GROUPS = [
     group: 'Bonding-Curve Loops',
     strategies: [
       {
-        id: 7, emoji: '🧂', name: 'SALT Loop (Mint Club → Aerodrome)',
+        id: 7, name: 'SALT Loop (Mint Club → Aerodrome)',
+        pill: 'CHALLENGING', pillTone: 'amber',
+        difficulty: 'ADVANCED', freqShort: 'SPORADIC', capShort: '$200+',
         routeIds: ['SALT-MC-AERO-USDC'],
         venues: 'Mint Club (NUT→SALT) → Aerodrome (SALT→USDC)',
-        formula: 'forward: profit = SALT_dex_price_USDC - SALT_mint_cost_NUT × NUT_price_USD - gas - 1% royalty\\nreverse: profit = SALT_burn_value_NUT × NUT_price_USD - SALT_dex_price_USDC - gas - 1% royalty',
+        trigger: 'DEX price diverges >5-10% from curve fair value · SALT liquidity events · NUT moves but SALT DEX lags.',
+        formula: 'forward: profit = SALT_dex_USDC - SALT_mint_cost_NUT × NUT_USD - gas - 1% royalty\nreverse: profit = SALT_burn_NUT × NUT_USD - SALT_dex_USDC - gas - 1% royalty',
+        profitCondition: 'Forward: SALT DEX price > MC buy price + 1% royalty + gas. Reverse: MC sell price > DEX price + 1% royalty + gas.',
+        risks: 'Curve spread captures most value · supply moves against each trade · thin DEX liquidity.',
         verdict: 'CHALLENGING — the bonding curve buy/sell spread is designed as protocol revenue and captures significant value from both directions. Forward is squeezed because DEX price tends below MC buy price; reverse because MC sell price tends below DEX price. Windows open during volatility or liquidity events — monitor for 5-10% divergence.',
-        verdictColor: 'warning',
         whatIsIt: 'SALT is a Mint Club bonding curve token backed by NUT. It also trades on Aerodrome against USDC. The curve price and DEX price can diverge, creating a loop: mint SALT on the curve, sell on Aerodrome — or reverse.',
         howToUse: '1. Get SALT mint price from Mint Club (NUT_locked / supply). 2. Get SALT DEX price from Aerodrome (SALT/USDC reserves). 3. Forward: buy NUT → mint SALT on MC → sell SALT on Aerodrome for USDC. 4. Reverse: buy SALT on Aerodrome → burn on MC for NUT → sell NUT. 5. Subtract the 1% royalty on both MC directions.',
-        whenToUse: 'When DEX price diverges >5-10% from the bonding curve fair value. During SALT liquidity events, market moves, or when NUT price moves but SALT DEX lags. Most viable during high volatility windows.',
-        difficulty: 'Advanced',
         frequency: 'Sporadic — the curve spread captures most value. Windows open during volatility but close fast as arbitrageurs correct the divergence.',
         capitalNeeded: '$200+ for gas coverage, but margins are thin. Larger sizes get worse slippage on both curve and DEX.',
         prerequisites: 'Mint Club V2 SDK or browser automation for curve prices, Aerodrome pool monitoring, understanding of bonding curve mechanics (buy ≠ sell), NUT price feed.',
-        profitCondition: 'Forward: SALT DEX price > MC buy price + 1% royalty + gas. Reverse: MC sell price > DEX price + 1% royalty + gas.',
-        risks: 'Bonding curve spread captures most value. Supply changes with each trade (price moves against you). DEX liquidity may be thin.',
         steps: [
           'Forward: Buy NUT → Mint SALT on Mint Club → Sell SALT on Aerodrome (SALT/USDC)',
           'Reverse: Buy SALT on Aerodrome → Burn SALT on Mint Club for NUT → Sell NUT',
@@ -618,21 +636,21 @@ const STRATEGY_GROUPS = [
         tokens: ['NUT', 'SALT', 'USDC'],
       },
       {
-        id: 8, emoji: '🍫', name: 'NUTINO Loop (Mint Club → Uniswap V2)',
+        id: 8, name: 'NUTINO Loop (Mint Club → Uniswap V2)',
+        pill: 'CHALLENGING', pillTone: 'amber',
+        difficulty: 'ADVANCED', freqShort: 'SPORADIC', capShort: '$200+',
         routeIds: ['NUTINO-MC-UNI2-CBBTC'],
         venues: 'Mint Club (NUT→NUTINO) → Uniswap V2 (NUTINO→cbBTC)',
-        formula: 'forward: profit = cbBTC_received × BTC_price - NUT_cost_USD - gas - 1% royalty\\nreverse: profit = NUT_received × NUT_price - cbBTC_cost_USD - gas - 1% royalty',
+        trigger: 'High BTC volatility (cbBTC moves but NUTINO DEX lags) · NUT sharp move with curve lag · same 5-10% threshold as SALT.',
+        formula: 'forward: profit = cbBTC_received × BTC_price - NUT_cost_USD - gas - 1% royalty\nreverse: profit = NUT_received × NUT_price - cbBTC_cost_USD - gas - 1% royalty',
+        profitCondition: 'Forward: NUTINO DEX price in cbBTC > MC buy price + 1% royalty + gas. Reverse: MC sell price > DEX price + 1% royalty + gas.',
+        risks: 'BTC volatility · curve spread · thin UniV2 liquidity limits size.',
         verdict: 'CHALLENGING — same curve dynamics as SALT. NUTINO is cbBTC-denominated, adding a BTC volatility dimension that can create wider dislocations. Monitor DEX price vs curve divergence and BTC momentum.',
-        verdictColor: 'warning',
         whatIsIt: 'NUTINO is a Mint Club bonding curve token backed by NUT, trading on Uniswap V2 against cbBTC. Same loop concept as SALT but with BTC-denominated pricing.',
         howToUse: '1. Get NUTINO mint price from Mint Club (NUT_locked / supply). 2. Get NUTINO DEX price from UniV2 (NUTINO/cbBTC reserves). 3. Forward: buy NUT → mint NUTINO → sell for cbBTC. 4. Reverse: buy NUTINO → burn for NUT → sell NUT. 5. Subtract 1% royalty. 6. Convert cbBTC to USD for the profit calc.',
-        whenToUse: 'During high BTC volatility (cbBTC moves but NUTINO DEX lags). When NUT makes a sharp move and the curve has not caught up. Same 5-10% divergence threshold as SALT.',
-        difficulty: 'Advanced',
         frequency: 'Sporadic — similar to SALT but BTC volatility can create wider windows. Still squeezed by the curve spread on most attempts.',
         capitalNeeded: '$200+ for gas. cbBTC denomination means position sizes are effectively in BTC terms. Thin UniV2 liquidity limits size.',
         prerequisites: 'Mint Club V2 SDK, UniV2 pool monitoring, BTC price feed for cbBTC, understanding of bonding curve mechanics, NUT price feed.',
-        profitCondition: 'Forward: NUTINO DEX price in cbBTC > MC buy price + 1% royalty + gas. Reverse: MC sell price > DEX price + 1% royalty + gas.',
-        risks: 'cbBTC price volatility. Bonding curve spread. UniV2 slippage. Same fundamental issue as the SALT loop.',
         steps: [
           'Forward: Buy NUT → Mint NUTINO on Mint Club → Sell NUTINO on UniV2 (NUTINO/cbBTC)',
           'Reverse: Buy NUTINO on UniV2 → Burn on Mint Club for NUT → Sell NUT',
@@ -647,21 +665,21 @@ const STRATEGY_GROUPS = [
     group: 'Structural (Monitoring)',
     strategies: [
       {
-        id: 9, emoji: '🔥', name: 'SNUT Burn Flywheel',
+        id: 9, name: 'SNUT Burn Flywheel',
+        pill: 'MONITOR ONLY', pillTone: 'gray',
+        difficulty: 'BEGINNER', freqShort: 'CONTINUOUS', capShort: 'N/A',
         routeIds: ['SNUT-BUYBACK-BURN'],
         venues: 'SNUT activity → 1% fee → swapback → buyback/burn + NUT rewards',
+        trigger: 'Burn rate accelerates (high volume = more fee = more burns) · dead-held LP percentage rises.',
         formula: 'price_support = burn_rate / circulating_supply (continuous, non-directional)',
+        profitCondition: 'Not a tradeable loop — structural support. Hold SNUT to benefit from deflation.',
+        risks: 'Fee reduces net transfer size · burn rate depends on volume · long-term hold mechanic, not an arbitrage exit.',
         verdict: 'NOT AN ARB — a structural deflation mechanism. Cannot be arbitraged directly. Relevant for bots that monitor burn rate as a supply-and-flow signal and hold signal.',
-        verdictColor: 'neutral',
         whatIsIt: 'SNUT has a built-in deflationary mechanism: the 1% fee on every trade routes through a swapback engine that buys back and burns SNUT. Dead-held SNUT keeps earning NUT rewards. Supply decreases monotonically — no new SNUT is ever minted.',
         howToUse: 'You cannot arbitrage this directly. Instead: 1. Monitor burn rate (dead address SNUT balance growth). 2. Monitor buyback fuel (SNUT contract ETH balance). 3. Use burn rate as a structural support indicator — higher burn = stronger floor. 4. Hold SNUT to participate passively. 5. Track NUT sent to dead (burned NUT) as flywheel intensity.',
-        whenToUse: 'Use as a monitoring signal, not a trade. When burn rate accelerates (high volume = more fee = more burns), deflationary pressure increases. When dead-held LP percentage rises, the liquidity floor strengthens.',
-        difficulty: 'Beginner (monitoring only)',
         frequency: 'Continuous — every SNUT trade contributes to the burn. Monitor daily/weekly burn rates for trend analysis.',
         capitalNeeded: 'N/A for monitoring. For holding: any amount of SNUT. No gas required to benefit from burns.',
         prerequisites: 'Base RPC for dead address balance queries, SNUT contract read for tax configuration, understanding of deflationary tokenomics.',
-        profitCondition: 'Not a tradeable loop — structural support. Hold SNUT to benefit from deflation.',
-        risks: 'Fee reduces net transfer size. Burn rate depends on volume. Long-term hold mechanic, not an arbitrage exit.',
         steps: [
           '1% fee on every trade → swapback → ETH routing → NUT rewards + buyback fuel + liquidity',
           'Buybacks send SNUT to the dead address — dead-held SNUT keeps earning NUT rewards',
@@ -678,21 +696,21 @@ const STRATEGY_GROUPS = [
     group: 'Derivatives',
     strategies: [
       {
-        id: 10, emoji: '🧬', name: 'SNUT/ETH-LP Meta-Pool Arbitrage',
+        id: 10, name: 'SNUT/ETH-LP Meta-Pool Arbitrage',
+        pill: 'OPPORTUNISTIC', pillTone: 'blue',
+        difficulty: 'EXPERT', freqShort: 'LOW-FREQ', capShort: '$500+',
         routeIds: ['SNUT-ETHLP-META'],
         venues: 'Uniswap V2 (SNUT/ETH-LP/ETH meta-pool) ↔ Uniswap V2 (SNUT/WETH main pool)',
+        trigger: 'Meta-pool LP price diverges >1% from fair NAV · SNUT volatility (LP sticky, spot fast) · large liquidity adds/removes.',
         formula: 'profit = LP_NAV_premium - gas - slippage',
+        profitCondition: '|meta_pool_LP_price - LP_fair_NAV| > gas + slippage + LP removal/addition fees.',
+        risks: 'Thin meta-pool liquidity · multi-step execution · pending fees in LP position.',
         verdict: 'OPPORTUNISTIC — unique meta-market arb. The LP-token/ETH pool creates a secondary market for SNUT/ETH liquidity claims. Best executed when meta-pool LP price diverges significantly from fair NAV. Low frequency but high potential when triggered.',
-        verdictColor: 'warning',
         whatIsIt: 'The SNUT/ETH-LP meta-pool is a Uniswap V2 pool where LP tokens of the main SNUT/ETH pool are traded against ETH. When the meta-pool LP price diverges from the fair NAV of the underlying LP position, you can arbitrage the gap.',
         howToUse: 'Path 1 (LP Premium): when meta-pool LP price > fair NAV — acquire SNUT + ETH, add liquidity to the main pool, sell the LP tokens on the meta-pool. Path 2 (LP Discount): when meta-pool LP price < fair NAV — buy LP tokens on the meta-pool, remove liquidity, sell the components. Path 3 (lag play): LP prices are sticky vs spot — if SNUT drops on the main pool but LP tokens lag on the meta-pool, buy LP, unwrap, sell the SNUT component.',
-        whenToUse: 'When meta-pool LP price diverges >1% from fair NAV. During SNUT volatility (LP price is sticky, spot moves fast). After large liquidity adds/removes on the main pool.',
-        difficulty: 'Expert',
         frequency: 'Low frequency but high potential. LP token prices are inherently sticky, creating predictable lag-based windows.',
         capitalNeeded: '$500+ recommended. LP addition/removal requires both SNUT and ETH. Meta-pool liquidity may be thin — slippage on large sizes.',
         prerequisites: 'Real-time LP NAV calculation, monitoring both pools simultaneously, understanding of LP token mechanics, SNUT fee awareness on LP transfers.',
-        profitCondition: '|meta_pool_LP_price - LP_fair_NAV| > gas + slippage + LP removal/addition fees.',
-        risks: 'LP token liquidity on the meta-pool may be thin. Removing liquidity from the main pool affects SNUT price. SNUT fee may apply on LP token transfers. Complex multi-step execution. Must account for pending fees accrued in the LP position.',
         steps: [
           'Path 1 — LP Premium: acquire SNUT + ETH → add liquidity to main pool → receive LP tokens → sell LP on meta-pool for ETH',
           'Path 2 — LP Discount: buy LP tokens on meta-pool → remove liquidity → receive SNUT + ETH → sell SNUT',
@@ -707,54 +725,11 @@ const STRATEGY_GROUPS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// MINT CLUB BONDING CURVE MECHANICS
-// ═══════════════════════════════════════════════════════════════
-const MINT_CLUB_FACTS = [
-  { label: 'Mechanism', value: 'Mint/burn (NOT AMM swap). New tokens are minted when buying, burned when selling. No LP deposits needed — the curve IS the liquidity.' },
-  { label: 'Price Formula', value: 'Bonding curve price = NUT_locked / token_supply. Price increases as supply mints, decreases as supply burns.' },
-  { label: 'Buy ≠ Sell', value: 'BUY (mint) price is always higher than SELL (burn) price. The spread is protocol revenue and varies with curve position.' },
-  { label: 'Royalty', value: '1% creator royalty on BOTH mint and burn transactions. Deducted from the base asset (NUT).' },
-  { label: 'Curve Types', value: 'Exponential (most common), Linear, Logarithmic, Flat. Mint Club uses a Discrete Bonding Curve (DBC) with step arrays.' },
-  { label: 'Token Specs', value: 'Max Minting Supply, Initial Minting Price, Final Minting Price, Price Intervals (steps). More steps = smoother price curve.' },
-  { label: 'Base Asset', value: 'NUT is the base/reserve asset for all BASED NUT bonding curves. SALT and NUTINO are both backed by NUT.' },
-  { label: 'SDK', value: 'npm i mint.club-v2-sdk — official SDK for programmatic interaction. Docs: https://sdk.mint.club/' },
-  { label: 'Price Retrieval', value: 'Mint Club tokens are minimal proxy contracts. Direct RPC price queries are unreliable. Use browser automation or the V2 SDK for accurate prices.' },
-  { label: 'Why Loops Are Challenging', value: 'Forward: DEX price tends below MC buy price → squeezed. Reverse: MC sell price tends below DEX price → squeezed. The spread captures value from BOTH directions. Windows open during volatility or external liquidity events — monitor for 5-10%+ divergence.' },
-];
-
-// ═══════════════════════════════════════════════════════════════
-// VENUE INTEL — WITH API ENDPOINTS
-// ═══════════════════════════════════════════════════════════════
-const VENUES = [
-  { name: 'Uniswap V3', type: 'Concentrated AMM', pairs: 'NUT/WETH', fee: '1.0%', notes: 'Primary NUT venue. Use slot0() for price. DEX Screener cannot see this pool — must use Base RPC.', api: 'Base RPC: eth_call slot0() → 0x3850c7bd' },
-  { name: 'Uniswap V2', type: 'XYK AMM', pairs: 'NUT/WETH, SNUT/WETH, NUTINO/cbBTC', fee: '0.3%', notes: 'Secondary venues. Use getReserves() for price.', api: 'Base RPC: eth_call getReserves() → 0x0902f1ac' },
-  { name: 'Aerodrome', type: 've(3,3) AMM', pairs: 'NUT/AERO, NUT/cbBTC, SALT/USDC, SNUT/NUT', fee: 'Variable', notes: 'Base native DEX. SALT primary venue. SNUT primary venue. Same interface as UniV2.', api: 'Base RPC: getReserves() + token0() for ordering' },
-  { name: 'Mint Club', type: 'Bonding Curve', pairs: 'SALT (backed by NUT), NUTINO (backed by NUT)', fee: '1% royalty', notes: 'Mint/burn only. Buy ≠ Sell. Price = NUT_locked / supply. Use SDK or browser for prices.', api: 'SDK: npm i mint.club-v2-sdk | UI: https://mint.club/token/base/{TOKEN}' },
-  { name: 'Balancer V2', type: 'Weighted Pool', pairs: 'pNUT Quad (25% each: cbETH, cbBTC, NUT, SNUT)', fee: 'Variable', notes: 'pNUT IS the BPT. NAV = totalLiquidity / totalShares. Mint by depositing basket, redeem to withdraw.', api: 'REST: https://api.balancer.fi/v1/pools/base/{pool_addr} | GraphQL: https://api.thegraph.com/subgraphs/name/balancer-base-v2' },
-  { name: 'Balancer V3', type: 'Weighted Pool / reCLAMM', pairs: 'pNUT Whorl, 6 grafts, NUT/SALT reCLAMM, PIPS/USDC reCLAMM', fee: 'Variable', notes: 'v3 venues — immutable weighted pools and reCLAMM. Composition via Balancer API.', api: 'Balancer API + V3 Router: 0x3f170631ed9821Ca51A59D996aB095162438DC10' },
-  { name: 'Sudoswap', type: 'NFT AMM', pairs: 'PNUTS, ALMD, SALMD NFT pools', fee: 'Variable', notes: 'Whole-NFT AMM via bonding curves.', api: 'Base RPC: balanceOf() on pool contracts' },
-  { name: 'DexScreener', type: 'Price API', pairs: 'All DEX pairs (fallback)', fee: 'Free', notes: 'Good for V2 pools. CANNOT correctly handle the UniV3 NUT/WETH pool. Use as secondary source only.', api: 'GET https://api.dexscreener.com/latest/dex/tokens/{token_addr}' },
-  { name: 'CoinGecko', type: 'Price API', pairs: 'ETH, BTC, cbETH (quote tokens only)', fee: 'Free (rate-limited)', notes: 'Use for USD normalization of quote tokens. Do NOT use for NUT ecosystem token prices directly.', api: 'GET https://api.coingecko.com/api/v3/simple/price?ids=ethereum,wrapped-bitcoin,coinbase-wrapped-staked-eth&vs_currencies=usd' },
-];
-
-// ═══════════════════════════════════════════════════════════════
-// DATA SOURCE HIERARCHY
-// ═══════════════════════════════════════════════════════════════
-const DATA_SOURCES = [
-  { priority: 1, source: 'Base RPC (https://mainnet.base.org)', use: 'Primary for ALL on-chain prices. V3 slot0(), V2 getReserves(), balanceOf(), totalSupply(). The ONLY reliable source for NUT/WETH V3 price.', cost: 'Free' },
-  { priority: 2, source: 'DexScreener API', use: 'Secondary for V2/Aerodrome prices and TVL. Handles UniV2 math. CANNOT handle UniV3 NUT/WETH — returns NULL or wrong data.', cost: 'Free' },
-  { priority: 3, source: 'Balancer API', use: 'pNUT total liquidity, pool metadata. REST: https://api.balancer.fi/v1/pools/base/{addr}. GraphQL for deeper queries.', cost: 'Free' },
-  { priority: 4, source: 'CoinGecko API', use: 'USD prices for quote tokens only (ETH, BTC, cbETH, AERO). Do NOT use for NUT/SNUT/pNUT directly.', cost: 'Free (rate-limited)' },
-  { priority: 5, source: 'Mint Club UI / SDK', use: 'Bonding curve prices for SALT and NUTINO. Browser automation or V2 SDK. RPC unreliable for minimal proxy contracts.', cost: 'Free' },
-  { priority: 6, source: 'GeckoTerminal API', use: 'Alternative to DexScreener for pool data. Useful for cross-verification.', cost: 'Free' },
-];
-
-// ═══════════════════════════════════════════════════════════════
-// BOT COMMANDS — DIRECT WIRING REFERENCE FOR AGENTS
+// BOT COMMANDS — DIRECT WIRING REFERENCE
 // ═══════════════════════════════════════════════════════════════
 const BOT_COMMANDS = [
   {
-    trigger: '/arb-scan', name: 'Arbitrage Scanner', emoji: '⚔️',
+    trigger: '/arb-scan', name: 'Arbitrage Scanner',
     args: '[NUT|SNUT|pNUT|SALT|NUTINO|all]',
     desc: 'Full arbitrage scanner — cross-venue, pNUT index, and Mint Club loops.',
     scanTypes: ['Cross-Venue (NUT/SNUT)', 'pNUT Index (Volatility)', 'Mint Club Loop (SALT/NUTINO)'],
@@ -771,7 +746,7 @@ const BOT_COMMANDS = [
     verdict: 'MOST COMPREHENSIVE — covers all 3 arb types in one scan. Use as the primary monitoring command.',
   },
   {
-    trigger: '/loop-scan', name: 'Loop Arbitrage Scanner', emoji: '🔄',
+    trigger: '/loop-scan', name: 'Loop Arbitrage Scanner',
     args: '[SALT|NUTINO|all]',
     desc: 'Detailed loop arbitrage analysis for Mint Club bonding curve tokens (SALT, NUTINO).',
     scanTypes: ['Forward Loop (Mint → DEX)', 'Reverse Loop (DEX → Burn)', 'Cross-DEX Spread'],
@@ -788,7 +763,7 @@ const BOT_COMMANDS = [
     verdict: 'SPECIALIZED — deeper analysis of Mint Club loops than /arb-scan. Use for focused SALT/NUTINO monitoring.',
   },
   {
-    trigger: '/token-info', name: 'Token Info', emoji: '📊',
+    trigger: '/token-info', name: 'Token Info',
     args: '<TOKEN> (NUT/SNUT/pNUT/NUTINO/SALT)',
     desc: 'Comprehensive token info — prices, TVL, distribution, and pool data.',
     scanTypes: ['Price (DexScreener primary, RPC fallback)', 'TVL (sum of pools)', 'Pool Identification'],
@@ -805,7 +780,7 @@ const BOT_COMMANDS = [
     verdict: 'ESSENTIAL — first command to run for any token. Use before executing arb trades to verify current state.',
   },
   {
-    trigger: '/nut-status', name: 'NUT Ecosystem Status', emoji: '🌰',
+    trigger: '/nut-status', name: 'NUT Ecosystem Status',
     args: '[none]',
     desc: 'Full ecosystem status — market data, price, MCAP, TVL, and NUT distribution.',
     scanTypes: ['Market Overview', 'Price Aggregation', 'Distribution Analysis'],
@@ -821,7 +796,7 @@ const BOT_COMMANDS = [
     verdict: 'OVERVIEW — use for dashboard-style ecosystem monitoring. Best for periodic health checks.',
   },
   {
-    trigger: '/pools', name: 'Pool Status', emoji: '💧',
+    trigger: '/pools', name: 'Pool Status',
     args: '[NUT|SNUT|SALT|NUTINO|pNUT|NFT]',
     desc: 'All liquidity pools with addresses, flavors, and live reserve status.',
     scanTypes: ['Reserve Query', 'Pool Identification', 'Liquidity Depth'],
@@ -837,7 +812,7 @@ const BOT_COMMANDS = [
     verdict: 'STRUCTURAL — use to identify which pools have deepest liquidity before executing arb routes.',
   },
   {
-    trigger: '/nft-status', name: 'NFT Status', emoji: '🖼️',
+    trigger: '/nft-status', name: 'NFT Status',
     args: '[none]',
     desc: 'NFT collection status — minted counts and Sudoswap pools.',
     scanTypes: ['Supply Query', 'Sudoswap Pool Balances'],
@@ -852,11 +827,36 @@ const BOT_COMMANDS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
+// VENUES & DATA SOURCES
+// ═══════════════════════════════════════════════════════════════
+const VENUES = [
+  { name: 'Uniswap V3', type: 'Concentrated AMM', pairs: 'NUT/WETH', fee: '1.0%', notes: 'Primary NUT venue. Use slot0() for price. DEX Screener cannot see this pool — must use Base RPC.', api: 'Base RPC: eth_call slot0() → 0x3850c7bd' },
+  { name: 'Uniswap V2', type: 'XYK AMM', pairs: 'NUT/WETH, SNUT/WETH, NUTINO/cbBTC', fee: '0.3%', notes: 'Secondary venues. Use getReserves() for price.', api: 'Base RPC: eth_call getReserves() → 0x0902f1ac' },
+  { name: 'Aerodrome', type: 've(3,3) AMM', pairs: 'NUT/AERO, NUT/cbBTC, SALT/USDC, SNUT/NUT', fee: 'Variable', notes: 'Base native DEX. SALT primary venue. SNUT primary venue. Same interface as UniV2.', api: 'Base RPC: getReserves() + token0() for ordering' },
+  { name: 'Mint Club', type: 'Bonding Curve', pairs: 'SALT (backed by NUT), NUTINO (backed by NUT)', fee: '1% royalty', notes: 'Mint/burn only. Buy ≠ Sell. Price = NUT_locked / supply. Use SDK or browser for prices.', api: 'SDK: npm i mint.club-v2-sdk | UI: https://mint.club/token/base/{TOKEN}' },
+  { name: 'Balancer V2', type: 'Weighted Pool', pairs: 'pNUT Quad (25% each: cbETH, cbBTC, NUT, SNUT)', fee: 'Variable', notes: 'pNUT IS the BPT. NAV = totalLiquidity / totalShares. Mint by depositing basket, redeem to withdraw.', api: 'REST: https://api.balancer.fi/v1/pools/base/{pool_addr} | GraphQL: https://api.thegraph.com/subgraphs/name/balancer-base-v2' },
+  { name: 'Balancer V3', type: 'Weighted Pool / reCLAMM', pairs: 'pNUT Whorl, 6 grafts, NUT/SALT reCLAMM, PIPS/USDC reCLAMM', fee: 'Variable', notes: 'v3 venues — immutable weighted pools and reCLAMM. Composition via Balancer API.', api: 'Balancer API + V3 Router: 0x3f170631ed9821Ca51A59D996aB095162438DC10' },
+  { name: 'Sudoswap', type: 'NFT AMM', pairs: 'PNUTS, ALMD, SALMD NFT pools', fee: 'Variable', notes: 'Whole-NFT AMM via bonding curves.', api: 'Base RPC: balanceOf() on pool contracts' },
+  { name: 'DexScreener', type: 'Price API', pairs: 'All DEX pairs (fallback)', fee: 'Free', notes: 'Good for V2 pools. CANNOT correctly handle the UniV3 NUT/WETH pool. Use as secondary source only.', api: 'GET https://api.dexscreener.com/latest/dex/tokens/{token_addr}' },
+  { name: 'CoinGecko', type: 'Price API', pairs: 'ETH, BTC, cbETH (quote tokens only)', fee: 'Free (rate-limited)', notes: 'Use for USD normalization of quote tokens. Do NOT use for NUT ecosystem token prices directly.', api: 'GET https://api.coingecko.com/api/v3/simple/price?ids=ethereum,wrapped-bitcoin,coinbase-wrapped-staked-eth&vs_currencies=usd' },
+];
+
+const DATA_SOURCES = [
+  { priority: 1, source: 'Base RPC (https://mainnet.base.org)', use: 'Primary for ALL on-chain prices. V3 slot0(), V2 getReserves(), balanceOf(), totalSupply(). The ONLY reliable source for NUT/WETH V3 price.', cost: 'Free' },
+  { priority: 2, source: 'DexScreener API', use: 'Secondary for V2/Aerodrome prices and TVL. Handles UniV2 math. CANNOT handle UniV3 NUT/WETH — returns NULL or wrong data.', cost: 'Free' },
+  { priority: 3, source: 'Balancer API', use: 'pNUT total liquidity, pool metadata. REST: https://api.balancer.fi/v1/pools/base/{addr}. GraphQL for deeper queries.', cost: 'Free' },
+  { priority: 4, source: 'CoinGecko API', use: 'USD prices for quote tokens only (ETH, BTC, cbETH, AERO). Do NOT use for NUT/SNUT/pNUT directly.', cost: 'Free (rate-limited)' },
+  { priority: 5, source: 'Mint Club UI / SDK', use: 'Bonding curve prices for SALT and NUTINO. Browser automation or V2 SDK. RPC unreliable for minimal proxy contracts.', cost: 'Free' },
+  { priority: 6, source: 'GeckoTerminal API', use: 'Alternative to DexScreener for pool data. Useful for cross-verification.', cost: 'Free' },
+];
+
+// ═══════════════════════════════════════════════════════════════
 // MACHINE-READABLE SPEC
 // ═══════════════════════════════════════════════════════════════
 const MACHINE_SPEC = {
   chain: 'base',
   chainId: 8453,
+  snapshot: '2026-09-07',
   rpc: 'https://mainnet.base.org',
   rpcFallbacks: ['https://base.publicnode.com', 'https://1rpc.io/base'],
   tokens: {
@@ -973,103 +973,164 @@ const MACHINE_SPEC = {
   },
 };
 
+const SPEC_SUMMARY = '23 tokens · 21 pools · 8 infra · 12 selectors · 19 routes';
+
 // ═══════════════════════════════════════════════════════════════
-// COMPONENT — MUI v7 Grid API (size prop)
+// FULL IMPLEMENTATION CHECKLIST
+// ═══════════════════════════════════════════════════════════════
+const CHECKLIST = [
+  { title: 'Install dependencies', code: 'pip install requests' },
+  { title: 'Connect to Base RPC', code: 'https://mainnet.base.org (chainId: 8453)' },
+  { title: 'Copy the Base RPC Helper from Reads above', code: null },
+  { title: 'Fetch NUT price from UniV3 slot0() — check token0 for inversion', code: null },
+  { title: 'Fetch all pool reserves via getReserves() — verify token0/token1 ordering', code: null },
+  { title: 'Normalize all prices to USD using CoinGecko (ETH, BTC, cbETH only)', code: null },
+  { title: 'Calculate spreads across venues — flag when spread > 0.5%', code: null },
+  { title: 'For Mint Club prices, use browser automation or the V2 SDK — RPC is unreliable', code: 'npm i mint.club-v2-sdk' },
+  { title: 'For pNUT NAV, use getPoolTokens(poolId) or balanceOf(BALANCER_VAULT) — NOT balanceOf(pNUT) which is not the basket', code: null },
+  { title: 'Execute when spread > 2 × gas + slippage estimate (~$0.20-0.40 total on Base)', code: null },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// COMPONENT — MUI v7 Grid API, H1/H2/H3/H4 semantics
 // ═══════════════════════════════════════════════════════════════
 export default function ArbBotPage() {
   const [activeSection, setActiveSection] = useState('model');
   const [expandedStrategy, setExpandedStrategy] = useState(null);
   const [expandedCode, setExpandedCode] = useState(null);
-  const [specCopied, setSpecCopied] = useState(false);
+  const [expandedReg, setExpandedReg] = useState(null);
+  const [specOpen, setSpecOpen] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(null);
 
   const navItems = [
-    { id: 'model', label: '🧭 Model' },
-    { id: 'tokens', label: '🥜 Tokens' },
-    { id: 'pools', label: '💧 Pools' },
-    { id: 'infra', label: '🏭 Infra & NFT' },
-    { id: 'reads', label: '🔧 Reads & Code' },
-    { id: 'mintclub', label: '🏭 Mint Club' },
-    { id: 'strategies', label: '⚔️ Strategies' },
-    { id: 'venues', label: '🏠 Venues' },
-    { id: 'spec', label: '⚙️ Spec' },
-    { id: 'start', label: '🚀 Start' },
+    { id: 'model', label: 'Model' },
+    { id: 'start', label: 'Start Here' },
+    { id: 'registry', label: 'Registry' },
+    { id: 'reads', label: 'Reads' },
+    { id: 'mechanics', label: 'Mechanics' },
+    { id: 'strategies', label: 'Strategies' },
+    { id: 'commands', label: 'Commands' },
+    { id: 'venues', label: 'Venues' },
+    { id: 'spec', label: 'Spec' },
+    { id: 'checklist', label: 'Checklist' },
   ];
 
-  const scrollTo = (id) => {
+  const scrollTo = (href) => {
+    const id = href.replace('#', '');
     setActiveSection(id);
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const copySpec = () => {
-    navigator.clipboard.writeText(JSON.stringify(MACHINE_SPEC, null, 2));
-    setSpecCopied(true);
-    setTimeout(() => setSpecCopied(false), 2000);
+  const copyText = (text, key) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey((k) => (k === key ? null : k)), 1600);
+    });
   };
 
-  const verdictColors = {
-    success: { bg: 'rgba(34,139,34,0.08)', border: 'rgba(34,139,34,0.2)', text: '#2e7d32' },
-    warning: { bg: 'rgba(255,165,0,0.08)', border: 'rgba(255,165,0,0.2)', text: '#e65100' },
-    neutral: { bg: 'rgba(100,100,100,0.06)', border: 'rgba(100,100,100,0.15)', text: '#555' },
+  const downloadSpec = () => {
+    const blob = new Blob([JSON.stringify(MACHINE_SPEC, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'basednut-execution-spec.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
-  const difficultyColors = {
-    'Beginner': { bg: 'rgba(34,139,34,0.08)', border: 'rgba(34,139,34,0.2)', text: '#2e7d32' },
-    'Beginner (monitoring only)': { bg: 'rgba(34,139,34,0.08)', border: 'rgba(34,139,34,0.2)', text: '#2e7d32' },
-    'Intermediate': { bg: 'rgba(21,101,192,0.08)', border: 'rgba(21,101,192,0.2)', text: '#1565c0' },
-    'Advanced': { bg: 'rgba(230,81,0,0.08)', border: 'rgba(230,81,0,0.2)', text: '#e65100' },
-    'Expert': { bg: 'rgba(198,40,40,0.08)', border: 'rgba(198,40,40,0.2)', text: '#c62828' },
+  const trunc = (a) => a.slice(0, 6) + '…' + a.slice(-4);
+
+  const PILL_TONES = {
+    green: { background: 'rgba(34,139,34,0.12)', border: '1px solid rgba(34,139,34,0.4)', color: '#2e7d32' },
+    amber: { background: 'rgba(230,81,0,0.10)', border: '1px solid rgba(230,81,0,0.4)', color: '#e65100' },
+    blue: { background: 'rgba(21,101,192,0.10)', border: '1px solid rgba(21,101,192,0.4)', color: '#1565c0' },
+    gray: { background: 'rgba(90,90,90,0.10)', border: '1px solid rgba(90,90,90,0.35)', color: '#555' },
   };
 
-  const severityStyles = {
-    high: { border: '1px solid rgba(139,90,43,0.3)', bg: 'rgba(255,244,224,0.75)' },
-    medium: { border: '1px solid rgba(139,90,43,0.15)', bg: 'rgba(255,252,245,0.85)' },
-    info: { border: '1px solid rgba(139,90,43,0.1)', bg: 'rgba(255,252,245,0.7)' },
+  const TAG_TONES = {
+    CORE: { background: 'rgba(139,90,43,0.12)', color: '#6B3D20' },
+    QUOTE: { background: 'rgba(90,90,90,0.08)', color: 'rgba(60,60,60,0.6)' },
+    PRIMARY: { background: 'rgba(34,139,34,0.10)', color: '#2e7d32' },
+    SECONDARY: { background: 'rgba(90,90,90,0.08)', color: 'rgba(60,60,60,0.6)' },
   };
+
+  const Badge = ({ children, tone }) => (
+    <Box component="span" sx={{ px: 0.7, py: 0.14, borderRadius: 1, fontSize: '0.62rem', fontWeight: 700, fontFamily: 'monospace', letterSpacing: '0.03em', whiteSpace: 'nowrap', ...(tone || TAG_TONES.QUOTE) }}>{children}</Box>
+  );
+
+  const Pill = ({ label, tone }) => (
+    <Box component="span" sx={{ px: 1.2, py: 0.24, borderRadius: 999, fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.05em', display: 'inline-block', ...PILL_TONES[tone] }}>{label}</Box>
+  );
+
+  const CopyBtn = ({ text, k, small }) => (
+    <Box
+      component="span"
+      onClick={(e) => { e.stopPropagation(); copyText(text, k); }}
+      sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, cursor: 'pointer', px: 0.5, py: 0.1, borderRadius: 1, background: 'rgba(139,90,43,0.06)', '&:hover': { background: 'rgba(139,90,43,0.14)' } }}
+      title="Copy full address"
+    >
+      <ContentCopy sx={{ fontSize: small ? '0.72rem' : '0.8rem', color: '#8B5A2B' }} />
+      {copiedKey === k && <Typography component="span" sx={{ fontSize: '0.6rem', fontWeight: 700, color: '#2e7d32' }}>copied</Typography>}
+    </Box>
+  );
 
   const SectionTitle = ({ icon, children }) => (
-    <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#4A2F1A', mb: 0.5, mt: 1 }}>
+    <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: '#4A2F1A', mb: 0.5, mt: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
       {icon} {children}
     </Typography>
   );
 
   const SectionDesc = ({ children }) => (
-    <Typography sx={{ fontSize: '0.85rem', color: 'rgba(40,40,60,0.65)', mb: 2 }}>
+    <Typography sx={{ fontSize: '0.85rem', color: 'rgba(40,40,60,0.65)', mb: 2 }}>{children}</Typography>
+  );
+
+  const GroupLabel = ({ children }) => (
+    <Typography component="h3" sx={{ fontSize: '0.92rem', fontWeight: 700, color: '#6B3D20', mb: 1.25, borderBottom: '2px solid rgba(139,90,43,0.15)', pb: 0.5 }}>
       {children}
     </Typography>
   );
 
-  const GroupLabel = ({ children }) => (
-    <Typography sx={{ fontSize: '0.9rem', fontWeight: 700, color: '#6B3D20', mb: 1.5, borderBottom: '2px solid rgba(139,90,43,0.15)', pb: 0.5 }}>
-      {children}
-    </Typography>
+  const Card = ({ children, sx }) => (
+    <Box sx={{ p: 1.5, borderRadius: 2, height: '100%', border: '1px solid rgba(139,90,43,0.15)', background: 'rgba(255,252,245,0.85)', ...sx }}>{children}</Box>
   );
 
   return (
     <Layout>
       <Head>
         <title>Arb Bot Builder | BASED NUT</title>
-        <meta name="description" content="On-chain reference for the BASED NUT ecosystem on Base: verified token and pool addresses, read patterns, strategy catalog, and a machine-readable spec for trading and monitoring agents." />
+        <meta name="description" content="BASED NUT agent execution reference — verified token and pool registry, read patterns, market mechanics, strategy catalog, and machine-readable spec for trading and monitoring agents on Base." />
       </Head>
 
       <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto', overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-        {/* ══ HEADER ══ */}
+        {/* ══ HEADER — H1 + subtitle + chips + copy spec ══ */}
         <Box sx={{ mb: 2, p: { xs: 2, md: 3 }, borderRadius: 3, background: 'linear-gradient(135deg, #4A2F1A 0%, #6B3D20 50%, #8B5A2B 100%)', color: '#FAF3E6' }}>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 0.5 }}>⚔️ Arb Bot Builder</Typography>
-          <Typography sx={{ opacity: 0.85, fontSize: '0.9rem', mb: 1 }}>
-            On-chain reference for agents and developers working with BASED NUT on Base — verified addresses, read patterns, strategy catalog, and one machine-readable spec. Addresses are snapshot-verified; re-verify live state before executing.
-          </Typography>
-          <Box sx={{ mt: 1, p: 1.5, borderRadius: 2, background: 'rgba(255,252,245,0.12)', border: '1px solid rgba(255,252,245,0.2)' }}>
-            <Typography sx={{ fontSize: '0.78rem', color: 'rgba(250,243,230,0.9)', lineHeight: 1.5 }}>
-              🧭 Model = facts that change how you price · 🥜 Tokens + 💧 Pools = the verified registry · 🏭 Infra = vaults, factories, NFTs · 🔧 Reads = selectors + Python · 🏭 Mint Club = curve mechanics · ⚔️ Strategies = the full catalog with honest verdicts · 🏠 Venues = where everything trades · ⚙️ Spec = one JSON · 🚀 Start = build order.
-            </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+            <Box>
+              <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', mb: 0.25 }}>Arb Bot Builder</Typography>
+              <Typography sx={{ opacity: 0.85, fontSize: '0.92rem', fontWeight: 600, mb: 1 }}>BASED NUT Agent Execution Reference</Typography>
+              <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                {['Base', 'Chain 8453', 'Snapshot 2026-09-07'].map((c) => (
+                  <Box key={c} sx={{ px: 0.9, py: 0.16, borderRadius: 999, background: 'rgba(255,252,245,0.14)', border: '1px solid rgba(255,252,245,0.22)', fontSize: '0.68rem', fontWeight: 700, fontFamily: 'monospace' }}>{c}</Box>
+                ))}
+              </Box>
+            </Box>
+            <Box
+              onClick={() => copyText(JSON.stringify(MACHINE_SPEC, null, 2), 'spec')}
+              sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.5, px: 1.25, py: 0.6, borderRadius: 1.5, background: 'rgba(255,252,245,0.14)', border: '1px solid rgba(255,252,245,0.25)', '&:hover': { background: 'rgba(255,252,245,0.22)' } }}
+            >
+              <ContentCopy sx={{ fontSize: '0.95rem' }} />
+              <Typography sx={{ fontSize: '0.78rem', fontWeight: 700 }}>{copiedKey === 'spec' ? 'Copied!' : 'Copy Spec'}</Typography>
+            </Box>
           </Box>
         </Box>
 
-        {/* ══ NOTE ══ */}
-        <Box sx={{ mb: 3, p: { xs: 1.5, md: 2 }, borderRadius: 2, background: 'rgba(255,252,245,0.9)', border: '1px solid rgba(139,90,43,0.15)' }}>
-          <Typography sx={{ fontSize: '0.8rem', color: 'rgba(74,47,26,0.75)', lineHeight: 1.6 }}>
-            BASED NUT is an experimental memefi project. This page is a technical reference — not financial advice. Standard DeFi execution risks apply: verify live contract state on Basescan before acting, and treat all on-chain parameters (fees, taxes, pool configs) as changeable state to be read, not assumptions to be cached.
+        {/* ══ COMPACT DISCLAIMER ══ */}
+        <Box sx={{ mb: 3, p: 1.25, borderRadius: 2, background: 'rgba(255,244,224,0.7)', border: '1px solid rgba(230,168,40,0.35)', borderLeft: '4px solid rgba(230,168,40,0.7)' }}>
+          <Typography sx={{ fontSize: '0.78rem', color: 'rgba(90,60,10,0.85)', lineHeight: 1.55 }}>
+            <strong>Experimental memefi — technical reference, not financial advice.</strong> Verify live contract state on Basescan before acting; treat all on-chain parameters (fees, taxes, pool configs) as changeable state to be read, not cached assumptions.
           </Typography>
         </Box>
 
@@ -1087,10 +1148,10 @@ export default function ArbBotPage() {
           {navItems.map((item) => (
             <Box
               key={item.id}
-              onClick={() => scrollTo(item.id)}
+              onClick={() => scrollTo('#' + item.id)}
               sx={{
-                px: 1.5, py: 0.5, borderRadius: 999, flexShrink: 0,
-                fontSize: '0.82rem', fontWeight: 700, whiteSpace: 'nowrap', cursor: 'pointer',
+                px: 1.4, py: 0.45, borderRadius: 999, flexShrink: 0,
+                fontSize: '0.8rem', fontWeight: 700, whiteSpace: 'nowrap', cursor: 'pointer',
                 color: activeSection === item.id ? '#fff' : '#5D4037',
                 background: activeSection === item.id ? 'linear-gradient(135deg, #8B4513, #A0522D)' : 'transparent',
                 border: '1px solid',
@@ -1105,128 +1166,191 @@ export default function ArbBotPage() {
         {/* ══ MODEL ══ */}
         <Box id="model" sx={{ mb: 4, scrollMarginTop: 60 }}>
           <SectionTitle icon="🧭">Ecosystem Model</SectionTitle>
-          <SectionDesc>The structural facts that change how an agent prices these markets. Everything else on this page assumes these.</SectionDesc>
+          <SectionDesc>Eight critical invariants. Everything else on this page assumes these — strategies reference them instead of repeating them.</SectionDesc>
           <Grid container spacing={1.5}>
-            {MODEL_NOTES.map((n, i) => (
-              <Grid key={i} size={{ xs: 12, md: 6 }}>
-                <Box sx={{ p: 1.5, borderRadius: 2, height: '100%', ...(severityStyles[n.severity] || severityStyles.info) }}>
-                  <Typography sx={{ fontSize: '0.8rem', color: 'rgba(40,40,60,0.85)', lineHeight: 1.6 }}>
-                    <strong>{n.severity === 'high' ? '⚠️ ' : n.severity === 'medium' ? '· ' : 'ℹ️ '}</strong>{n.note}
-                  </Typography>
-                </Box>
+            {MODEL_NOTES.map((n) => (
+              <Grid key={n.id} size={{ xs: 12, md: 6 }}>
+                <Card sx={{ ...(n.severity === 'high'
+                  ? { border: '1px solid rgba(139,90,43,0.3)', background: 'rgba(255,244,224,0.75)' }
+                  : { border: '1px solid rgba(139,90,43,0.12)', background: 'rgba(255,252,245,0.7)' }) }}>
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, mb: 0.25 }}>
+                    <Badge tone={{ background: 'rgba(139,90,43,0.14)', color: '#6B3D20' }}>{n.id}</Badge>
+                    {n.severity === 'high' && <Badge tone={TAG_TONES.SECONDARY}>VERIFY ALWAYS</Badge>}
+                  </Box>
+                  <Typography sx={{ fontSize: '0.8rem', color: 'rgba(40,40,60,0.85)', lineHeight: 1.6 }}>{n.note}</Typography>
+                </Card>
               </Grid>
             ))}
           </Grid>
         </Box>
 
-        {/* ══ TOKENS ══ */}
-        <Box id="tokens" sx={{ mb: 4, scrollMarginTop: 60 }}>
-          <SectionTitle icon="🥜">Token Registry</SectionTitle>
-          <SectionDesc>All ecosystem tokens and reserve assets. Addresses snapshot-verified on Base. Supplies shown at snapshot; live metrics on each token page.</SectionDesc>
+        {/* ══ START HERE ══ */}
+        <Box id="start" sx={{ mb: 4, scrollMarginTop: 60 }}>
+          <SectionTitle icon="🚀">Start Here — Minimal Scanner Build Path</SectionTitle>
+          <SectionDesc>The shortest path to a working arb scanner. Each step links to its detailed section below.</SectionDesc>
+          <Card sx={{ background: 'rgba(255,252,245,0.9)' }}>
+            <Grid container spacing={1}>
+              {QUICKSTART.map((q, i) => (
+                <Grid key={q.label} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'flex-start', p: 0.75, borderRadius: 1.5, background: 'rgba(2,6,23,0.03)', height: '100%' }}>
+                    <Box sx={{ minWidth: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #8B4513, #A0522D)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.68rem', fontWeight: 700, flexShrink: 0 }}>{i + 1}</Box>
+                    <Box>
+                      <Typography
+                        component="a"
+                        href={q.href}
+                        onClick={(e) => { e.preventDefault(); scrollTo(q.href); }}
+                        sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#8B5A2B', cursor: 'pointer', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                      >{q.label} →</Typography>
+                      <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.6)', lineHeight: 1.45 }}>{q.desc}</Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+          </Card>
+        </Box>
+
+        {/* ══ REGISTRY ══ */}
+        <Box id="registry" sx={{ mb: 4, scrollMarginTop: 60 }}>
+          <SectionTitle icon="🗂">Registry</SectionTitle>
+          <SectionDesc>Snapshot-verified on Base. Scan-level rows — expand any row for the full address and description, or copy the full address directly.</SectionDesc>
+
+          <GroupLabel>Tokens</GroupLabel>
           {TOKEN_GROUPS.map((g) => (
-            <Box key={g.group} sx={{ mb: 3 }}>
-              <GroupLabel>{g.group}</GroupLabel>
-              <Grid container spacing={1.5}>
-                {g.tokens.map((t) => (
-                  <Grid key={t.name} size={{ xs: 12, sm: 6, md: 4 }}>
-                    <Box sx={{
-                      p: 1.5, borderRadius: 2, height: '100%',
-                      border: '1px solid rgba(139,90,43,0.15)',
-                      background: 'rgba(255,252,245,0.85)',
-                      transition: 'all 0.2s ease',
-                      '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(90,60,30,0.1)' },
-                    }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5, flexWrap: 'wrap' }}>
-                        <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#4A2F1A' }}>{t.emoji} {t.name}</Typography>
-                        <Box sx={{ px: 0.75, py: 0.15, borderRadius: 1, background: 'rgba(139,90,43,0.1)', fontSize: '0.68rem', fontWeight: 700, color: '#6B3D20' }}>{t.decimals}d</Box>
-                        {t.href ? (
-                          <Link href={t.href} style={{ fontSize: '0.68rem', color: '#8B5A2B', fontWeight: 600, textDecoration: 'none' }}>Profile →</Link>
-                        ) : (
-                          <Box sx={{ px: 0.75, py: 0.15, borderRadius: 1, background: 'rgba(0,0,0,0.03)', fontSize: '0.68rem', fontWeight: 600, color: 'rgba(40,40,60,0.4)' }}>Quote</Box>
-                        )}
-                      </Box>
-                      <Box component="code" sx={{ display: 'block', fontSize: '0.7rem', color: 'rgba(40,40,60,0.6)', mb: 0.5, fontFamily: 'monospace', wordBreak: 'break-all' }}>{t.address}</Box>
-                      <Typography sx={{ fontSize: '0.68rem', color: 'rgba(40,40,60,0.45)', mb: 0.5 }}>Supply: {t.supply}</Typography>
-                      <Typography sx={{ fontSize: '0.76rem', color: 'rgba(40,40,60,0.7)', lineHeight: 1.5 }}>{t.role}</Typography>
-                    </Box>
-                  </Grid>
-                ))}
+            <Box key={g.group} sx={{ mb: 2 }}>
+              <Typography component="h4" sx={{ fontSize: '0.8rem', fontWeight: 700, color: 'rgba(74,47,26,0.75)', mb: 1, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{g.group}</Typography>
+              <Grid container spacing={1.25}>
+                {g.tokens.map((t) => {
+                  const k = 'tok-' + t.name;
+                  return (
+                    <Grid key={k} size={{ xs: 12, sm: 6, md: 4 }}>
+                      <Card>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap', mb: 0.4 }}>
+                          <Typography sx={{ fontSize: '0.92rem', fontWeight: 700, color: '#4A2F1A' }}>{t.name}</Typography>
+                          <Badge>{t.decimals}d</Badge>
+                          <Badge tone={TAG_TONES.CORE}>{t.tag}</Badge>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.4 }}>
+                          <Box component="code" sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.65)', fontFamily: 'monospace' }} title={t.address}>{trunc(t.address)}</Box>
+                          <CopyBtn text={t.address} k={k} small />
+                          {t.href && <Link href={t.href} style={{ fontSize: '0.68rem', color: '#8B5A2B', fontWeight: 600, textDecoration: 'none' }}>Profile →</Link>}
+                        </Box>
+                        <Typography sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.5)', mb: 0.25 }}>Supply: {t.supply}</Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: 'rgba(40,40,60,0.72)', lineHeight: 1.45 }}>{t.roleShort}</Typography>
+                        <Collapse in={expandedReg === k} timeout="auto" unmountOnExit>
+                          <Box sx={{ mt: 0.75, pt: 0.75, borderTop: '1px dashed rgba(139,90,43,0.2)' }}>
+                            <Box component="code" sx={{ display: 'block', fontSize: '0.68rem', color: 'rgba(40,40,60,0.6)', fontFamily: 'monospace', wordBreak: 'break-all', mb: 0.5 }}>{t.address}</Box>
+                            <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.7)', lineHeight: 1.5 }}>{t.role}</Typography>
+                          </Box>
+                        </Collapse>
+                        <Box
+                          component="span"
+                          onClick={() => setExpandedReg(expandedReg === k ? null : k)}
+                          sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, cursor: 'pointer', mt: 0.4, fontSize: '0.68rem', fontWeight: 700, color: '#8B5A2B' }}
+                        >
+                          {expandedReg === k ? <ExpandLess sx={{ fontSize: '0.9rem' }} /> : <ExpandMore sx={{ fontSize: '0.9rem' }} />}
+                          {expandedReg === k ? 'less' : 'detail'}
+                        </Box>
+                      </Card>
+                    </Grid>
+                  );
+                })}
               </Grid>
             </Box>
           ))}
-        </Box>
 
-        {/* ══ POOLS ══ */}
-        <Box id="pools" sx={{ mb: 4, scrollMarginTop: 60 }}>
-          <SectionTitle icon="💧">Pool Registry</SectionTitle>
-          <SectionDesc>Every venue, grouped by role. token0/token1 orderings are as listed — verify on-chain before dividing reserves.</SectionDesc>
+          <GroupLabel>Pools</GroupLabel>
           {POOL_GROUPS.map((g) => (
-            <Box key={g.group} sx={{ mb: 3 }}>
-              <GroupLabel>{g.group}</GroupLabel>
-              <Grid container spacing={1.5}>
-                {g.pools.map((p) => (
-                  <Grid key={p.address} size={{ xs: 12, sm: 6, md: 4 }}>
-                    <Box sx={{
-                      p: 1.5, borderRadius: 2, height: '100%',
-                      border: '1px solid rgba(139,90,43,0.15)',
-                      background: 'rgba(255,252,245,0.85)',
-                      transition: 'all 0.2s ease',
-                      '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(90,60,30,0.1)' },
-                    }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5, flexWrap: 'wrap' }}>
-                        <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#4A2F1A' }}>{p.name}</Typography>
-                        <Box sx={{ px: 0.75, py: 0.15, borderRadius: 1, background: 'rgba(139,90,43,0.1)', fontSize: '0.68rem', fontWeight: 700, color: '#6B3D20' }}>{p.platform}</Box>
-                      </Box>
-                      <Typography sx={{ fontSize: '0.72rem', color: '#8B6914', fontStyle: 'italic', mb: 0.5 }}>“{p.flavor}”</Typography>
-                      <Box component="code" sx={{ display: 'block', fontSize: '0.7rem', color: 'rgba(40,40,60,0.6)', mb: 0.5, fontFamily: 'monospace', wordBreak: 'break-all' }}>{p.address}</Box>
-                      <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(40,40,60,0.55)', mb: 0.5 }}>pair: {p.pair}</Typography>
-                      <Typography sx={{ fontSize: '0.76rem', color: 'rgba(40,40,60,0.7)', lineHeight: 1.5 }}>{p.notes}</Typography>
-                    </Box>
-                  </Grid>
-                ))}
+            <Box key={g.group} sx={{ mb: 2 }}>
+              <Typography component="h4" sx={{ fontSize: '0.8rem', fontWeight: 700, color: 'rgba(74,47,26,0.75)', mb: 1, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{g.group}</Typography>
+              <Grid container spacing={1.25}>
+                {g.pools.map((p) => {
+                  const k = 'pool-' + p.address;
+                  return (
+                    <Grid key={k} size={{ xs: 12, sm: 6 }}>
+                      <Card>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap', mb: 0.4 }}>
+                          <Typography sx={{ fontSize: '0.92rem', fontWeight: 700, color: '#4A2F1A' }}>{p.name}</Typography>
+                          <Badge tone={TAG_TONES.CORE}>{p.platform}</Badge>
+                          <Badge>{p.fee}</Badge>
+                          <Badge tone={TAG_TONES[p.badge] || TAG_TONES.SECONDARY}>{p.badge}</Badge>
+                        </Box>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#8B6914', fontStyle: 'italic', mb: 0.4 }}>“{p.flavor}”</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.4 }}>
+                          <Box component="code" sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.65)', fontFamily: 'monospace' }} title={p.address}>{trunc(p.address)}</Box>
+                          <CopyBtn text={p.address} k={k} small />
+                        </Box>
+                        <Typography sx={{ fontSize: '0.73rem', color: 'rgba(40,40,60,0.62)' }}>
+                          <strong>Order:</strong> {p.pair} · <strong style={{ color: '#1565c0' }}>{p.read}</strong>
+                        </Typography>
+                        <Collapse in={expandedReg === k} timeout="auto" unmountOnExit>
+                          <Box sx={{ mt: 0.75, pt: 0.75, borderTop: '1px dashed rgba(139,90,43,0.2)' }}>
+                            <Box component="code" sx={{ display: 'block', fontSize: '0.68rem', color: 'rgba(40,40,60,0.6)', fontFamily: 'monospace', wordBreak: 'break-all', mb: 0.5 }}>{p.address}</Box>
+                            <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.7)', lineHeight: 1.5 }}>{p.notes}</Typography>
+                          </Box>
+                        </Collapse>
+                        <Box
+                          component="span"
+                          onClick={() => setExpandedReg(expandedReg === k ? null : k)}
+                          sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, cursor: 'pointer', mt: 0.4, fontSize: '0.68rem', fontWeight: 700, color: '#8B5A2B' }}
+                        >
+                          {expandedReg === k ? <ExpandLess sx={{ fontSize: '0.9rem' }} /> : <ExpandMore sx={{ fontSize: '0.9rem' }} />}
+                          {expandedReg === k ? 'less' : 'detail'}
+                        </Box>
+                      </Card>
+                    </Grid>
+                  );
+                })}
               </Grid>
             </Box>
           ))}
+
+          <GroupLabel>Infrastructure & NFTs</GroupLabel>
+          <Grid container spacing={1.25} sx={{ mb: 1.5 }}>
+            {INFRA.map((v) => {
+              const k = 'inf-' + v.name;
+              return (
+                <Grid key={k} size={{ xs: 12, sm: 6 }}>
+                  <Card>
+                    <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#4A2F1A', mb: 0.3 }}>{v.name}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.4 }}>
+                      <Box component="code" sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.65)', fontFamily: 'monospace' }} title={v.address}>{trunc(v.address)}</Box>
+                      <CopyBtn text={v.address} k={k} small />
+                    </Box>
+                    <Typography sx={{ fontSize: '0.75rem', color: 'rgba(40,40,60,0.7)', lineHeight: 1.45 }}>{v.purpose}</Typography>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
+          <Grid container spacing={1.25}>
+            {NFTS.map((nft) => {
+              const k = 'nft-' + nft.name;
+              return (
+                <Grid key={k} size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Card>
+                    <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#4A2F1A' }}>{nft.name} — {nft.label}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, my: 0.3 }}>
+                      <Box component="code" sx={{ fontSize: '0.7rem', color: 'rgba(40,40,60,0.6)', fontFamily: 'monospace' }} title={nft.address}>{trunc(nft.address)}</Box>
+                      <CopyBtn text={nft.address} k={k} small />
+                    </Box>
+                    <Typography sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.68)' }}>Minted: {nft.supply}</Typography>
+                    {nft.sudoswap ? (
+                      <Typography sx={{ fontSize: '0.68rem', color: 'rgba(40,40,60,0.5)', fontFamily: 'monospace' }} title={nft.sudoswap}>Sudoswap: {trunc(nft.sudoswap)}</Typography>
+                    ) : (
+                      <Typography sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.45)' }}>No Sudoswap pool</Typography>
+                    )}
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
         </Box>
 
-        {/* ══ INFRA & NFT ══ */}
-        <Box id="infra" sx={{ mb: 4, scrollMarginTop: 60 }}>
-          <SectionTitle icon="🏭">Infrastructure & NFTs</SectionTitle>
-          <SectionDesc>Vaults, factories, and burn sinks that hold or route ecosystem assets — plus the NFT collections.</SectionDesc>
-          <Grid container spacing={1.5} sx={{ mb: 3 }}>
-            {INFRA.map((v) => (
-              <Grid key={v.address} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Box sx={{ p: 1.5, borderRadius: 2, height: '100%', border: '1px solid rgba(139,90,43,0.15)', background: 'rgba(255,252,245,0.85)' }}>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#4A2F1A', mb: 0.5 }}>{v.name}</Typography>
-                  <Box component="code" sx={{ display: 'block', fontSize: '0.7rem', color: 'rgba(40,40,60,0.6)', mb: 0.75, fontFamily: 'monospace', wordBreak: 'break-all' }}>{v.address}</Box>
-                  <Typography sx={{ fontSize: '0.76rem', color: 'rgba(40,40,60,0.7)', lineHeight: 1.5 }}>{v.purpose}</Typography>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-          <GroupLabel>🖼️ NFT Collections</GroupLabel>
-          <Grid container spacing={1.5}>
-            {NFTS.map((nft) => (
-              <Grid key={nft.name} size={{ xs: 12, sm: 6, md: 3 }}>
-                <Box sx={{ p: 1.5, borderRadius: 2, height: '100%', border: '1px solid rgba(139,90,43,0.15)', background: 'rgba(255,252,245,0.85)' }}>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#4A2F1A' }}>{nft.emoji} {nft.name} — {nft.label}</Typography>
-                  <Box component="code" sx={{ display: 'block', fontSize: '0.7rem', color: 'rgba(40,40,60,0.6)', my: 0.5, fontFamily: 'monospace', wordBreak: 'break-all' }}>{nft.address}</Box>
-                  <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.7)' }}>Minted: {nft.supply}</Typography>
-                  {nft.sudoswap ? (
-                    <Typography sx={{ fontSize: '0.7rem', color: 'rgba(40,40,60,0.55)', mt: 0.5, fontFamily: 'monospace', wordBreak: 'break-all' }}>Sudoswap: {nft.sudoswap}</Typography>
-                  ) : (
-                    <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.5)', mt: 0.5 }}>No Sudoswap pool</Typography>
-                  )}
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-
-        {/* ══ READS & CODE ══ */}
+        {/* ══ READS ══ */}
         <Box id="reads" sx={{ mb: 4, scrollMarginTop: 60 }}>
-          <SectionTitle icon="🔧">Read Reference</SectionTitle>
-          <SectionDesc>The pricing subset of the read ABI — enough to price every market on this page. Execution (approve, swap, join/exit) needs each contract's full ABI.</SectionDesc>
+          <SectionTitle icon="🔧">Reads — Selectors & RPC Patterns</SectionTitle>
+          <SectionDesc>The pricing subset of the read ABI, plus copy-pasteable Python. Rotate endpoints (mainnet.base.org, base.publicnode.com, 1rpc.io/base) with backoff — public RPCs rate-limit aggressively. Execution (approve, swap, join/exit) needs each contract's full ABI.</SectionDesc>
 
           <Box sx={{ mb: 3, overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.76rem' }}>
@@ -1251,48 +1375,50 @@ export default function ArbBotPage() {
             </table>
           </Box>
 
-          <GroupLabel>🐍 Copy-pasteable Python — no Web3 library required</GroupLabel>
+          <GroupLabel>Python — no Web3 library required</GroupLabel>
           <Grid container spacing={1.5}>
             {CODE_BLOCKS.map((block, i) => (
               <Grid key={block.title} size={{ xs: 12 }}>
-                <Box sx={{ p: 1.5, borderRadius: 2, border: '1px solid rgba(139,90,43,0.15)', background: 'rgba(255,252,245,0.85)' }}>
+                <Card>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => setExpandedCode(expandedCode === i ? null : i)}>
                     <Box sx={{ pr: 1 }}>
-                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#4A2F1A' }}>{block.title}</Typography>
-                      <Typography sx={{ fontSize: '0.76rem', color: 'rgba(40,40,60,0.6)' }}>{block.desc}</Typography>
+                      <Typography component="h4" sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#4A2F1A' }}>{block.title}</Typography>
+                      <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.6)' }}>{block.desc}</Typography>
                     </Box>
                     <IconButton size="small">{expandedCode === i ? <ExpandLess /> : <ExpandMore />}</IconButton>
                   </Box>
                   <Collapse in={expandedCode === i} timeout="auto" unmountOnExit>
-                    <Box component="pre" sx={{ mt: 1, p: 1.5, borderRadius: 1.5, background: 'rgba(2,6,23,0.92)', color: '#e2e8f0', fontSize: '0.7rem', lineHeight: 1.55, overflowX: 'auto', whiteSpace: 'pre' }}>
-                      {block.code}
+                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+                      <Box component="pre" sx={{ flex: 1, m: 0, p: 1.5, borderRadius: 1.5, background: 'rgba(2,6,23,0.92)', color: '#e2e8f0', fontSize: '0.7rem', lineHeight: 1.55, overflowX: 'auto', whiteSpace: 'pre' }}>{block.code}</Box>
+                      <CopyBtn text={block.code} k={'code-' + i} />
                     </Box>
                   </Collapse>
-                </Box>
+                </Card>
               </Grid>
             ))}
           </Grid>
         </Box>
 
-        {/* ══ MINT CLUB ══ */}
-        <Box id="mintclub" sx={{ mb: 4, scrollMarginTop: 60 }}>
-          <SectionTitle icon="🏭">Mint Club Bonding Curve Mechanics</SectionTitle>
-          <SectionDesc>Critical for understanding curve dynamics and why loop arbitrage is challenging but not impossible. SALT and NUTINO are Mint Club tokens backed by NUT.</SectionDesc>
-          <Grid container spacing={1.5}>
-            {MINT_CLUB_FACTS.map((f, i) => (
-              <Grid key={i} size={{ xs: 12, sm: 6 }}>
-                <Box sx={{ p: 1.5, borderRadius: 2, height: '100%', border: '1px solid rgba(139,90,43,0.15)', background: 'rgba(255,252,245,0.85)' }}>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#4A2F1A', mb: 0.25 }}>{f.label}</Typography>
-                  <Typography sx={{ fontSize: '0.78rem', color: 'rgba(40,40,60,0.7)', lineHeight: 1.45 }}>{f.value}</Typography>
-                </Box>
+        {/* ══ MECHANICS ══ */}
+        <Box id="mechanics" sx={{ mb: 4, scrollMarginTop: 60 }}>
+          <SectionTitle icon="⚙️">Market Mechanics</SectionTitle>
+          <SectionDesc>The three non-obvious pricing systems: Mint Club bonding curves, Balancer NAV baskets, and the wNUT wrapper invariant.</SectionDesc>
+
+          <GroupLabel>Mint Club Bonding Curves (SALT, NUTINO)</GroupLabel>
+          <Grid container spacing={1.25} sx={{ mb: 2 }}>
+            {MINT_CLUB_FACTS.map((f) => (
+              <Grid key={f.label} size={{ xs: 12, sm: 6 }}>
+                <Card>
+                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#4A2F1A', mb: 0.2 }}>{f.label}</Typography>
+                  <Typography sx={{ fontSize: '0.76rem', color: 'rgba(40,40,60,0.7)', lineHeight: 1.45 }}>{f.value}</Typography>
+                </Card>
               </Grid>
             ))}
           </Grid>
 
-          {/* pNUT Index explainer */}
-          <Box sx={{ mt: 3, p: 2, borderRadius: 2, background: 'rgba(255,252,245,0.85)', border: '1px solid rgba(139,90,43,0.15)' }}>
-            <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#4A2F1A', mb: 1 }}>🧺 pNUT Quad Index — NAV & Arbitrage</Typography>
-            <Box component="pre" sx={{ p: 1.5, borderRadius: 1.5, background: 'rgba(2,6,23,0.92)', color: '#e2e8f0', fontSize: '0.7rem', lineHeight: 1.5, overflowX: 'auto', whiteSpace: 'pre' }}>
+          <GroupLabel>pNUT Quad — NAV & Arbitrage</GroupLabel>
+          <Box sx={{ mb: 2, p: 2, borderRadius: 2, background: 'rgba(255,252,245,0.85)', border: '1px solid rgba(139,90,43,0.15)' }}>
+            <Box component="pre" sx={{ m: 0, p: 1.5, borderRadius: 1.5, background: 'rgba(2,6,23,0.92)', color: '#e2e8f0', fontSize: '0.7rem', lineHeight: 1.5, overflowX: 'auto', whiteSpace: 'pre' }}>
 {`pNUT address:  ${pNUT_POOL_ID.slice(0, 42)}
 Pool ID:        ${pNUT_POOL_ID}
 Balancer URL:   ${BALANCER_URL}
@@ -1314,108 +1440,111 @@ Volatility play:
               pNUT is NOT traded on standard DEXs. It is minted by depositing the basket into Balancer and redeemed by withdrawing. The "market price" is the BPT price on Balancer. NAV divergence {'>'} 2% indicates potential arbitrage. This is the most complex arb in the ecosystem — requires monitoring 4 component prices simultaneously.
             </Typography>
           </Box>
+
+          <GroupLabel>wNUT Wrapper Parity</GroupLabel>
+          <Card>
+            {WNUT_PARITY_FACTS.map((f) => (
+              <Typography key={f} sx={{ fontSize: '0.78rem', color: 'rgba(40,40,60,0.75)', lineHeight: 1.55, mb: 0.4, pl: 1.25, position: 'relative' }}>
+                <Box component="span" sx={{ position: 'absolute', left: 0, color: '#CD7F32', fontWeight: 700 }}>›</Box> {f}
+              </Typography>
+            ))}
+          </Card>
         </Box>
 
         {/* ══ STRATEGIES ══ */}
         <Box id="strategies" sx={{ mb: 4, scrollMarginTop: 60 }}>
-          <SectionTitle icon="⚔️">Strategy Catalog — Honest Assessments</SectionTitle>
-          <SectionDesc>
-            Each strategy is self-contained: what it is, how to execute, when to deploy, difficulty, frequency, capital, prerequisites, profit condition, risks, and an honest verdict. Verdicts are not upgraded — start with beginner-friendly loops (9, 1, 3) before attempting advanced (4, 6, 7, 8, 10).
-          </SectionDesc>
+          <SectionTitle icon="⚔️">Strategy Catalog</SectionTitle>
+          <SectionDesc>Fixed grammar per card: badges → verdict pill → Route / Trigger / Profit / Risks at scan level; full implementation behind the expand. Verdicts are honest, never upgraded. Start with BEGINNER cards (3, 1, 9) before ADVANCED/EXPERT.</SectionDesc>
           {STRATEGY_GROUPS.map((g) => (
-            <Box key={g.group} sx={{ mb: 3 }}>
+            <Box key={g.group} sx={{ mb: 2.5 }}>
               <GroupLabel>{g.group}</GroupLabel>
-              <Grid container spacing={2}>
-                {g.strategies.map((s) => {
-                  const vc = verdictColors[s.verdictColor] || verdictColors.neutral;
-                  const dc = difficultyColors[s.difficulty] || difficultyColors.Advanced;
-                  return (
-                    <Grid key={s.id} size={{ xs: 12, md: 6 }}>
-                      <Box sx={{
-                        p: 2, borderRadius: 3, height: '100%',
-                        background: 'rgba(255,252,245,0.9)',
-                        border: '1px solid rgba(139,90,43,0.15)',
-                        boxShadow: '0 2px 8px rgba(90,60,30,0.06)',
-                      }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                          <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#4A2F1A' }}>{s.emoji} {s.name}</Typography>
-                          <IconButton size="small" onClick={() => setExpandedStrategy(expandedStrategy === s.id ? null : s.id)}>
-                            {expandedStrategy === s.id ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
-                          </IconButton>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1, alignItems: 'center' }}>
-                          <Box sx={{ px: 0.75, py: 0.2, borderRadius: 999, fontSize: '0.65rem', fontWeight: 700, color: dc.text, background: dc.bg, border: `1px solid ${dc.border}` }}>{s.difficulty}</Box>
-                          {s.routeIds.map((r) => (
-                            <Box key={r} sx={{ px: 0.75, py: 0.15, borderRadius: 1, background: 'rgba(2,6,23,0.04)', fontSize: '0.68rem', fontFamily: 'monospace', color: 'rgba(40,40,60,0.7)' }}>{r}</Box>
-                          ))}
-                        </Box>
-                        <Box sx={{ p: 0.75, borderRadius: 1, background: vc.bg, border: `1px solid ${vc.border}`, mb: 1 }}>
-                          <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: vc.text }}>VERDICT: {s.verdict}</Typography>
-                        </Box>
-                        <Typography sx={{ fontSize: '0.78rem', color: 'rgba(40,40,60,0.75)', mb: 0.5 }}><strong>What:</strong> {s.whatIsIt}</Typography>
-                        <Typography sx={{ fontSize: '0.78rem', color: 'rgba(40,40,60,0.75)', mb: 0.5 }}><strong>Venues:</strong> {s.venues}</Typography>
-                        <Typography sx={{ fontSize: '0.78rem', color: 'rgba(40,40,60,0.75)', mb: 0.5 }}><strong>When:</strong> {s.whenToUse}</Typography>
-                        <Typography sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.55)', mb: 1 }}><strong>Freq:</strong> {s.frequency} · <strong>Capital:</strong> {s.capitalNeeded}</Typography>
-                        <Box sx={{ p: 0.75, borderRadius: 1, background: 'rgba(2,6,23,0.03)', mb: 1, overflowX: 'auto' }}>
-                          <code style={{ fontSize: '0.68rem', color: 'rgba(40,40,60,0.8)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{s.formula}</code>
-                        </Box>
-                        <Collapse in={expandedStrategy === s.id} timeout="auto" unmountOnExit>
-                          <Box sx={{ pt: 1, borderTop: '1px solid rgba(139,90,43,0.1)' }}>
-                            <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>How to Execute</Typography>
-                            <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.7)', mb: 1, lineHeight: 1.45 }}>{s.howToUse}</Typography>
-                            <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.5 }}>Steps</Typography>
-                            {s.steps.map((step, j) => (
-                              <Box key={j} sx={{ display: 'flex', gap: 0.5, mb: 0.25 }}>
-                                <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#CD7F32', minWidth: 16 }}>{j + 1}.</Typography>
-                                <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.75)', lineHeight: 1.35 }}>{step}</Typography>
-                              </Box>
-                            ))}
-                            <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mt: 1, mb: 0.25 }}>Profit Condition</Typography>
-                            <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.7)', mb: 1 }}>{s.profitCondition}</Typography>
-                            <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>Risks</Typography>
-                            <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.7)', mb: 1 }}>{s.risks}</Typography>
-                            <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>Prerequisites</Typography>
-                            <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.7)', mb: 1 }}>{s.prerequisites}</Typography>
-                            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                              {s.tokens.map((t) => (
-                                <Link key={t} href={`/token/${t.toLowerCase().replace(/[^a-z0-9]/g, '')}`} style={{ textDecoration: 'none' }}>
-                                  <Box sx={{ px: 0.75, py: 0.15, borderRadius: 1, fontSize: '0.68rem', fontWeight: 600, color: '#8B5A2B', cursor: 'pointer', background: 'rgba(139,90,43,0.06)', border: '1px solid rgba(139,90,43,0.1)', '&:hover': { background: 'rgba(139,90,43,0.12)' } }}>{t} →</Box>
-                                </Link>
-                              ))}
-                            </Box>
-                          </Box>
-                        </Collapse>
+              <Grid container spacing={1.5}>
+                {g.strategies.map((s) => (
+                  <Grid key={s.id} size={{ xs: 12, md: 6 }}>
+                    <Card sx={{ background: 'rgba(255,252,245,0.9)', boxShadow: '0 2px 8px rgba(90,60,30,0.06)' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 0.75 }}>
+                        <Typography component="h4" sx={{ fontSize: '0.98rem', fontWeight: 700, color: '#4A2F1A' }}>{s.name}</Typography>
+                        <IconButton size="small" onClick={() => setExpandedStrategy(expandedStrategy === s.id ? null : s.id)}>
+                          {expandedStrategy === s.id ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+                        </IconButton>
                       </Box>
-                    </Grid>
-                  );
-                })}
+                      <Box sx={{ display: 'flex', gap: 0.4, flexWrap: 'wrap', mb: 0.75, alignItems: 'center' }}>
+                        <Badge tone={TAG_TONES.CORE}>{s.difficulty}</Badge>
+                        <Badge>{s.freqShort}</Badge>
+                        <Badge>{s.capShort}</Badge>
+                      </Box>
+                      <Box sx={{ mb: 0.75 }}><Pill label={s.pill} tone={s.pillTone} /></Box>
+                      <Typography sx={{ fontSize: '0.76rem', color: 'rgba(40,40,60,0.75)', mb: 0.4 }}><strong>Route:</strong> {s.venues}</Typography>
+                      <Typography sx={{ fontSize: '0.76rem', color: 'rgba(40,40,60,0.75)', mb: 0.4 }}><strong>Trigger:</strong> {s.trigger}</Typography>
+                      <Box sx={{ p: 0.7, borderRadius: 1, background: 'rgba(2,6,23,0.04)', mb: 0.5, overflowX: 'auto' }}>
+                        <code style={{ fontSize: '0.68rem', color: 'rgba(40,40,60,0.8)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{s.formula}</code>
+                      </Box>
+                      <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.62)', mb: 0.25 }}><strong>Profit:</strong> {s.profitCondition}</Typography>
+                      <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.62)' }}><strong>Risks:</strong> {s.risks}</Typography>
+                      <Collapse in={expandedStrategy === s.id} timeout="auto" unmountOnExit>
+                        <Box sx={{ pt: 1, mt: 0.75, borderTop: '1px solid rgba(139,90,43,0.1)' }}>
+                          <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>Verdict</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.75)', mb: 0.75, lineHeight: 1.45 }}>{s.verdict}</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>What</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.72)', mb: 0.75, lineHeight: 1.45 }}>{s.whatIsIt}</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>How to Execute</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.72)', mb: 0.75, lineHeight: 1.45 }}>{s.howToUse}</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.5 }}>Steps</Typography>
+                          {s.steps.map((step, j) => (
+                            <Box key={j} sx={{ display: 'flex', gap: 0.5, mb: 0.25 }}>
+                              <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#CD7F32', minWidth: 16 }}>{j + 1}.</Typography>
+                              <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.75)', lineHeight: 1.35 }}>{step}</Typography>
+                            </Box>
+                          ))}
+                          <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mt: 1, mb: 0.25 }}>Frequency & Capital</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.65)', mb: 0.75, lineHeight: 1.45 }}>{s.frequency} · {s.capitalNeeded}</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>Prerequisites</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.65)', mb: 0.75, lineHeight: 1.45 }}>{s.prerequisites}</Typography>
+                          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 0.75 }}>
+                            {s.routeIds.map((r) => (
+                              <Badge key={r}>{r}</Badge>
+                            ))}
+                          </Box>
+                          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                            {s.tokens.map((t) => (
+                              <Link key={t} href={`/token/${t.toLowerCase().replace(/[^a-z0-9]/g, '')}`} style={{ textDecoration: 'none' }}>
+                                <Badge tone={TAG_TONES.CORE}>{t} →</Badge>
+                              </Link>
+                            ))}
+                          </Box>
+                        </Box>
+                      </Collapse>
+                    </Card>
+                  </Grid>
+                ))}
               </Grid>
             </Box>
           ))}
+        </Box>
 
-          {/* Bot commands */}
-          <GroupLabel>🤖 Bot Commands — Direct Wiring Reference</GroupLabel>
-          <Grid container spacing={2}>
+        {/* ══ COMMANDS ══ */}
+        <Box id="commands" sx={{ mb: 4, scrollMarginTop: 60 }}>
+          <SectionTitle icon="🤖">Bot Commands — Wiring Reference</SectionTitle>
+          <SectionDesc>Six commands for scanning and monitoring. Each card: trigger, args, scan types, implementation steps, key data, verdict.</SectionDesc>
+          <Grid container spacing={1.5}>
             {BOT_COMMANDS.map((cmd) => (
               <Grid key={cmd.trigger} size={{ xs: 12, md: 6 }}>
-                <Box sx={{ p: 2, borderRadius: 2, height: '100%', background: 'rgba(255,252,245,0.9)', border: '1px solid rgba(139,90,43,0.15)' }}>
+                <Card sx={{ background: 'rgba(255,252,245,0.9)' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Typography sx={{ fontSize: '1.1rem' }}>{cmd.emoji}</Typography>
                     <Box sx={{ flex: 1 }}>
-                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#4A2F1A' }}>{cmd.name}</Typography>
+                      <Typography component="h4" sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#4A2F1A' }}>{cmd.name}</Typography>
                       <Typography sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.5)' }}>{cmd.desc}</Typography>
                     </Box>
                   </Box>
                   <Box sx={{ p: 0.75, borderRadius: 1, background: 'rgba(2,6,23,0.04)', mb: 1 }}>
                     <code style={{ fontSize: '0.75rem', color: '#8B5A2B', fontWeight: 600 }}>{cmd.trigger} {cmd.args}</code>
                   </Box>
-                  <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#8B6914', mb: 0.5 }}>Scan Types</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
                     {cmd.scanTypes.map((st) => (
-                      <Box key={st} sx={{ px: 0.75, py: 0.25, borderRadius: 1, background: 'rgba(139,90,43,0.08)', fontSize: '0.68rem', color: 'rgba(40,40,60,0.65)' }}>{st}</Box>
+                      <Badge key={st} tone={{ background: 'rgba(21,101,192,0.08)', color: '#1565c0' }}>{st}</Badge>
                     ))}
                   </Box>
-                  <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#8B6914', mb: 0.5 }}>Implementation Steps</Typography>
+                  <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#8B6914', mb: 0.5 }}>Implementation</Typography>
                   <Box sx={{ mb: 1 }}>
                     {cmd.impl.map((step, i) => (
                       <Typography key={i} sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.65)', lineHeight: 1.5, pl: 1.5, position: 'relative' }}>
@@ -1427,20 +1556,22 @@ Volatility play:
                     <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>Key Data</Typography>
                     <Typography sx={{ fontSize: '0.7rem', color: 'rgba(40,40,60,0.6)', lineHeight: 1.45 }}>{cmd.keyData}</Typography>
                   </Box>
-                  <Box sx={{ p: 0.75, borderRadius: 1, background: 'rgba(34,139,34,0.05)' }}>
-                    <Typography sx={{ fontSize: '0.7rem', color: 'rgba(40,40,60,0.65)', lineHeight: 1.4 }}><strong style={{ color: '#8B5A2B' }}>Verdict:</strong> {cmd.verdict}</Typography>
+                  <Box sx={{ p: 0.75, borderRadius: 1, background: 'rgba(139,90,43,0.05)', borderLeft: '3px solid rgba(139,90,43,0.4)' }}>
+                    <Typography sx={{ fontSize: '0.7rem', color: 'rgba(40,40,60,0.68)', lineHeight: 1.4 }}><strong style={{ color: '#8B5A2B' }}>Verdict:</strong> {cmd.verdict}</Typography>
                   </Box>
-                </Box>
+                </Card>
               </Grid>
             ))}
           </Grid>
         </Box>
 
-        {/* ══ VENUES ══ */}
+        {/* ══ VENUES & DATA ══ */}
         <Box id="venues" sx={{ mb: 4, scrollMarginTop: 60 }}>
-          <SectionTitle icon="🏠">Venue Intel & API Endpoints</SectionTitle>
-          <SectionDesc>Where each token trades and which API reads it. Includes the data-source hierarchy for price polling.</SectionDesc>
-          <Box sx={{ mb: 3, borderRadius: 2, overflow: 'hidden', border: '1px solid rgba(139,90,43,0.12)' }}>
+          <SectionTitle icon="🏠">Venues & Data-Source Matrix</SectionTitle>
+          <SectionDesc>Where each token trades, which API reads it, and the priority hierarchy for price polling.</SectionDesc>
+
+          <GroupLabel>Venues</GroupLabel>
+          <Box sx={{ mb: 2.5, borderRadius: 2, overflow: 'hidden', border: '1px solid rgba(139,90,43,0.12)' }}>
             {VENUES.map((v, i) => (
               <Box key={v.name} sx={{
                 p: 1.25, display: 'flex', alignItems: 'flex-start', gap: 1.5,
@@ -1454,15 +1585,15 @@ Volatility play:
                 <Box sx={{ flex: 1 }}>
                   <Typography sx={{ fontSize: '0.75rem', color: 'rgba(40,40,60,0.65)', mb: 0.25 }}><strong>Pairs:</strong> {v.pairs}</Typography>
                   <Typography sx={{ fontSize: '0.75rem', color: 'rgba(40,40,60,0.55)', mb: 0.25 }}>{v.notes}</Typography>
-                  <Box sx={{ p: 0.5, borderRadius: 0.5, background: 'rgba(2,6,23,0.03)', display: 'inline-block' }}>
-                    <code style={{ fontSize: '0.68rem', color: 'rgba(40,40,60,0.6)' }}>{v.api}</code>
+                  <Box sx={{ p: 0.5, borderRadius: 0.5, background: 'rgba(21,101,192,0.05)', display: 'inline-block' }}>
+                    <code style={{ fontSize: '0.68rem', color: '#1565c0' }}>{v.api}</code>
                   </Box>
                 </Box>
               </Box>
             ))}
           </Box>
 
-          <GroupLabel>📊 Data Source Hierarchy</GroupLabel>
+          <GroupLabel>Data-Source Hierarchy</GroupLabel>
           <Box sx={{ borderRadius: 2, overflow: 'hidden', border: '1px solid rgba(139,90,43,0.12)' }}>
             {DATA_SOURCES.map((d, i) => (
               <Box key={d.source} sx={{
@@ -1481,41 +1612,43 @@ Volatility play:
           </Box>
         </Box>
 
-        {/* ══ SPEC ══ */}
+        {/* ══ SPEC — collapsed by default ══ */}
         <Box id="spec" sx={{ mb: 4, scrollMarginTop: 60 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#4A2F1A' }}>⚙️ Machine-Readable Spec</Typography>
-            <Box onClick={copySpec} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.5, px: 1, py: 0.5, borderRadius: 1, background: 'rgba(139,90,43,0.08)', border: '1px solid rgba(139,90,43,0.15)', '&:hover': { background: 'rgba(139,90,43,0.12)' } }}>
-              <ContentCopy sx={{ fontSize: '0.9rem', color: '#8B5A2B' }} />
-              <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: '#8B5A2B' }}>{specCopied ? 'Copied!' : 'Copy JSON'}</Typography>
+          <SectionTitle icon="📦">Machine-Readable Spec</SectionTitle>
+          <SectionDesc>One JSON with the full registry — copy it into your bot's context, view it inline, or download it.</SectionDesc>
+          <Card>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap', mb: specOpen ? 1.5 : 0 }}>
+              <Typography sx={{ fontSize: '0.8rem', color: 'rgba(40,40,60,0.7)', fontFamily: 'monospace' }}>{SPEC_SUMMARY}</Typography>
+              <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
+                <Box onClick={() => copyText(JSON.stringify(MACHINE_SPEC, null, 2), 'spec2')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.4, px: 1.1, py: 0.45, borderRadius: 1, background: 'rgba(139,90,43,0.08)', border: '1px solid rgba(139,90,43,0.15)', '&:hover': { background: 'rgba(139,90,43,0.12)' } }}>
+                  <ContentCopy sx={{ fontSize: '0.85rem', color: '#8B5A2B' }} />
+                  <Typography sx={{ fontSize: '0.74rem', fontWeight: 600, color: '#8B5A2B' }}>{copiedKey === 'spec2' ? 'Copied!' : 'Copy JSON'}</Typography>
+                </Box>
+                <Box onClick={() => setSpecOpen(!specOpen)} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.4, px: 1.1, py: 0.45, borderRadius: 1, background: specOpen ? 'rgba(139,90,43,0.12)' : 'rgba(139,90,43,0.08)', border: '1px solid rgba(139,90,43,0.15)', '&:hover': { background: 'rgba(139,90,43,0.12)' } }}>
+                  {specOpen ? <ExpandLess sx={{ fontSize: '0.85rem', color: '#8B5A2B' }} /> : <ExpandMore sx={{ fontSize: '0.85rem', color: '#8B5A2B' }} />}
+                  <Typography sx={{ fontSize: '0.74rem', fontWeight: 600, color: '#8B5A2B' }}>{specOpen ? 'Hide JSON' : 'View JSON'}</Typography>
+                </Box>
+                <Box onClick={downloadSpec} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.4, px: 1.1, py: 0.45, borderRadius: 1, background: 'rgba(21,101,192,0.08)', border: '1px solid rgba(21,101,192,0.2)', '&:hover': { background: 'rgba(21,101,192,0.12)' } }}>
+                  <Typography sx={{ fontSize: '0.74rem', fontWeight: 600, color: '#1565c0' }}>Download</Typography>
+                </Box>
+              </Box>
             </Box>
-          </Box>
-          <Typography sx={{ fontSize: '0.85rem', color: 'rgba(40,40,60,0.65)', mb: 2 }}>
-            One JSON with the full registry — tokens, pools, infrastructure, selectors, routes, APIs. Copy it into your bot's context.
-          </Typography>
-          <Box sx={{ p: 1.5, borderRadius: 2, background: 'rgba(2,6,23,0.03)', border: '1px solid rgba(2,6,23,0.08)', overflowX: 'auto' }}>
-            <Box component="pre" sx={{ fontSize: '0.7rem', lineHeight: 1.5, m: 0, color: 'rgba(40,40,60,0.8)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-              {JSON.stringify(MACHINE_SPEC, null, 2)}
-            </Box>
-          </Box>
+            <Collapse in={specOpen} timeout="auto" unmountOnExit>
+              <Box sx={{ p: 1.5, borderRadius: 2, background: 'rgba(2,6,23,0.03)', border: '1px solid rgba(2,6,23,0.08)', overflowX: 'auto' }}>
+                <Box component="pre" sx={{ fontSize: '0.7rem', lineHeight: 1.5, m: 0, color: 'rgba(40,40,60,0.8)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                  {JSON.stringify(MACHINE_SPEC, null, 2)}
+                </Box>
+              </Box>
+            </Collapse>
+          </Card>
         </Box>
 
-        {/* ══ START ══ */}
-        <Box id="start" sx={{ mb: 4, scrollMarginTop: 60 }}>
-          <SectionTitle icon="🚀">Getting Started</SectionTitle>
-          <Box sx={{ p: 2, borderRadius: 2, background: 'rgba(255,252,245,0.9)', border: '1px solid rgba(139,90,43,0.12)' }}>
-            {[
-              { title: 'Install dependencies', code: 'pip install requests' },
-              { title: 'Connect to Base RPC', code: 'https://mainnet.base.org (chainId: 8453)' },
-              { title: 'Copy the Base RPC Helper from Reads & Code above', code: null },
-              { title: 'Fetch NUT price from UniV3 slot0() — check token0 for inversion', code: null },
-              { title: 'Fetch all pool reserves via getReserves() — verify token0/token1 ordering', code: null },
-              { title: 'Normalize all prices to USD using CoinGecko (ETH, BTC, cbETH only)', code: null },
-              { title: 'Calculate spreads across venues — flag when spread > 0.5%', code: null },
-              { title: 'For Mint Club prices, use browser automation or the V2 SDK — RPC is unreliable', code: 'npm i mint.club-v2-sdk' },
-              { title: 'For pNUT NAV, use getPoolTokens(poolId) or balanceOf(BALANCER_VAULT) — NOT balanceOf(pNUT) which is not the basket', code: null },
-              { title: 'Execute when spread > 2 × gas + slippage estimate (~$0.20-0.40 total on Base)', code: null },
-            ].map((step, i) => (
+        {/* ══ CHECKLIST ══ */}
+        <Box id="checklist" sx={{ mb: 4, scrollMarginTop: 60 }}>
+          <SectionTitle icon="✅">Full Implementation Checklist</SectionTitle>
+          <SectionDesc>The complete ten-step build path — the expanded version of Start Here.</SectionDesc>
+          <Card sx={{ background: 'rgba(255,252,245,0.9)' }}>
+            {CHECKLIST.map((step, i) => (
               <Box key={i} sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
                 <Box sx={{ minWidth: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #8B4513, #A0522D)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700, flexShrink: 0 }}>{i + 1}</Box>
                 <Box>
@@ -1537,7 +1670,7 @@ Volatility play:
                 {' · '}DexScreener: <a href="https://api.dexscreener.com/latest/dex/tokens/0xb8de15fb529d98c93c749de63c749d48d25a30df" target="_blank" rel="noopener noreferrer" style={{ color: '#8B5A2B', fontWeight: 600 }}>NUT pairs</a>
               </Typography>
             </Box>
-          </Box>
+          </Card>
         </Box>
 
       </Box>
