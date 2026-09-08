@@ -12,7 +12,7 @@ import { fetchTokens } from '../../utils/fetchTokens';
 const POOL_DESCRIPTIONS = {
   'nut-weth-uniswap-v3': 'Primary concentrated liquidity venue for NUT. Uniswap V3 enables capital-efficient positions with custom tick ranges. Deep liquidity for large swaps with minimal slippage.',
   'nut-weth-uniswap-v2': 'Legacy NUT/wETH pair on Uniswap V2. Simple x*y=k AMM. Full-range liquidity — easier to LP but less capital-efficient than V3.',
-  'snut-nut-aerodrome': 'Keeper-Arb Reactor pool. SNUT/NUT pair on Aerodrome. Arbitrageurs cycle between this pool and the SNUT/wETH pool to keep NUT price aligned across venues. Aerodrome emissions reward LPs.',
+  'snut-nut-aerodrome': 'SNUT/NUT pair on Aerodrome. Pairs the reward-position token directly against the root token — the primary SNUT↔NUT price venue. Arbitrageurs cycle between this pool and the SNUT/wETH pool to keep prices aligned across venues. Aerodrome emissions reward LPs.',
   'pnut-balancer': 'Balancer V2 4-asset index basket (25% cbETH, 25% cbBTC, 25% NUT, 25% SNUT). Mint/redeem BPT to enter/exit the basket. NAV drift from market price creates arbitrage opportunities.',
   'nut-aero-aerodrome': 'NUT/AERO pair on Aerodrome. Provides NUT exposure denominated in AERO. Aerodrome gauge emissions may incentivize liquidity.',
   'nut-cbbtc-aerodrome': 'NUT/cbBTC pair on Aerodrome. Bitcoin-denominated NUT liquidity. Connects the NUT ecosystem to Base\'s wrapped Bitcoin via cbBTC.',

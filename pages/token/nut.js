@@ -176,7 +176,7 @@ export default function NutPage() {
   const pools = [
     { name: 'NUT/wETH', platform: 'Uniswap V3', status: 'Concentrated', url: 'https://app.uniswap.org/explore/tokens/base/' + NUT_ADDR, dex: 'https://dexscreener.com/base/' + NUT_WETH_V3, flavor: 'Primary price discovery pool' },
     { name: 'NUT/wETH', platform: 'Uniswap V2', status: 'Volatile', url: 'https://app.uniswap.org/explore/tokens/base/' + NUT_ADDR, dex: 'https://dexscreener.com/base/' + NUT_WETH_V2, flavor: 'Legacy liquidity pool' },
-    { name: 'SNUT/NUT', platform: 'Aerodrome', status: 'Volatile', url: 'https://aerodrome.finance/pools?token1=' + NUT_ADDR, dex: 'https://dexscreener.com/base/' + SNUT_NUT_AERO, flavor: 'Reactor pool — keeps SNUT/NUT aligned' },
+    { name: 'SNUT/NUT', platform: 'Aerodrome', status: 'Volatile', url: 'https://aerodrome.finance/pools?token1=' + NUT_ADDR, dex: 'https://dexscreener.com/base/' + SNUT_NUT_AERO, flavor: 'SNUT↔NUT venue — keeps SNUT/NUT aligned' },
     { name: 'NUT/AERO', platform: 'Aerodrome', status: 'Volatile', url: 'https://aerodrome.finance/pools?token1=' + NUT_ADDR, dex: 'https://dexscreener.com/base/' + NUT_AERO_AERO, flavor: 'Aero-denominated route' },
     { name: 'NUT/cbBTC', platform: 'Aerodrome', status: 'Volatile', url: 'https://aerodrome.finance/pools?token1=' + NUT_ADDR, dex: 'https://dexscreener.com/base/' + NUT_CBTC_AERO, flavor: 'Bitcoin-denominated route' },
     { name: 'pNUT Basket', platform: 'Balancer V2', status: 'Index', url: BALANCER_JOIN, dex: 'https://dexscreener.com/base/' + BALANCER_POOL, flavor: '25% NUT + 25% SNUT + 25% cbETH + 25% cbBTC' },
@@ -196,7 +196,7 @@ export default function NutPage() {
     { route: 'NUT → AERO → wETH', desc: 'Multi-hop route through Aerodrome for another price reference.', url: 'https://dexscreener.com/base/' + NUT_AERO_AERO },
     { route: 'Bonding curve vs LP', desc: 'NUTINO/SALT curve price vs their LP market price. If curve is cheaper, mint and sell on LP.', url: 'https://mint.club/token/base/nutino' },
     { route: 'pNUT index vs constituents', desc: 'If pNUT trades below its components value, buy pNUT and unwrap.', url: BALANCER_JOIN },
-    { route: 'SNUT/NUT reactor', desc: 'The SNUT/NUT Aerodrome pool keeps SNUT and NUT prices aligned.', url: 'https://dexscreener.com/base/' + SNUT_NUT_AERO },
+    { route: 'SNUT/NUT alignment', desc: 'The SNUT/NUT Aerodrome pool keeps SNUT and NUT prices aligned.', url: 'https://dexscreener.com/base/' + SNUT_NUT_AERO },
   ];
 
   // Beyond-Advanced — canonical state machine vocabulary

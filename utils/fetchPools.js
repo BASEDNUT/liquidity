@@ -40,7 +40,7 @@ export function fetchPools() {
       tvl: null,
       flavor: "Cloud-Salted Breeze",
       platform: "Aerodrome", // Airplanes => "Cloud-Salted" theme
-      role: "Keeper-Arb Reactor",
+      role: "SNUT-NUT Venue",
       category: ["TKNs", "NUT", "SNUT"],
       url: "https://basescan.org/address/0x893faaa7baf7a8247fc7142afb28e13d51a5aae8",
       checkPoolUrl:

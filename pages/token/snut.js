@@ -147,9 +147,6 @@ export default function SnutPage() {
   const fees = d.fees || {};
   const totalFeePct = fees.totalFee != null ? bpsToPct(fees.totalFee) : '...';
 
-  // Reactor
-  const reactorExcess = d.reactorExcess || 0;
-  const reactorActive = d.reactorActive || false;
   const buybackFuel = d.buybackFuelEth || 0;
 
   // Market data
@@ -260,15 +257,6 @@ export default function SnutPage() {
                 <Typography sx={{ fontSize: '0.65rem', color: C.textFaint, textTransform: 'uppercase', fontWeight: 700 }}>Buyback Fuel</Typography>
                 <Typography sx={{ fontSize: { xs: '1.2rem', md: '1.5rem' }, fontWeight: 900, color: C.fireGlow }}>
                   {loading ? '...' : `${fmtNum(buybackFuel, 4)} ETH`}
-                </Typography>
-              </Box>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography sx={{ fontSize: '0.65rem', color: C.textFaint, textTransform: 'uppercase', fontWeight: 700 }}>Reactor</Typography>
-                <Typography sx={{
-                  fontSize: { xs: '1.2rem', md: '1.5rem' }, fontWeight: 900,
-                  color: reactorActive ? '#4CAF50' : C.textFaint,
-                }}>
-                  {loading ? '...' : reactorActive ? '⚡ ACTIVE' : '💤 IDLE'}
                 </Typography>
               </Box>
             </Box>
@@ -549,7 +537,7 @@ export default function SnutPage() {
         {/* ════ FOUR POOLS ════ */}
         <Section title="Four Pools, Four Roles" icon="🌊">
           <Typography sx={{ fontSize: '0.88rem', color: C.textDim, mb: 2 }}>
-            SNUT lives in multiple pools. Each has a different job — main liquidity, meta-market for LP rights, keeper-arb reactor, and multi-asset arbitrage reactor.
+            SNUT lives in multiple pools. Each has a different job — main liquidity, meta-market for LP rights, SNUT↔NUT venue, and multi-asset arbitrage reactor.
           </Typography>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
@@ -596,28 +584,27 @@ export default function SnutPage() {
               <AddrBox label="Pool" addr={META_POOL} />
             </Box>
 
-            {/* Pool 3: SNUT/NUT Reactor */}
+            {/* Pool 3: SNUT/NUT venue */}
             <Box sx={{
               p: 2, borderRadius: 3, cursor: 'pointer',
-              background: `linear-gradient(135deg, ${reactorActive ? 'rgba(76,175,80,0.1)' : 'rgba(255,107,53,0.06)'} 0%, rgba(42,26,15,0.6) 100%)`,
-              border: `1px solid ${reactorActive ? 'rgba(76,175,80,0.3)' : 'rgba(255,107,53,0.2)'}`,
+              background: 'linear-gradient(135deg, rgba(76,175,80,0.08) 0%, rgba(42,26,15,0.6) 100%)',
+              border: '1px solid rgba(76,175,80,0.2)',
               transition: 'all 0.2s ease', '&:hover': { transform: 'translateY(-2px)' },
             }} onClick={() => window.open(`https://basescan.org/address/${SNUT_NUT_POOL}`, '_blank')}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Typography sx={{ fontSize: '1.05rem', fontWeight: 700, color: reactorActive ? '#4CAF50' : C.fireGlow }}>SNUT/NUT</Typography>
+                <Typography sx={{ fontSize: '1.05rem', fontWeight: 700, color: '#4CAF50' }}>SNUT/NUT</Typography>
                 <Box sx={{
                   px: 1, py: 0.15, borderRadius: 999, fontSize: '0.62rem', fontWeight: 700,
-                  background: reactorActive ? 'rgba(76,175,80,0.15)' : 'rgba(255,107,53,0.15)',
-                  color: reactorActive ? '#4CAF50' : C.fireGlow,
-                }}>REACTOR</Box>
+                  background: 'rgba(76,175,80,0.15)',
+                  color: '#4CAF50',
+                }}>NUT VENUE</Box>
               </Box>
               <Typography sx={{ fontSize: '0.82rem', color: C.textDim, mb: 1, lineHeight: 1.4 }}>
-                Intentionally earns NUT rewards. Excess NUT creates arbitrage opportunities for keepers.
+                Pairs the reward-position token directly against the root token — the primary SNUT/NUT price venue.
               </Typography>
               <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 1 }}>
                 <Box><Typography sx={{ color: C.textFaint, fontSize: '0.68rem' }}>SNUT</Typography><Typography sx={{ color: C.nutLight, fontWeight: 600, fontSize: '0.82rem' }}>{loading ? '...' : fmtNum(d.snutNutPoolActualSnut)}</Typography></Box>
                 <Box><Typography sx={{ color: C.textFaint, fontSize: '0.68rem' }}>NUT</Typography><Typography sx={{ color: C.nutLight, fontWeight: 600, fontSize: '0.82rem' }}>{loading ? '...' : fmtNum(d.snutNutPoolActualNut, 4)}</Typography></Box>
-                <Box><Typography sx={{ color: C.textFaint, fontSize: '0.68rem' }}>Excess</Typography><Typography sx={{ color: reactorActive ? '#4CAF50' : C.textFaint, fontWeight: 600, fontSize: '0.82rem' }}>{loading ? '...' : fmtNum(reactorExcess, 6)}</Typography></Box>
               </Box>
               <AddrBox label="Pool" addr={SNUT_NUT_POOL} />
             </Box>
@@ -657,7 +644,7 @@ export default function SnutPage() {
               { num: '1', title: 'Reward-Position', icon: '🎁', desc: 'Hold SNUT, earn NUT. No locking, no escrow. Your wallet is your stake. The SNUT contract distributes NUT rewards to all holders proportional to their balance.', color: C.gold },
               { num: '2', title: 'Burn Layer', icon: '🔥', desc: 'Buybacks send SNUT to dead. Dead earns NUT. NUT sent to dead = NUT burned. Dead-held SNUT share grows over time, compounding the recursive burn.', color: C.fire },
               { num: '3', title: 'Liquidity-Rights', icon: '🌴', desc: 'SNUT/ETH LP = claim on pool assets. Meta-pool lets you trade that claim without exiting liquidity. LP token is a redeemable pro-rata claim on SNUT + ETH.', color: '#AB47BC' },
-              { num: '4', title: 'Reactor Layer', icon: '⚡', desc: 'Balancer = multi-asset arbitrage routing surface. SNUT/NUT = reward-fed keeper-arb reactor where NUT inflows create excess-balance games for keepers.', color: '#4CAF50' },
+              { num: '4', title: 'Reactor Layer', icon: '⚡', desc: 'Balancer = multi-asset arbitrage routing surface. SNUT/NUT = the direct SNUT↔NUT price venue.', color: '#4CAF50' },
             ].map((layer) => (
               <Box key={layer.num} sx={{
                 p: 2, borderRadius: 2,

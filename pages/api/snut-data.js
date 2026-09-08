@@ -1,5 +1,5 @@
 // API Route: /api/snut-data
-// Fetches deep SNUT ecosystem data: burn tracking, LP stats, reactor excess, buyback fuel
+// Fetches deep SNUT ecosystem data: burn tracking, LP stats, buyback fuel
 // Redis cache (5 min TTL) + stale fallback — never show null if we ever had data
 
 import { fetchSnutData } from '../../utils/snutDataSources';

@@ -1,5 +1,5 @@
 // SNUT On-Chain Data Fetcher
-// Fetches deep SNUT ecosystem data: burn tracking, LP stats, reactor excess, buyback fuel
+// Fetches deep SNUT ecosystem data: burn tracking, LP stats, buyback fuel
 // All data is live from Base RPC — no hard-coded numbers
 
 const RPC_URLS = [
@@ -136,7 +136,7 @@ export async function fetchSnutData() {
     
     await new Promise(r => setTimeout(r, 200));
     
-    // 7. SNUT/NUT pool reserves (reactor) — token ordering may vary
+    // 7. SNUT/NUT pool reserves — token ordering may vary
     const snutNutResHex = await rpcCall('eth_call', [{ to: SNUT_NUT_POOL, data: GET_RESERVES }, 'latest']);
     if (snutNutResHex && snutNutResHex.length >= 194) {
       const r0 = Number(hexToBigInt('0x' + snutNutResHex.slice(2, 66)));
@@ -146,7 +146,7 @@ export async function fetchSnutData() {
       data._snutNutR1 = r1;
     }
     
-    // 8. Actual NUT balance in SNUT/NUT pool (reactor excess detection)
+    // 8. Actual NUT balance in SNUT/NUT pool
     const poolNutHex = await rpcCall('eth_call', [{ to: NUT, data: balanceOfData(NUT, SNUT_NUT_POOL) }, 'latest']);
     const poolNutActual = Number(hexToBigInt(poolNutHex)) / NUT_DECIMALS;
     data.snutNutPoolActualNut = poolNutActual;
@@ -171,8 +171,7 @@ export async function fetchSnutData() {
     // For backward compat
     data.snutNutReserve0 = data.snutNutReserveSnut;
     data.snutNutReserve1 = data.snutNutReserveNut;
-    data.reactorExcess = resolvedNutReserve != null ? (poolNutActual - resolvedNutReserve) : 0;
-    data.reactorActive = data.reactorExcess > 0.000001;
+
     
     await new Promise(r => setTimeout(r, 200));
     

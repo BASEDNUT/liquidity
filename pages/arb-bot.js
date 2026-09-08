@@ -78,7 +78,8 @@ const POOL_GROUPS = [
   {
     group: 'SNUT Venues',
     pools: [
-      { name: 'SNUT/NUT', platform: 'Aerodrome', address: '0x893faaa7baf7a8247fc7142afb28e13d51a5aae8', type: 'V2', pair: 'SNUT/NUT', notes: 'Primary SNUT venue. Dividend-eligible pair — NUT rewards accrue here (see Keeper strategy).' },
+
+      { name: 'SNUT/NUT', platform: 'Aerodrome', address: '0x893faaa7baf7a8247fc7142afb28e13d51a5aae8', type: 'V2', pair: 'SNUT/NUT', notes: 'Primary SNUT venue. Pairs the reward-position token directly against the root token.' },
       { name: 'SNUT/WETH', platform: 'Uniswap V2', address: '0xB22895d2ee6e29395F30Ec47c8D9FE0d55355AE1', type: 'V2', pair: 'WETH/SNUT', notes: 'Secondary SNUT venue.' },
       { name: 'SNUT/ETH-LP', platform: 'Uniswap V2 (meta)', address: '0x82bbadb9d6b2c0a59ed01809e30323f89f6faa1c', type: 'V2', pair: 'SNUT/ETH-LP/WETH', notes: 'Meta-pool — SNUT/WETH LP tokens traded against WETH. Secondary market for liquidity claims.' },
     ],
@@ -96,7 +97,7 @@ const POOL_GROUPS = [
   {
     group: 'Index Baskets (Balancer)',
     pools: [
-      { name: 'pNUT Quad', platform: 'Balancer V2 WeightedPool', address: '0x2a5757b60987ff10385de1d4d923792f6fdcfff1', type: 'Balancer', pair: 'cbETH/cbBTC/NUT/SNUT', notes: '25% each. Pool = BPT address. Read basket via getPoolTokens(poolId) on the V2 Vault. Dividend-exempt.' },
+      { name: 'pNUT Quad', platform: 'Balancer V2 WeightedPool', address: '0x2a5757b60987ff10385de1d4d923792f6fdcfff1', type: 'Balancer', pair: 'cbETH/cbBTC/NUT/SNUT', notes: '25% each. Pool = BPT address. Read basket via getPoolTokens(poolId) on the V2 Vault.' },
       { name: 'pNUT Whorl', platform: 'Balancer V3 WeightedPool', address: '0x252b1E49D1d1E42657d028703e8c37fe5B5cACF5', type: 'Balancer', pair: 'cbETH/SNUT/wNUT/cbBTC', notes: '25% each. Immutable — all roles renounced. Live in the V3 Vault; composition via Balancer API.' },
     ],
   },
@@ -409,21 +410,6 @@ const STRATEGY_GROUPS = [
     ],
   },
   {
-    group: 'Keeper',
-    strategies: [
-      {
-        id: 10, emoji: '⚛️', name: 'SNUT/NUT Reactor',
-        route: 'Aerodrome SNUT/NUT — dividend-eligible pair',
-        verdict: 'Expert keeper game — NUT rewards accrue to the pair as excess balance; fastest keeper captures it.',
-        verdictColor: 'warning',
-        when: 'Continuously — excess accumulates with each reward distribution.',
-        costs: 'Gas, competition',
-        steps: ['Monitor actual NUT balance of the pair vs recorded reserves', 'Excess = actual − recorded; when excess > gas: skim() or sync()+swap', 'Alternatively hold LP and burn to claim pro-rata actual balances', 'Competition, not opportunity, is the constraint'],
-        tokens: ['SNUT', 'NUT'],
-      },
-    ],
-  },
-  {
     group: 'Derivatives',
     strategies: [
       {
@@ -492,7 +478,7 @@ const MACHINE_SPEC = {
     NUT_WETH_CL: { addr: '0x0416a0d0Ce17F23DAA9D3f852470fe91f0a69c71', type: 'CL', token0: 'WETH', token1: 'NUT' },
     NUT_AERO: { addr: '0x38630fede5e2032652640d98b2d3f9c6296eea5d', type: 'V2', token0: 'AERO', token1: 'NUT' },
     NUT_cbBTC: { addr: '0x15385c9281bc12d2e9bf5c081621944b0ee2acca', type: 'V2', token0: 'NUT', token1: 'cbBTC' },
-    SNUT_NUT: { addr: '0x893faaa7baf7a8247fc7142afb28e13d51a5aae8', type: 'V2', token0: 'SNUT', token1: 'NUT', dividendEligible: true },
+    SNUT_NUT: { addr: '0x893faaa7baf7a8247fc7142afb28e13d51a5aae8', type: 'V2', token0: 'SNUT', token1: 'NUT' },
     SNUT_WETH: { addr: '0xB22895d2ee6e29395F30Ec47c8D9FE0d55355AE1', type: 'V2', token0: 'WETH', token1: 'SNUT' },
     SNUT_ETHLP_META: { addr: '0x82bbadb9d6b2c0a59ed01809e30323f89f6faa1c', type: 'V2', token0: 'WETH', token1: 'UNI-V2 (SNUT/WETH LP)' },
     NUTINO_cbBTC: { addr: '0xeafde67d470480d14139e3d91164c158b82b38e2', type: 'V2', token0: 'NUTINO', token1: 'cbBTC' },
@@ -560,7 +546,6 @@ const MACHINE_SPEC = {
     'SNUT-NUT-AERO',
     'SNUT-BASKET',
     'SNUT-BUYBACK-BURN',
-    'SNUT-NUT-REACTOR',
     'SNUT-ETHLP-META',
     'PIPS-NUT-SLIPSTREAM',
     'PIPS-USDC-RECLAMM',
