@@ -1044,17 +1044,17 @@ export default function ArbBotPage() {
   const trunc = (a) => a.slice(0, 6) + '…' + a.slice(-4);
 
   const PILL_TONES = {
-    green: { background: 'rgba(34,139,34,0.12)', border: '1px solid rgba(34,139,34,0.4)', color: '#2e7d32' },
-    amber: { background: 'rgba(230,81,0,0.10)', border: '1px solid rgba(230,81,0,0.4)', color: '#e65100' },
-    blue: { background: 'rgba(21,101,192,0.10)', border: '1px solid rgba(21,101,192,0.4)', color: '#1565c0' },
-    gray: { background: 'rgba(90,90,90,0.10)', border: '1px solid rgba(90,90,90,0.35)', color: '#555' },
+    green: { background: 'rgba(46,125,50,0.18)', border: '1px solid #2e7d32', color: '#1b5e20' },
+    amber: { background: 'rgba(230,81,0,0.15)', border: '1px solid #e65100', color: '#bf360c' },
+    blue: { background: 'rgba(21,101,192,0.15)', border: '1px solid #1565c0', color: '#0d47a1' },
+    gray: { background: 'rgba(61,43,31,0.14)', border: '1px solid rgba(61,43,31,0.45)', color: '#3d2b1f' },
   };
 
   const TAG_TONES = {
-    CORE: { background: 'rgba(139,90,43,0.12)', color: '#6B3D20' },
-    QUOTE: { background: 'rgba(90,90,90,0.08)', color: 'rgba(60,60,60,0.6)' },
-    PRIMARY: { background: 'rgba(34,139,34,0.10)', color: '#2e7d32' },
-    SECONDARY: { background: 'rgba(90,90,90,0.08)', color: 'rgba(60,60,60,0.6)' },
+    CORE: { background: 'rgba(61,43,31,0.15)', color: '#3d2b1f' },
+    QUOTE: { background: 'rgba(61,43,31,0.12)', color: '#5d4a38' },
+    PRIMARY: { background: 'rgba(46,125,50,0.16)', color: '#1b5e20' },
+    SECONDARY: { background: 'rgba(61,43,31,0.12)', color: '#5d4a38' },
   };
 
   const Badge = ({ children, tone }) => (
@@ -1069,10 +1069,10 @@ export default function ArbBotPage() {
     <Box
       component="span"
       onClick={(e) => { e.stopPropagation(); copyText(text, k); }}
-      sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, cursor: 'pointer', px: 0.5, py: 0.1, borderRadius: 1, background: 'rgba(139,90,43,0.06)', '&:hover': { background: 'rgba(139,90,43,0.14)' } }}
+      sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, cursor: 'pointer', px: 0.5, py: 0.1, borderRadius: 1, background: 'rgba(61,43,31,0.10)', '&:hover': { background: 'rgba(139,90,43,0.14)' } }}
       title="Copy full address"
     >
-      <ContentCopy sx={{ fontSize: small ? '0.72rem' : '0.8rem', color: '#8B5A2B' }} />
+      <ContentCopy sx={{ fontSize: small ? '0.72rem' : '0.8rem', color: '#6d4420' }} />
       {copiedKey === k && <Typography component="span" sx={{ fontSize: '0.6rem', fontWeight: 700, color: '#2e7d32' }}>copied</Typography>}
     </Box>
   );
@@ -1084,7 +1084,7 @@ export default function ArbBotPage() {
   );
 
   const SectionDesc = ({ children }) => (
-    <Typography sx={{ fontSize: '0.85rem', color: 'rgba(40,40,60,0.65)', mb: 2 }}>{children}</Typography>
+    <Typography sx={{ fontSize: '0.85rem', color: '#5d4a38', mb: 2 }}>{children}</Typography>
   );
 
   const GroupLabel = ({ children }) => (
@@ -1094,7 +1094,7 @@ export default function ArbBotPage() {
   );
 
   const Card = ({ children, sx }) => (
-    <Box sx={{ p: 1.5, borderRadius: 2, height: '100%', border: '1px solid rgba(139,90,43,0.15)', background: 'rgba(255,252,245,0.85)', ...sx }}>{children}</Box>
+    <Box sx={{ p: 1.5, borderRadius: 2, height: '100%', border: '1px solid rgba(61,43,31,0.30)', background: '#efe4c9', ...sx }}>{children}</Box>
   );
 
   return (
@@ -1104,7 +1104,7 @@ export default function ArbBotPage() {
         <meta name="description" content="BASED NUT agent execution reference — verified token and pool registry, read patterns, market mechanics, strategy catalog, and machine-readable spec for trading and monitoring agents on Base." />
       </Head>
 
-      <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto', overflowWrap: 'break-word', wordBreak: 'break-word' }}>
+      <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1200, mx: 'auto', overflowWrap: 'break-word', wordBreak: 'break-word', minHeight: '100vh', background: 'radial-gradient(circle at 12% 4%, rgba(217,154,40,0.14), transparent 32rem), radial-gradient(circle at 88% 18%, rgba(74,47,26,0.10), transparent 36rem), #f4ead6' }}>
         {/* ══ HEADER — H1 + subtitle + chips + copy spec ══ */}
         <Box sx={{ mb: 2, p: { xs: 2, md: 3 }, borderRadius: 3, background: 'linear-gradient(135deg, #4A2F1A 0%, #6B3D20 50%, #8B5A2B 100%)', color: '#FAF3E6' }}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
@@ -1119,7 +1119,7 @@ export default function ArbBotPage() {
             </Box>
             <Box
               onClick={() => copyText(JSON.stringify(MACHINE_SPEC, null, 2), 'spec')}
-              sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.5, px: 1.25, py: 0.6, borderRadius: 1.5, background: 'rgba(255,252,245,0.14)', border: '1px solid rgba(255,252,245,0.25)', '&:hover': { background: 'rgba(255,252,245,0.22)' } }}
+              sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.5, px: 1.25, py: 0.6, borderRadius: 1.5, background: 'rgba(255,252,245,0.14)', border: '1px solid rgba(255,252,245,0.25)', '&:hover': { background: 'rgba(255,248,232,0.28)' } }}
             >
               <ContentCopy sx={{ fontSize: '0.95rem' }} />
               <Typography sx={{ fontSize: '0.78rem', fontWeight: 700 }}>{copiedKey === 'spec' ? 'Copied!' : 'Copy Spec'}</Typography>
@@ -1128,8 +1128,8 @@ export default function ArbBotPage() {
         </Box>
 
         {/* ══ COMPACT DISCLAIMER ══ */}
-        <Box sx={{ mb: 3, p: 1.25, borderRadius: 2, background: 'rgba(255,244,224,0.7)', border: '1px solid rgba(230,168,40,0.35)', borderLeft: '4px solid rgba(230,168,40,0.7)' }}>
-          <Typography sx={{ fontSize: '0.78rem', color: 'rgba(90,60,10,0.85)', lineHeight: 1.55 }}>
+        <Box sx={{ mb: 3, p: 1.25, borderRadius: 2, background: '#f7e3ac', border: '1px solid rgba(217,154,40,0.55)', borderLeft: '5px solid #d99a28' }}>
+          <Typography sx={{ fontSize: '0.78rem', color: '#5d430f', lineHeight: 1.55 }}>
             <strong>Experimental memefi — technical reference, not financial advice.</strong> Verify live contract state on Basescan before acting; treat all on-chain parameters (fees, taxes, pool configs) as changeable state to be read, not cached assumptions.
           </Typography>
         </Box>
@@ -1139,9 +1139,9 @@ export default function ArbBotPage() {
           position: 'sticky', top: 0, zIndex: 100,
           display: 'flex', gap: 0.5, overflowX: 'auto',
           pb: 1, mb: 3, pt: 1,
-          bgcolor: 'rgba(255,252,245,0.9)',
+          bgcolor: '#f4ead6',
           backdropFilter: 'blur(8px)',
-          borderBottom: '1px solid rgba(139,90,43,0.1)',
+          borderBottom: '1px solid rgba(61,43,31,0.24)',
           '&::-webkit-scrollbar': { height: 3 },
           '&::-webkit-scrollbar-thumb': { background: 'rgba(139,69,19,0.2)', borderRadius: 2 },
         }}>
@@ -1155,7 +1155,7 @@ export default function ArbBotPage() {
                 color: activeSection === item.id ? '#fff' : '#5D4037',
                 background: activeSection === item.id ? 'linear-gradient(135deg, #8B4513, #A0522D)' : 'transparent',
                 border: '1px solid',
-                borderColor: activeSection === item.id ? '#6B3D20' : 'rgba(139,69,19,0.1)',
+                borderColor: activeSection === item.id ? '#3d2b1f' : 'rgba(61,43,31,0.35)',
                 transition: 'all 0.2s ease',
                 '&:hover': { background: activeSection === item.id ? 'linear-gradient(135deg, #A0522D, #B87333)' : 'rgba(139,69,19,0.06)' },
               }}
@@ -1171,13 +1171,13 @@ export default function ArbBotPage() {
             {MODEL_NOTES.map((n) => (
               <Grid key={n.id} size={{ xs: 12, md: 6 }}>
                 <Card sx={{ ...(n.severity === 'high'
-                  ? { border: '1px solid rgba(139,90,43,0.3)', background: 'rgba(255,244,224,0.75)' }
-                  : { border: '1px solid rgba(139,90,43,0.12)', background: 'rgba(255,252,245,0.7)' }) }}>
+                  ? { border: '1px solid rgba(61,43,31,0.35)', background: '#f3dfae', borderLeft: '4px solid #d99a28' }
+                  : { border: '1px solid rgba(61,43,31,0.26)', background: '#eadfc2', borderLeft: '4px solid rgba(61,43,31,0.35)' }) }}>
                   <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, mb: 0.25 }}>
-                    <Badge tone={{ background: 'rgba(139,90,43,0.14)', color: '#6B3D20' }}>{n.id}</Badge>
+                    <Badge tone={{ background: 'rgba(61,43,31,0.16)', color: '#3d2b1f' }}>{n.id}</Badge>
                     {n.severity === 'high' && <Badge tone={TAG_TONES.SECONDARY}>VERIFY ALWAYS</Badge>}
                   </Box>
-                  <Typography sx={{ fontSize: '0.8rem', color: 'rgba(40,40,60,0.85)', lineHeight: 1.6 }}>{n.note}</Typography>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#23180f', lineHeight: 1.6 }}>{n.note}</Typography>
                 </Card>
               </Grid>
             ))}
@@ -1188,20 +1188,20 @@ export default function ArbBotPage() {
         <Box id="start" sx={{ mb: 4, scrollMarginTop: 60 }}>
           <SectionTitle icon="🚀">Start Here — Minimal Scanner Build Path</SectionTitle>
           <SectionDesc>The shortest path to a working arb scanner. Each step links to its detailed section below.</SectionDesc>
-          <Card sx={{ background: 'rgba(255,252,245,0.9)' }}>
+          <Card sx={{ background: '#f2e7cd' }}>
             <Grid container spacing={1}>
               {QUICKSTART.map((q, i) => (
                 <Grid key={q.label} size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'flex-start', p: 0.75, borderRadius: 1.5, background: 'rgba(2,6,23,0.03)', height: '100%' }}>
+                  <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'flex-start', p: 0.75, borderRadius: 1.5, background: 'rgba(61,43,31,0.10)', height: '100%' }}>
                     <Box sx={{ minWidth: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #8B4513, #A0522D)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.68rem', fontWeight: 700, flexShrink: 0 }}>{i + 1}</Box>
                     <Box>
                       <Typography
                         component="a"
                         href={q.href}
                         onClick={(e) => { e.preventDefault(); scrollTo(q.href); }}
-                        sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#8B5A2B', cursor: 'pointer', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                        sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#6d4420', cursor: 'pointer', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                       >{q.label} →</Typography>
-                      <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.6)', lineHeight: 1.45 }}>{q.desc}</Typography>
+                      <Typography sx={{ fontSize: '0.74rem', color: '#6b543f', lineHeight: 1.45 }}>{q.desc}</Typography>
                     </Box>
                   </Box>
                 </Grid>
@@ -1218,7 +1218,7 @@ export default function ArbBotPage() {
           <GroupLabel>Tokens</GroupLabel>
           {TOKEN_GROUPS.map((g) => (
             <Box key={g.group} sx={{ mb: 2 }}>
-              <Typography component="h4" sx={{ fontSize: '0.8rem', fontWeight: 700, color: 'rgba(74,47,26,0.75)', mb: 1, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{g.group}</Typography>
+              <Typography component="h4" sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#4a2f1a', mb: 1, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{g.group}</Typography>
               <Grid container spacing={1.25}>
                 {g.tokens.map((t) => {
                   const k = 'tok-' + t.name;
@@ -1231,22 +1231,22 @@ export default function ArbBotPage() {
                           <Badge tone={TAG_TONES.CORE}>{t.tag}</Badge>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.4 }}>
-                          <Box component="code" sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.65)', fontFamily: 'monospace' }} title={t.address}>{trunc(t.address)}</Box>
+                          <Box component="code" sx={{ fontSize: '0.72rem', color: '#5d4a38', fontFamily: 'monospace' }} title={t.address}>{trunc(t.address)}</Box>
                           <CopyBtn text={t.address} k={k} small />
-                          {t.href && <Link href={t.href} style={{ fontSize: '0.68rem', color: '#8B5A2B', fontWeight: 600, textDecoration: 'none' }}>Profile →</Link>}
+                          {t.href && <Link href={t.href} style={{ fontSize: '0.68rem', color: '#6d4420', fontWeight: 700, textDecoration: 'none' }}>Profile →</Link>}
                         </Box>
-                        <Typography sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.5)', mb: 0.25 }}>Supply: {t.supply}</Typography>
-                        <Typography sx={{ fontSize: '0.75rem', color: 'rgba(40,40,60,0.72)', lineHeight: 1.45 }}>{t.roleShort}</Typography>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#776451', mb: 0.25 }}>Supply: {t.supply}</Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: '#4a3527', lineHeight: 1.45 }}>{t.roleShort}</Typography>
                         <Collapse in={expandedReg === k} timeout="auto" unmountOnExit>
-                          <Box sx={{ mt: 0.75, pt: 0.75, borderTop: '1px dashed rgba(139,90,43,0.2)' }}>
-                            <Box component="code" sx={{ display: 'block', fontSize: '0.68rem', color: 'rgba(40,40,60,0.6)', fontFamily: 'monospace', wordBreak: 'break-all', mb: 0.5 }}>{t.address}</Box>
-                            <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.7)', lineHeight: 1.5 }}>{t.role}</Typography>
+                          <Box sx={{ mt: 0.75, pt: 0.75, borderTop: '1px dashed rgba(61,43,31,0.38)' }}>
+                            <Box component="code" sx={{ display: 'block', fontSize: '0.68rem', color: '#6b543f', fontFamily: 'monospace', wordBreak: 'break-all', mb: 0.5 }}>{t.address}</Box>
+                            <Typography sx={{ fontSize: '0.74rem', color: '#4a3527', lineHeight: 1.5 }}>{t.role}</Typography>
                           </Box>
                         </Collapse>
                         <Box
                           component="span"
                           onClick={() => setExpandedReg(expandedReg === k ? null : k)}
-                          sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, cursor: 'pointer', mt: 0.4, fontSize: '0.68rem', fontWeight: 700, color: '#8B5A2B' }}
+                          sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, cursor: 'pointer', mt: 0.4, fontSize: '0.68rem', fontWeight: 700, color: '#6d4420' }}
                         >
                           {expandedReg === k ? <ExpandLess sx={{ fontSize: '0.9rem' }} /> : <ExpandMore sx={{ fontSize: '0.9rem' }} />}
                           {expandedReg === k ? 'less' : 'detail'}
@@ -1262,7 +1262,7 @@ export default function ArbBotPage() {
           <GroupLabel>Pools</GroupLabel>
           {POOL_GROUPS.map((g) => (
             <Box key={g.group} sx={{ mb: 2 }}>
-              <Typography component="h4" sx={{ fontSize: '0.8rem', fontWeight: 700, color: 'rgba(74,47,26,0.75)', mb: 1, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{g.group}</Typography>
+              <Typography component="h4" sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#4a2f1a', mb: 1, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{g.group}</Typography>
               <Grid container spacing={1.25}>
                 {g.pools.map((p) => {
                   const k = 'pool-' + p.address;
@@ -1277,22 +1277,22 @@ export default function ArbBotPage() {
                         </Box>
                         <Typography sx={{ fontSize: '0.72rem', color: '#8B6914', fontStyle: 'italic', mb: 0.4 }}>“{p.flavor}”</Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.4 }}>
-                          <Box component="code" sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.65)', fontFamily: 'monospace' }} title={p.address}>{trunc(p.address)}</Box>
+                          <Box component="code" sx={{ fontSize: '0.72rem', color: '#5d4a38', fontFamily: 'monospace' }} title={p.address}>{trunc(p.address)}</Box>
                           <CopyBtn text={p.address} k={k} small />
                         </Box>
-                        <Typography sx={{ fontSize: '0.73rem', color: 'rgba(40,40,60,0.62)' }}>
+                        <Typography sx={{ fontSize: '0.73rem', color: '#5d4a38' }}>
                           <strong>Order:</strong> {p.pair} · <strong style={{ color: '#1565c0' }}>{p.read}</strong>
                         </Typography>
                         <Collapse in={expandedReg === k} timeout="auto" unmountOnExit>
-                          <Box sx={{ mt: 0.75, pt: 0.75, borderTop: '1px dashed rgba(139,90,43,0.2)' }}>
-                            <Box component="code" sx={{ display: 'block', fontSize: '0.68rem', color: 'rgba(40,40,60,0.6)', fontFamily: 'monospace', wordBreak: 'break-all', mb: 0.5 }}>{p.address}</Box>
-                            <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.7)', lineHeight: 1.5 }}>{p.notes}</Typography>
+                          <Box sx={{ mt: 0.75, pt: 0.75, borderTop: '1px dashed rgba(61,43,31,0.38)' }}>
+                            <Box component="code" sx={{ display: 'block', fontSize: '0.68rem', color: '#6b543f', fontFamily: 'monospace', wordBreak: 'break-all', mb: 0.5 }}>{p.address}</Box>
+                            <Typography sx={{ fontSize: '0.74rem', color: '#4a3527', lineHeight: 1.5 }}>{p.notes}</Typography>
                           </Box>
                         </Collapse>
                         <Box
                           component="span"
                           onClick={() => setExpandedReg(expandedReg === k ? null : k)}
-                          sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, cursor: 'pointer', mt: 0.4, fontSize: '0.68rem', fontWeight: 700, color: '#8B5A2B' }}
+                          sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.25, cursor: 'pointer', mt: 0.4, fontSize: '0.68rem', fontWeight: 700, color: '#6d4420' }}
                         >
                           {expandedReg === k ? <ExpandLess sx={{ fontSize: '0.9rem' }} /> : <ExpandMore sx={{ fontSize: '0.9rem' }} />}
                           {expandedReg === k ? 'less' : 'detail'}
@@ -1314,10 +1314,10 @@ export default function ArbBotPage() {
                   <Card>
                     <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#4A2F1A', mb: 0.3 }}>{v.name}</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.4 }}>
-                      <Box component="code" sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.65)', fontFamily: 'monospace' }} title={v.address}>{trunc(v.address)}</Box>
+                      <Box component="code" sx={{ fontSize: '0.72rem', color: '#5d4a38', fontFamily: 'monospace' }} title={v.address}>{trunc(v.address)}</Box>
                       <CopyBtn text={v.address} k={k} small />
                     </Box>
-                    <Typography sx={{ fontSize: '0.75rem', color: 'rgba(40,40,60,0.7)', lineHeight: 1.45 }}>{v.purpose}</Typography>
+                    <Typography sx={{ fontSize: '0.75rem', color: '#4a3527', lineHeight: 1.45 }}>{v.purpose}</Typography>
                   </Card>
                 </Grid>
               );
@@ -1331,14 +1331,14 @@ export default function ArbBotPage() {
                   <Card>
                     <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#4A2F1A' }}>{nft.name} — {nft.label}</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, my: 0.3 }}>
-                      <Box component="code" sx={{ fontSize: '0.7rem', color: 'rgba(40,40,60,0.6)', fontFamily: 'monospace' }} title={nft.address}>{trunc(nft.address)}</Box>
+                      <Box component="code" sx={{ fontSize: '0.7rem', color: '#6b543f', fontFamily: 'monospace' }} title={nft.address}>{trunc(nft.address)}</Box>
                       <CopyBtn text={nft.address} k={k} small />
                     </Box>
-                    <Typography sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.68)' }}>Minted: {nft.supply}</Typography>
+                    <Typography sx={{ fontSize: '0.72rem', color: '#5d4a38' }}>Minted: {nft.supply}</Typography>
                     {nft.sudoswap ? (
-                      <Typography sx={{ fontSize: '0.68rem', color: 'rgba(40,40,60,0.5)', fontFamily: 'monospace' }} title={nft.sudoswap}>Sudoswap: {trunc(nft.sudoswap)}</Typography>
+                      <Typography sx={{ fontSize: '0.68rem', color: '#776451', fontFamily: 'monospace' }} title={nft.sudoswap}>Sudoswap: {trunc(nft.sudoswap)}</Typography>
                     ) : (
-                      <Typography sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.45)' }}>No Sudoswap pool</Typography>
+                      <Typography sx={{ fontSize: '0.72rem', color: '#776451' }}>No Sudoswap pool</Typography>
                     )}
                   </Card>
                 </Grid>
@@ -1367,8 +1367,8 @@ export default function ArbBotPage() {
                   <tr key={f.sig} style={{ borderBottom: '1px solid rgba(139,90,43,0.08)' }}>
                     <td style={{ padding: '7px 10px', fontFamily: 'monospace', color: '#6B3D20', fontWeight: 700 }}>{f.sig}</td>
                     <td style={{ padding: '7px 10px', fontFamily: 'monospace' }}>{f.name}</td>
-                    <td style={{ padding: '7px 10px', color: 'rgba(40,40,60,0.75)' }}>{f.desc}</td>
-                    <td style={{ padding: '7px 10px', fontFamily: 'monospace', color: 'rgba(40,40,60,0.55)', fontSize: '0.7rem' }}>{f.returns}</td>
+                    <td style={{ padding: '7px 10px', color: '#3d2b1f' }}>{f.desc}</td>
+                    <td style={{ padding: '7px 10px', fontFamily: 'monospace', color: '#6b543f', fontSize: '0.7rem' }}>{f.returns}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1383,13 +1383,13 @@ export default function ArbBotPage() {
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => setExpandedCode(expandedCode === i ? null : i)}>
                     <Box sx={{ pr: 1 }}>
                       <Typography component="h4" sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#4A2F1A' }}>{block.title}</Typography>
-                      <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.6)' }}>{block.desc}</Typography>
+                      <Typography sx={{ fontSize: '0.74rem', color: '#6b543f' }}>{block.desc}</Typography>
                     </Box>
                     <IconButton size="small">{expandedCode === i ? <ExpandLess /> : <ExpandMore />}</IconButton>
                   </Box>
                   <Collapse in={expandedCode === i} timeout="auto" unmountOnExit>
                     <Box sx={{ mt: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
-                      <Box component="pre" sx={{ flex: 1, m: 0, p: 1.5, borderRadius: 1.5, background: 'rgba(2,6,23,0.92)', color: '#e2e8f0', fontSize: '0.7rem', lineHeight: 1.55, overflowX: 'auto', whiteSpace: 'pre' }}>{block.code}</Box>
+                      <Box component="pre" sx={{ flex: 1, m: 0, p: 1.5, borderRadius: 1.5, background: '#2a1c10', color: '#f5e9d2', fontSize: '0.7rem', lineHeight: 1.55, overflowX: 'auto', whiteSpace: 'pre' }}>{block.code}</Box>
                       <CopyBtn text={block.code} k={'code-' + i} />
                     </Box>
                   </Collapse>
@@ -1410,15 +1410,15 @@ export default function ArbBotPage() {
               <Grid key={f.label} size={{ xs: 12, sm: 6 }}>
                 <Card>
                   <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#4A2F1A', mb: 0.2 }}>{f.label}</Typography>
-                  <Typography sx={{ fontSize: '0.76rem', color: 'rgba(40,40,60,0.7)', lineHeight: 1.45 }}>{f.value}</Typography>
+                  <Typography sx={{ fontSize: '0.76rem', color: '#4a3527', lineHeight: 1.45 }}>{f.value}</Typography>
                 </Card>
               </Grid>
             ))}
           </Grid>
 
           <GroupLabel>pNUT Quad — NAV & Arbitrage</GroupLabel>
-          <Box sx={{ mb: 2, p: 2, borderRadius: 2, background: 'rgba(255,252,245,0.85)', border: '1px solid rgba(139,90,43,0.15)' }}>
-            <Box component="pre" sx={{ m: 0, p: 1.5, borderRadius: 1.5, background: 'rgba(2,6,23,0.92)', color: '#e2e8f0', fontSize: '0.7rem', lineHeight: 1.5, overflowX: 'auto', whiteSpace: 'pre' }}>
+          <Box sx={{ mb: 2, p: 2, borderRadius: 2, background: '#efe4c9', border: '1px solid rgba(61,43,31,0.30)' }}>
+            <Box component="pre" sx={{ m: 0, p: 1.5, borderRadius: 1.5, background: '#2a1c10', color: '#f5e9d2', fontSize: '0.7rem', lineHeight: 1.5, overflowX: 'auto', whiteSpace: 'pre' }}>
 {`pNUT address:  ${pNUT_POOL_ID.slice(0, 42)}
 Pool ID:        ${pNUT_POOL_ID}
 Balancer URL:   ${BALANCER_URL}
@@ -1436,7 +1436,7 @@ Volatility play:
   NUT/SNUT move vs cbETH/cbBTC → basket weights drift → NAV diverges
   Track: NUT/ETH correlation, SNUT/NUT spread, component drift %`}
             </Box>
-            <Typography sx={{ fontSize: '0.78rem', color: 'rgba(40,40,60,0.65)', lineHeight: 1.45, mt: 1 }}>
+            <Typography sx={{ fontSize: '0.78rem', color: '#5d4a38', lineHeight: 1.45, mt: 1 }}>
               pNUT is NOT traded on standard DEXs. It is minted by depositing the basket into Balancer and redeemed by withdrawing. The "market price" is the BPT price on Balancer. NAV divergence {'>'} 2% indicates potential arbitrage. This is the most complex arb in the ecosystem — requires monitoring 4 component prices simultaneously.
             </Typography>
           </Box>
@@ -1444,7 +1444,7 @@ Volatility play:
           <GroupLabel>wNUT Wrapper Parity</GroupLabel>
           <Card>
             {WNUT_PARITY_FACTS.map((f) => (
-              <Typography key={f} sx={{ fontSize: '0.78rem', color: 'rgba(40,40,60,0.75)', lineHeight: 1.55, mb: 0.4, pl: 1.25, position: 'relative' }}>
+              <Typography key={f} sx={{ fontSize: '0.78rem', color: '#3d2b1f', lineHeight: 1.55, mb: 0.4, pl: 1.25, position: 'relative' }}>
                 <Box component="span" sx={{ position: 'absolute', left: 0, color: '#CD7F32', fontWeight: 700 }}>›</Box> {f}
               </Typography>
             ))}
@@ -1461,7 +1461,7 @@ Volatility play:
               <Grid container spacing={1.5}>
                 {g.strategies.map((s) => (
                   <Grid key={s.id} size={{ xs: 12, md: 6 }}>
-                    <Card sx={{ background: 'rgba(255,252,245,0.9)', boxShadow: '0 2px 8px rgba(90,60,30,0.06)' }}>
+                    <Card sx={{ background: '#f2e7cd', boxShadow: '0 2px 8px rgba(90,60,30,0.06)' }}>
                       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 0.75 }}>
                         <Typography component="h4" sx={{ fontSize: '0.98rem', fontWeight: 700, color: '#4A2F1A' }}>{s.name}</Typography>
                         <IconButton size="small" onClick={() => setExpandedStrategy(expandedStrategy === s.id ? null : s.id)}>
@@ -1474,32 +1474,32 @@ Volatility play:
                         <Badge>{s.capShort}</Badge>
                       </Box>
                       <Box sx={{ mb: 0.75 }}><Pill label={s.pill} tone={s.pillTone} /></Box>
-                      <Typography sx={{ fontSize: '0.76rem', color: 'rgba(40,40,60,0.75)', mb: 0.4 }}><strong>Route:</strong> {s.venues}</Typography>
-                      <Typography sx={{ fontSize: '0.76rem', color: 'rgba(40,40,60,0.75)', mb: 0.4 }}><strong>Trigger:</strong> {s.trigger}</Typography>
-                      <Box sx={{ p: 0.7, borderRadius: 1, background: 'rgba(2,6,23,0.04)', mb: 0.5, overflowX: 'auto' }}>
-                        <code style={{ fontSize: '0.68rem', color: 'rgba(40,40,60,0.8)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{s.formula}</code>
+                      <Typography sx={{ fontSize: '0.76rem', color: '#3d2b1f', mb: 0.4 }}><strong>Route:</strong> {s.venues}</Typography>
+                      <Typography sx={{ fontSize: '0.76rem', color: '#3d2b1f', mb: 0.4 }}><strong>Trigger:</strong> {s.trigger}</Typography>
+                      <Box sx={{ p: 0.7, borderRadius: 1, background: 'rgba(61,43,31,0.12)', mb: 0.5, overflowX: 'auto' }}>
+                        <code style={{ fontSize: '0.68rem', color: '#f5e9d2', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{s.formula}</code>
                       </Box>
-                      <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.62)', mb: 0.25 }}><strong>Profit:</strong> {s.profitCondition}</Typography>
-                      <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.62)' }}><strong>Risks:</strong> {s.risks}</Typography>
+                      <Typography sx={{ fontSize: '0.74rem', color: '#5d4a38', mb: 0.25 }}><strong>Profit:</strong> {s.profitCondition}</Typography>
+                      <Typography sx={{ fontSize: '0.74rem', color: '#5d4a38' }}><strong>Risks:</strong> {s.risks}</Typography>
                       <Collapse in={expandedStrategy === s.id} timeout="auto" unmountOnExit>
                         <Box sx={{ pt: 1, mt: 0.75, borderTop: '1px solid rgba(139,90,43,0.1)' }}>
                           <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>Verdict</Typography>
-                          <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.75)', mb: 0.75, lineHeight: 1.45 }}>{s.verdict}</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', color: '#3d2b1f', mb: 0.75, lineHeight: 1.45 }}>{s.verdict}</Typography>
                           <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>What</Typography>
-                          <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.72)', mb: 0.75, lineHeight: 1.45 }}>{s.whatIsIt}</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', color: '#4a3527', mb: 0.75, lineHeight: 1.45 }}>{s.whatIsIt}</Typography>
                           <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>How to Execute</Typography>
-                          <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.72)', mb: 0.75, lineHeight: 1.45 }}>{s.howToUse}</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', color: '#4a3527', mb: 0.75, lineHeight: 1.45 }}>{s.howToUse}</Typography>
                           <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.5 }}>Steps</Typography>
                           {s.steps.map((step, j) => (
                             <Box key={j} sx={{ display: 'flex', gap: 0.5, mb: 0.25 }}>
                               <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#CD7F32', minWidth: 16 }}>{j + 1}.</Typography>
-                              <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.75)', lineHeight: 1.35 }}>{step}</Typography>
+                              <Typography sx={{ fontSize: '0.74rem', color: '#3d2b1f', lineHeight: 1.35 }}>{step}</Typography>
                             </Box>
                           ))}
                           <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mt: 1, mb: 0.25 }}>Frequency & Capital</Typography>
-                          <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.65)', mb: 0.75, lineHeight: 1.45 }}>{s.frequency} · {s.capitalNeeded}</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', color: '#5d4a38', mb: 0.75, lineHeight: 1.45 }}>{s.frequency} · {s.capitalNeeded}</Typography>
                           <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>Prerequisites</Typography>
-                          <Typography sx={{ fontSize: '0.74rem', color: 'rgba(40,40,60,0.65)', mb: 0.75, lineHeight: 1.45 }}>{s.prerequisites}</Typography>
+                          <Typography sx={{ fontSize: '0.74rem', color: '#5d4a38', mb: 0.75, lineHeight: 1.45 }}>{s.prerequisites}</Typography>
                           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 0.75 }}>
                             {s.routeIds.map((r) => (
                               <Badge key={r}>{r}</Badge>
@@ -1529,35 +1529,35 @@ Volatility play:
           <Grid container spacing={1.5}>
             {BOT_COMMANDS.map((cmd) => (
               <Grid key={cmd.trigger} size={{ xs: 12, md: 6 }}>
-                <Card sx={{ background: 'rgba(255,252,245,0.9)' }}>
+                <Card sx={{ background: '#f2e7cd' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                     <Box sx={{ flex: 1 }}>
                       <Typography component="h4" sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#4A2F1A' }}>{cmd.name}</Typography>
-                      <Typography sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.5)' }}>{cmd.desc}</Typography>
+                      <Typography sx={{ fontSize: '0.72rem', color: '#776451' }}>{cmd.desc}</Typography>
                     </Box>
                   </Box>
-                  <Box sx={{ p: 0.75, borderRadius: 1, background: 'rgba(2,6,23,0.04)', mb: 1 }}>
-                    <code style={{ fontSize: '0.75rem', color: '#8B5A2B', fontWeight: 600 }}>{cmd.trigger} {cmd.args}</code>
+                  <Box sx={{ p: 0.75, borderRadius: 1, background: 'rgba(61,43,31,0.12)', mb: 1 }}>
+                    <code style={{ fontSize: '0.75rem', color: '#6d4420', fontWeight: 700 }}>{cmd.trigger} {cmd.args}</code>
                   </Box>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
                     {cmd.scanTypes.map((st) => (
-                      <Badge key={st} tone={{ background: 'rgba(21,101,192,0.08)', color: '#1565c0' }}>{st}</Badge>
+                      <Badge key={st} tone={{ background: 'rgba(21,101,192,0.14)', color: '#0d47a1' }}>{st}</Badge>
                     ))}
                   </Box>
                   <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#8B6914', mb: 0.5 }}>Implementation</Typography>
                   <Box sx={{ mb: 1 }}>
                     {cmd.impl.map((step, i) => (
-                      <Typography key={i} sx={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.65)', lineHeight: 1.5, pl: 1.5, position: 'relative' }}>
-                        <Box component="span" sx={{ position: 'absolute', left: 0, color: '#8B5A2B', fontWeight: 700 }}>{i + 1}.</Box> {step}
+                      <Typography key={i} sx={{ fontSize: '0.72rem', color: '#5d4a38', lineHeight: 1.5, pl: 1.5, position: 'relative' }}>
+                        <Box component="span" sx={{ position: 'absolute', left: 0, color: '#6d4420', fontWeight: 700 }}>{i + 1}.</Box> {step}
                       </Typography>
                     ))}
                   </Box>
-                  <Box sx={{ p: 1, borderRadius: 1, background: 'rgba(2,6,23,0.03)', mb: 1 }}>
+                  <Box sx={{ p: 1, borderRadius: 1, background: 'rgba(61,43,31,0.10)', mb: 1 }}>
                     <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#8B6914', mb: 0.25 }}>Key Data</Typography>
-                    <Typography sx={{ fontSize: '0.7rem', color: 'rgba(40,40,60,0.6)', lineHeight: 1.45 }}>{cmd.keyData}</Typography>
+                    <Typography sx={{ fontSize: '0.7rem', color: '#6b543f', lineHeight: 1.45 }}>{cmd.keyData}</Typography>
                   </Box>
                   <Box sx={{ p: 0.75, borderRadius: 1, background: 'rgba(139,90,43,0.05)', borderLeft: '3px solid rgba(139,90,43,0.4)' }}>
-                    <Typography sx={{ fontSize: '0.7rem', color: 'rgba(40,40,60,0.68)', lineHeight: 1.4 }}><strong style={{ color: '#8B5A2B' }}>Verdict:</strong> {cmd.verdict}</Typography>
+                    <Typography sx={{ fontSize: '0.7rem', color: '#5d4a38', lineHeight: 1.4 }}><strong style={{ color: '#6d4420' }}>Verdict:</strong> {cmd.verdict}</Typography>
                   </Box>
                 </Card>
               </Grid>
@@ -1571,20 +1571,20 @@ Volatility play:
           <SectionDesc>Where each token trades, which API reads it, and the priority hierarchy for price polling.</SectionDesc>
 
           <GroupLabel>Venues</GroupLabel>
-          <Box sx={{ mb: 2.5, borderRadius: 2, overflow: 'hidden', border: '1px solid rgba(139,90,43,0.12)' }}>
+          <Box sx={{ mb: 2.5, borderRadius: 2, overflow: 'hidden', border: '1px solid rgba(61,43,31,0.26)' }}>
             {VENUES.map((v, i) => (
               <Box key={v.name} sx={{
                 p: 1.25, display: 'flex', alignItems: 'flex-start', gap: 1.5,
-                background: i % 2 === 0 ? 'rgba(255,252,245,0.9)' : 'rgba(255,252,245,0.6)',
-                borderBottom: i < VENUES.length - 1 ? '1px solid rgba(139,90,43,0.08)' : 'none',
+                background: i % 2 === 0 ? '#f2e7cd' : '#e9dbb8',
+                borderBottom: i < VENUES.length - 1 ? '1px solid rgba(61,43,31,0.22)' : 'none',
               }}>
                 <Box sx={{ minWidth: 120, flexShrink: 0 }}>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#4A2F1A' }}>{v.name}</Typography>
-                  <Typography sx={{ fontSize: '0.68rem', color: 'rgba(40,40,60,0.5)' }}>{v.type} · {v.fee}</Typography>
+                  <Typography sx={{ fontSize: '0.68rem', color: '#776451' }}>{v.type} · {v.fee}</Typography>
                 </Box>
                 <Box sx={{ flex: 1 }}>
-                  <Typography sx={{ fontSize: '0.75rem', color: 'rgba(40,40,60,0.65)', mb: 0.25 }}><strong>Pairs:</strong> {v.pairs}</Typography>
-                  <Typography sx={{ fontSize: '0.75rem', color: 'rgba(40,40,60,0.55)', mb: 0.25 }}>{v.notes}</Typography>
+                  <Typography sx={{ fontSize: '0.75rem', color: '#5d4a38', mb: 0.25 }}><strong>Pairs:</strong> {v.pairs}</Typography>
+                  <Typography sx={{ fontSize: '0.75rem', color: '#6b543f', mb: 0.25 }}>{v.notes}</Typography>
                   <Box sx={{ p: 0.5, borderRadius: 0.5, background: 'rgba(21,101,192,0.05)', display: 'inline-block' }}>
                     <code style={{ fontSize: '0.68rem', color: '#1565c0' }}>{v.api}</code>
                   </Box>
@@ -1594,18 +1594,18 @@ Volatility play:
           </Box>
 
           <GroupLabel>Data-Source Hierarchy</GroupLabel>
-          <Box sx={{ borderRadius: 2, overflow: 'hidden', border: '1px solid rgba(139,90,43,0.12)' }}>
+          <Box sx={{ borderRadius: 2, overflow: 'hidden', border: '1px solid rgba(61,43,31,0.26)' }}>
             {DATA_SOURCES.map((d, i) => (
               <Box key={d.source} sx={{
                 p: 1.25, display: 'flex', alignItems: 'flex-start', gap: 1.5,
-                background: i % 2 === 0 ? 'rgba(255,252,245,0.9)' : 'rgba(255,252,245,0.6)',
-                borderBottom: i < DATA_SOURCES.length - 1 ? '1px solid rgba(139,90,43,0.08)' : 'none',
+                background: i % 2 === 0 ? '#f2e7cd' : '#e9dbb8',
+                borderBottom: i < DATA_SOURCES.length - 1 ? '1px solid rgba(61,43,31,0.22)' : 'none',
               }}>
                 <Box sx={{ minWidth: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg, #8B4513, #A0522D)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 700, flexShrink: 0 }}>{d.priority}</Box>
                 <Box sx={{ flex: 1 }}>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#4A2F1A' }}>{d.source}</Typography>
-                  <Typography sx={{ fontSize: '0.76rem', color: 'rgba(40,40,60,0.65)', lineHeight: 1.4 }}>{d.use}</Typography>
-                  <Typography sx={{ fontSize: '0.68rem', color: 'rgba(40,40,60,0.4)' }}>Cost: {d.cost}</Typography>
+                  <Typography sx={{ fontSize: '0.76rem', color: '#5d4a38', lineHeight: 1.4 }}>{d.use}</Typography>
+                  <Typography sx={{ fontSize: '0.68rem', color: '#7d6a55' }}>Cost: {d.cost}</Typography>
                 </Box>
               </Box>
             ))}
@@ -1618,15 +1618,15 @@ Volatility play:
           <SectionDesc>One JSON with the full registry — copy it into your bot's context, view it inline, or download it.</SectionDesc>
           <Card>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap', mb: specOpen ? 1.5 : 0 }}>
-              <Typography sx={{ fontSize: '0.8rem', color: 'rgba(40,40,60,0.7)', fontFamily: 'monospace' }}>{SPEC_SUMMARY}</Typography>
+              <Typography sx={{ fontSize: '0.8rem', color: '#4a3527', fontFamily: 'monospace' }}>{SPEC_SUMMARY}</Typography>
               <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
-                <Box onClick={() => copyText(JSON.stringify(MACHINE_SPEC, null, 2), 'spec2')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.4, px: 1.1, py: 0.45, borderRadius: 1, background: 'rgba(139,90,43,0.08)', border: '1px solid rgba(139,90,43,0.15)', '&:hover': { background: 'rgba(139,90,43,0.12)' } }}>
-                  <ContentCopy sx={{ fontSize: '0.85rem', color: '#8B5A2B' }} />
-                  <Typography sx={{ fontSize: '0.74rem', fontWeight: 600, color: '#8B5A2B' }}>{copiedKey === 'spec2' ? 'Copied!' : 'Copy JSON'}</Typography>
+                <Box onClick={() => copyText(JSON.stringify(MACHINE_SPEC, null, 2), 'spec2')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.4, px: 1.1, py: 0.45, borderRadius: 1, background: 'rgba(139,90,43,0.08)', border: '1px solid rgba(61,43,31,0.30)', '&:hover': { background: 'rgba(61,43,31,0.18)' } }}>
+                  <ContentCopy sx={{ fontSize: '0.85rem', color: '#6d4420' }} />
+                  <Typography sx={{ fontSize: '0.74rem', fontWeight: 600, color: '#6d4420' }}>{copiedKey === 'spec2' ? 'Copied!' : 'Copy JSON'}</Typography>
                 </Box>
-                <Box onClick={() => setSpecOpen(!specOpen)} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.4, px: 1.1, py: 0.45, borderRadius: 1, background: specOpen ? 'rgba(139,90,43,0.12)' : 'rgba(139,90,43,0.08)', border: '1px solid rgba(139,90,43,0.15)', '&:hover': { background: 'rgba(139,90,43,0.12)' } }}>
-                  {specOpen ? <ExpandLess sx={{ fontSize: '0.85rem', color: '#8B5A2B' }} /> : <ExpandMore sx={{ fontSize: '0.85rem', color: '#8B5A2B' }} />}
-                  <Typography sx={{ fontSize: '0.74rem', fontWeight: 600, color: '#8B5A2B' }}>{specOpen ? 'Hide JSON' : 'View JSON'}</Typography>
+                <Box onClick={() => setSpecOpen(!specOpen)} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.4, px: 1.1, py: 0.45, borderRadius: 1, background: specOpen ? 'rgba(139,90,43,0.12)' : 'rgba(139,90,43,0.08)', border: '1px solid rgba(61,43,31,0.30)', '&:hover': { background: 'rgba(61,43,31,0.18)' } }}>
+                  {specOpen ? <ExpandLess sx={{ fontSize: '0.85rem', color: '#6d4420' }} /> : <ExpandMore sx={{ fontSize: '0.85rem', color: '#6d4420' }} />}
+                  <Typography sx={{ fontSize: '0.74rem', fontWeight: 600, color: '#6d4420' }}>{specOpen ? 'Hide JSON' : 'View JSON'}</Typography>
                 </Box>
                 <Box onClick={downloadSpec} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.4, px: 1.1, py: 0.45, borderRadius: 1, background: 'rgba(21,101,192,0.08)', border: '1px solid rgba(21,101,192,0.2)', '&:hover': { background: 'rgba(21,101,192,0.12)' } }}>
                   <Typography sx={{ fontSize: '0.74rem', fontWeight: 600, color: '#1565c0' }}>Download</Typography>
@@ -1634,8 +1634,8 @@ Volatility play:
               </Box>
             </Box>
             <Collapse in={specOpen} timeout="auto" unmountOnExit>
-              <Box sx={{ p: 1.5, borderRadius: 2, background: 'rgba(2,6,23,0.03)', border: '1px solid rgba(2,6,23,0.08)', overflowX: 'auto' }}>
-                <Box component="pre" sx={{ fontSize: '0.7rem', lineHeight: 1.5, m: 0, color: 'rgba(40,40,60,0.8)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              <Box sx={{ p: 1.5, borderRadius: 2, background: 'rgba(61,43,31,0.10)', border: '1px solid rgba(61,43,31,0.26)', overflowX: 'auto' }}>
+                <Box component="pre" sx={{ fontSize: '0.7rem', lineHeight: 1.5, m: 0, color: '#f5e9d2', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                   {JSON.stringify(MACHINE_SPEC, null, 2)}
                 </Box>
               </Box>
@@ -1647,27 +1647,27 @@ Volatility play:
         <Box id="checklist" sx={{ mb: 4, scrollMarginTop: 60 }}>
           <SectionTitle icon="✅">Full Implementation Checklist</SectionTitle>
           <SectionDesc>The complete ten-step build path — the expanded version of Start Here.</SectionDesc>
-          <Card sx={{ background: 'rgba(255,252,245,0.9)' }}>
+          <Card sx={{ background: '#f2e7cd' }}>
             {CHECKLIST.map((step, i) => (
               <Box key={i} sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
                 <Box sx={{ minWidth: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #8B4513, #A0522D)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700, flexShrink: 0 }}>{i + 1}</Box>
                 <Box>
-                  <Typography sx={{ fontSize: '0.84rem', color: 'rgba(40,40,60,0.85)', fontWeight: 600 }}>{step.title}</Typography>
+                  <Typography sx={{ fontSize: '0.84rem', color: '#23180f', fontWeight: 600 }}>{step.title}</Typography>
                   {step.code && (
-                    <Box sx={{ mt: 0.25, p: 0.5, borderRadius: 1, background: 'rgba(2,6,23,0.04)', display: 'inline-block' }}>
-                      <code style={{ fontSize: '0.72rem', color: 'rgba(40,40,60,0.7)' }}>{step.code}</code>
+                    <Box sx={{ mt: 0.25, p: 0.5, borderRadius: 1, background: 'rgba(61,43,31,0.12)', display: 'inline-block' }}>
+                      <code style={{ fontSize: '0.72rem', color: '#4a3527' }}>{step.code}</code>
                     </Box>
                   )}
                 </Box>
               </Box>
             ))}
-            <Box sx={{ mt: 2, pt: 1.5, borderTop: '1px solid rgba(139,90,43,0.08)' }}>
-              <Typography sx={{ fontSize: '0.78rem', color: 'rgba(40,40,60,0.6)' }}>
-                📖 Mint Club SDK: <a href="https://sdk.mint.club/" target="_blank" rel="noopener noreferrer" style={{ color: '#8B5A2B', fontWeight: 600 }}>https://sdk.mint.club/</a>
-                {' · '}Sunflower Grove: <Link href="/sunflower-grove" style={{ color: '#8B5A2B', fontWeight: 600, textDecoration: 'none' }}>graft registry</Link>
-                {' · '}Balancer API: <a href="https://api.balancer.fi/v1/pools/base/0x2a5757b60987ff10385de1d4d923792f6fdcfff1" target="_blank" rel="noopener noreferrer" style={{ color: '#8B5A2B', fontWeight: 600 }}>REST endpoint</a>
-                {' · '}Base RPC: <a href="https://mainnet.base.org" target="_blank" rel="noopener noreferrer" style={{ color: '#8B5A2B', fontWeight: 600 }}>https://mainnet.base.org</a>
-                {' · '}DexScreener: <a href="https://api.dexscreener.com/latest/dex/tokens/0xb8de15fb529d98c93c749de63c749d48d25a30df" target="_blank" rel="noopener noreferrer" style={{ color: '#8B5A2B', fontWeight: 600 }}>NUT pairs</a>
+            <Box sx={{ mt: 2, pt: 1.5, borderTop: '1px solid rgba(61,43,31,0.20)' }}>
+              <Typography sx={{ fontSize: '0.78rem', color: '#6b543f' }}>
+                📖 Mint Club SDK: <a href="https://sdk.mint.club/" target="_blank" rel="noopener noreferrer" style={{ color: '#6d4420', fontWeight: 700 }}>https://sdk.mint.club/</a>
+                {' · '}Sunflower Grove: <Link href="/sunflower-grove" style={{ color: '#6d4420', fontWeight: 700, textDecoration: 'none' }}>graft registry</Link>
+                {' · '}Balancer API: <a href="https://api.balancer.fi/v1/pools/base/0x2a5757b60987ff10385de1d4d923792f6fdcfff1" target="_blank" rel="noopener noreferrer" style={{ color: '#6d4420', fontWeight: 700 }}>REST endpoint</a>
+                {' · '}Base RPC: <a href="https://mainnet.base.org" target="_blank" rel="noopener noreferrer" style={{ color: '#6d4420', fontWeight: 700 }}>https://mainnet.base.org</a>
+                {' · '}DexScreener: <a href="https://api.dexscreener.com/latest/dex/tokens/0xb8de15fb529d98c93c749de63c749d48d25a30df" target="_blank" rel="noopener noreferrer" style={{ color: '#6d4420', fontWeight: 700 }}>NUT pairs</a>
               </Typography>
             </Box>
           </Card>
