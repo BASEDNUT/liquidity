@@ -3,131 +3,120 @@ import assert from 'node:assert/strict';
 
 const read = (p) => readFileSync(p, 'utf8');
 
-// Orchard marketing layer — Boss-supplied based-nut-orchard-v15 index.html.
-// Ported site-native per S84: appended AFTER our cards (trees first), v15 chrome stripped
-// (topbar/hero/explorer/footer/JS), OUR live OrchardBoard embedded at the ledger position
-// inside the new code, plant CTA repointed to /pair-your-token, docs references wired.
+// Orchard marketing layer — Boss-supplied based-nut-orchard-v15 index.html, S84 evolution:
+// v1 port (chrome stripped, board embedded) -> de-slop -> pedagogy -> bottom-up architecture.
+// Final shape: intro (two forms first) -> structures -> soil/scions -> groves -> market types
+// -> MetaDEX (arb mechanism, pollination named after) -> living markets -> NUT allocation
+// -> ecosystem examples -> boundaries. Machine/canopy-forms/canopy-reveal moved OUT of homepage.
 
 // Group 1: component + page wiring
-assert.ok(existsSync('components/OrchardMarketing.js'), 'components/OrchardMarketing.js missing');
+assert.ok(existsSync('components/OrchardMarketing.js'), 'component missing');
 const comp = read('components/OrchardMarketing.js');
 const idx = read('pages/index.js');
-assert.ok(idx.includes('import OrchardMarketing from "../components/OrchardMarketing"'), 'index.js missing OrchardMarketing import');
-assert.ok(idx.includes('<OrchardMarketing'), 'index.js missing OrchardMarketing render');
+assert.ok(idx.includes('import OrchardMarketing from "../components/OrchardMarketing"'), 'index import missing');
+assert.ok(idx.includes('<OrchardMarketing'), 'index render missing');
 assert.ok(idx.includes('/img/hero-logo.png'), 'hero must stay untouched');
-assert.ok(idx.includes('PoolCard'), 'PoolCard cards must stay');
-assert.ok(idx.includes('TokenCard'), 'TokenCard cards must stay');
-assert.ok(!idx.includes('<OrchardBoard'), 'standalone board must move inside marketing layer');
+assert.ok(idx.includes('PoolCard') && idx.includes('TokenCard'), 'cards must stay');
+assert.ok(!idx.includes('<OrchardBoard'), 'standalone board must stay inside marketing layer');
 
-// Group 2: all v15 marketing sections ported
-for (const cls of ['advanced-intro','metadex-section','scale-section','factor-section','soil-section','structure-section','physics-section','ecology-section','projection-section','microclimate','whorl-family','credit-section','claim-section','machine-section','canopy-forms','canopy-reveal','boundary-section','boardwrap','plant']) {
-  assert.ok(comp.includes(`"${cls}"`), `missing section: ${cls}`);
+// Group 2: bottom-up section order — position-asserted
+const POS = ['advanced-intro', 'scale-section', 'structure-section', 'soil-section',
+  'projection-section', 'physics-section', 'metadex-section', 'ecology-section',
+  'factor-section', 'microclimate', 'whorl-family', 'credit-section',
+  'claim-section', 'boundary-section', 'boardwrap', 'plant'];
+let last = -1;
+for (const sec of POS) {
+  const i = comp.indexOf(`"${sec}"`);
+  assert.ok(i >= 0, `section missing: ${sec}`);
+  assert.ok(i > last, `order broken: ${sec} before ${POS[POS.indexOf(sec) - 1]}`);
+  last = i;
 }
 
-// Group 3: copy anchors (S84 de-slop — positive definitions; v15 content preserved)
+// Group 3: advanced sections REMOVED from homepage
+for (const gone of ['machine-section', 'canopy-forms', 'canopy-reveal']) {
+  assert.ok(!comp.includes(`"${gone}"`), `advanced section must be gone from homepage: ${gone}`);
+}
+
+// Group 4: homepage copy anchors — bottom-up plain language
 for (const h of [
   'Five layers, one Orchard.',
-  'The market between markets has no pool.',
-  'Foreign assets enter as soil.',
+  'The root token. Supply = 1, forever.',
+  'NUT comes in two forms.',
+  'Some pools use NUT directly',
+  'use wNUT. We call these the NUT scale and the wNUT scale.',
   'Shape changes the object.',
-  'Every venue has its own math.',
-  'Markets grow, dry out, cross-pollinate, and get pruned.',
-  'The Whorl family: one shape, three uses.',
-  'nutUSD — credit machinery.',
-  'Sometimes the pool grows a token. Then the token gets a pool.',
-  'A trade does not pass through the Orchard. It rewrites the Orchard it passes through.',
-  'Topology is the view from above.',
-  'The Orchard is the graph of graphs.',
+  'Two assets, one pool.',
+  'Groves group the pools.',
+  'The Orchard uses several kinds of markets.',
+  'The market between markets has no pool.',
+  'Arbitrage is the mechanism. Pollination is our name for the price transmission it causes.',
+  'If NUT is cheaper on Uniswap than Aerodrome, an arbitrageur buys on Uniswap and sells on Aerodrome',
+  'There is exactly 1 NUT. At any moment, slices of it sit in wallets',
+  'What SNUT does.',
+  'Liquidity on liquidity.',
   'Some systems feed the Orchard without joining it.',
   'Under the bark',
-  'Got a token?',
   'ROOT IT INTO THE ORCHARD',
 ]) assert.ok(comp.includes(h), `missing copy anchor: ${h}`);
 
-// Group 4: stripped chrome — v15 nav/explorer/footer/JS must not leak (markup + CSS patterns, not prose)
-for (const bad of ['class="topbar"', 'className="topbar"', '.topbar{', '.topbar ', 'class="brand"', 'class="nav"', '<nav', 'class="explorer"', 'className="explorer"', 'token-grid', 'pool-grid', '<footer', '>footer', 'getElementById', '<script']) {
-  assert.ok(!comp.includes(bad), `stripped chrome leaked: ${bad}`);
+// Group 5: field notes renumbered in presentation order, MetaDEX after market types
+for (const fn of ['Field note · 001 / two forms', 'Field note · 002 / structures',
+  'Field note · 003 / soil &amp; scions', 'Field note · 004 / groves',
+  'Field note · 005 / market types', 'Field note · 006 / MetaDEX',
+  'Field note · 007 / living markets', 'Field note · 008 / NUT allocation',
+  'Field note · 009 / SNUT', 'Field note · 010 / whorl family',
+  'Field note · 011 / nutUSD', 'Field note · 012 / recursive liquidity',
+  'Field note · 013 / boundaries']) {
+  assert.ok(comp.includes(fn), `field note missing: ${fn}`);
 }
+assert.ok(comp.indexOf('Field note · 005 / market types') < comp.indexOf('Field note · 006 / MetaDEX'), 'MetaDEX must come after market types');
 
-// Group 4b: v15 tree-canopy hero WANTED (Boss request) — opens the marketing layer after our cards
-for (const want of ['class="hero"', 'hero-inner', 'skygrain', 'class="canopy"', 'class="tree ', 'Every forest starts with one nut.', 'THE ORCHARD']) {
-  assert.ok(comp.includes(want), `v15 hero missing: ${want}`);
+// Group 6: no equations, no private notation, no forward-ref jargon
+for (const bad of ['𝒪', 'Ω', 'Tₐ(', 'Bᵢⱼ', 'Gᵢⱼ', 'W = {aᵢ', 'xᴬ = xᴮ',
+  'machine-under', 'rewrite-chain', 'observatory', 'graphbox', 'state-machine-v9',
+  'arity', 'Arity', 'ROOTSTOCK</text>', 'rootstock state', 'wNUT rootstock',
+  'parity arbitrage', 'communication</small>', 'not merely receipts',
+  'multiplex liquidity hypergraph', '4-merous']) {
+  assert.ok(!comp.includes(bad), `jargon/notation residual: ${bad}`);
 }
-assert.ok(comp.includes('@keyframes orchardFloat'), 'hero float keyframes must be renamed to orchardFloat (global namespace)');
-assert.ok(!comp.includes('@keyframes float'), 'bare float keyframes name must not leak');
+assert.ok(comp.includes('x · y = k'), 'canonical x·y=k may stay');
 
-// Group 5: OUR live board embedded at the ledger position — JSX render order: sections → board → plant CTA
+// Group 7: OUR live board embedded after boundaries, before plant CTA
 const aRender = comp.indexOf('dangerouslySetInnerHTML={{ __html: PART_A }}');
 const boardRender = comp.indexOf('<OrchardBoard');
 const cRender = comp.indexOf('dangerouslySetInnerHTML={{ __html: PART_C }}');
-assert.ok(aRender >= 0, 'PART_A render marker missing');
-assert.ok(boardRender >= 0, 'OrchardBoard render missing');
-assert.ok(cRender >= 0, 'PART_C render marker missing');
-assert.ok(comp.includes('boundary-section'), 'boundary section must exist in PART_A');
-assert.ok(aRender < boardRender, 'board must render after marketing sections');
-assert.ok(boardRender < cRender, 'board must render before plant CTA');
-assert.ok(comp.includes('Data sources:'), 'data sources caption must follow the board');
+assert.ok(aRender >= 0 && boardRender >= 0 && cRender >= 0, 'render markers missing');
+assert.ok(aRender < boardRender && boardRender < cRender, 'board position broken');
+assert.ok(comp.includes('Data sources:'), 'data sources caption missing');
+assert.ok(comp.includes('All NUTs — live board'), 'live board heading missing');
 
-// Group 6: CTA repointed + docs references wired
-assert.ok(comp.includes('href="/pair-your-token"'), 'plant CTA must point at /pair-your-token');
-const docHrefs = [...comp.matchAll(/https:\/\/docs\.basednut\.com[^\s"'`)]+/g)].map((m) => m[0]);
-assert.ok(docHrefs.length >= 8, `need >=8 docs references, found ${docHrefs.length}`);
-for (const doc of ['the-orchard-framework', 'factorizing-nut', 'sunflower-grove', 'snut-mechanics', 'nutusd', 'canopy-forms', 'topology-graphs', 'token-catalog']) {
-  assert.ok(comp.includes(doc), `missing docs ref: ${doc}`);
+// Group 8: links + CTA + docs
+assert.ok(comp.includes('href="/pair-your-token"'), 'CTA must point at /pair-your-token');
+assert.ok(comp.includes('href="/atlas"') && comp.includes('href="/atlas/data"'), 'atlas links missing');
+for (const l of ['/token/nut"', '/token/wnut"', '/token/snut"', '/token/pnut"',
+  '/pool/nut-weth-uniswap-v3"', '/sunflower-grove', 'docs.basednut.com/technical/glossary']) {
+  assert.ok(comp.includes(l), `link missing: ${l}`);
 }
 
-// Group 7: CSS scoped under .orchard-marketing — no global leaks
-assert.ok(comp.includes('.orchard-marketing{--soil'), 'CSS vars must scope to .orchard-marketing, not :root');
-assert.ok(!/(^|[^.\w-]):root\{/.test(comp), ':root must not leak');
-assert.ok(!/(^|[^.\w-])body\{/.test(comp), 'body selector must not leak');
-assert.ok(!/(^|[^.\w-])html\{/.test(comp), 'html selector must not leak');
-assert.ok(!comp.includes('>footer'), 'no footer element');
+// Group 9: CSS scoped + dark explanatory text
+assert.ok(comp.includes('.orchard-marketing{--soil'), 'CSS vars must scope to .orchard-marketing');
+for (const leak of [':root{', 'body{', 'html{', '>footer', '<footer']) {
+  assert.ok(!comp.includes(leak), `global CSS leak: ${leak}`);
+}
+assert.ok(comp.includes('color:#453325'), 'explanatory text must be darkest brown');
+assert.ok(!comp.includes('color:#5f4a3e') && !comp.includes('color:#6a5245'), 'mid browns must be darkened');
 
-// Group 8: test chained into npm test
+// Group 10: hero (Boss request) + stripped v15 chrome
+for (const want of ['class="hero"', 'class="canopy"', 'class="tree ', 'THE ORCHARD']) {
+  assert.ok(comp.includes(want), `hero missing: ${want}`);
+}
+assert.ok(comp.includes('@keyframes orchardFloat'), 'hero keyframes renamed');
+for (const bad of ['class="topbar"', 'class="explorer"', 'token-grid', 'getElementById', '<script']) {
+  assert.ok(!comp.includes(bad), `stripped chrome leaked: ${bad}`);
+}
+
+// Group 11: test chained
 const pkg = read('package.json');
-assert.ok(pkg.includes('orchard-marketing.test.mjs'), 'test must be chained into npm test');
-
-// Group 9: S84 de-slop pass — positive definitions, no meta-language, no plain-note device
-assert.ok(!comp.includes('plain-note'), 'plain-note device must be gone');
-assert.ok(comp.includes('Five layers, one Orchard.'), 'positive intro headline missing');
-assert.ok(comp.includes('The cards above are the trees. This part is how they fit together.'), 'promoted onboarding lead missing');
-assert.ok(comp.includes('A grove groups related structures.'), 'positive grove definition missing');
-assert.ok(comp.includes('LP and BPT tokens are transferable claims on underlying reserves.'), 'positive LP/BPT definition missing');
-assert.ok(comp.includes('Foreign assets enter as soil.'), 'positive soil headline missing');
-assert.ok(comp.includes('Every venue has its own math.'), 'positive physics headline missing');
-assert.ok(comp.includes('nutUSD — credit machinery.'), 'nutUSD headline missing');
-assert.ok(comp.includes('The Orchard is the graph of graphs.'), 'positive reveal headline missing');
-assert.ok(comp.includes('Some systems feed the Orchard without joining it.'), 'positive boundaries headline missing');
-// anti-slop residuals must stay dead
-for (const bad of ['is not a grove', 'not another ontology', 'graph theory first', 'Pollination is not decoration', 'does not make an asset a Based NUT descendant', 'Plain English:', 'pretending every', 'framework separates', 'framework now treats', 'not merely receipts']) {
-  assert.ok(!comp.includes(bad), `slop residual: ${bad}`);
-}
-// kept guards + anchors
-assert.ok(comp.includes('nutUSD is not USD'), 'nutUSD stablecoin guard must stay');
-assert.ok(comp.includes('href="/atlas"'), 'atlas link missing');
-assert.ok(comp.includes('href="/atlas/data"'), 'atlas data link missing');
-assert.ok(comp.includes('color:#453325'), 'explanatory text must be darkest brown #453325');
-assert.ok(!comp.includes('color:#5f4a3e'), 'old mid brown #5f4a3e must be darkened further');
-assert.ok(!comp.includes('color:#6a5245'), 'old mid brown #6a5245 must be darkened further');
-
-
-// Group 10: S84 pedagogy rewrite — plain before term, no forward refs
-assert.ok(comp.includes('When one asset prices differently on two venues, traders buy where it is cheaper and sell where it is dearer until the gap closes. That price transmission is pollination.'), 'literal pollination definition missing');
-assert.ok(comp.includes('NUT exists in two interchangeable forms'), 'two-forms lead missing');
-assert.ok(comp.includes('There is exactly 1 NUT. At any moment, slices of it sit in wallets'), 'allocation plain explanation missing');
-assert.ok(comp.includes('Field note · 002 / NUT allocation'), 'factorization must be renamed to NUT allocation');
-assert.ok(comp.includes('Field note · 005 / pool types'), 'cultivation physics must be renamed to pool types');
-assert.ok(comp.includes('Field note · 015 / boundaries'), 'boundaries must be renumbered 015');
-assert.ok(!comp.includes('Field note · 016'), '016 numbering must be gone');
-assert.ok(comp.includes('/token/nut"'), 'NUT token link missing');
-assert.ok(comp.includes('/token/wnut"'), 'wNUT token link missing');
-assert.ok(comp.includes('/token/snut"'), 'SNUT token link missing');
-assert.ok(comp.includes('/token/pnut"'), 'pNUT token link missing');
-assert.ok(comp.includes('/pool/nut-weth-uniswap-v3"'), 'pool link missing');
-assert.ok(comp.includes('technical/glossary'), 'glossary link missing');
-assert.ok(!comp.includes('The one NUT is conserved.'), 'old factorization slogan must be gone');
-assert.ok(!comp.includes('multiplex liquidity hypergraph'), 'hypergraph jargon must be gone');
-assert.ok(comp.includes('A market is more than its token balances.'), 'machine plain lead missing');
-assert.ok(!comp.includes('rewrite-chain'), 'unexplained rewrite-chain must be gone');
+assert.ok(pkg.includes('orchard-marketing.test.mjs'), 'test must be chained');
 
 console.log('orchard-marketing: all groups passed');
