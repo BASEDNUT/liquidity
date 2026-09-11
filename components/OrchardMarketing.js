@@ -305,7 +305,7 @@ export default function OrchardMarketing({ tokens = [], pools = [], marketData =
 <div class="claim-inner">
 <div class="section-head">
 <div><div class="eyebrow">Field note · 011 / recursive liquidity</div><h2>Sometimes the pool grows a token. Then the token gets a pool.</h2></div>
-<p>LP and BPT tokens are not merely receipts. They are transferable claims on underlying reserves. Once a claim itself acquires a market, the Orchard becomes higher-order: <strong>liquidity can become an asset inside more liquidity.</strong></p>
+<p>LP and BPT tokens are transferable claims on underlying reserves. Once a claim itself acquires a market, the Orchard becomes higher-order: <strong>liquidity can become an asset inside more liquidity.</strong></p>
 </div>
 <div class="claim-card">
 <div class="claim-copy">

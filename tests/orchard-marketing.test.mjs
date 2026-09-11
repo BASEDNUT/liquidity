@@ -92,13 +92,14 @@ assert.ok(!comp.includes('plain-note'), 'plain-note device must be gone');
 assert.ok(comp.includes('Five layers, one Orchard.'), 'positive intro headline missing');
 assert.ok(comp.includes('The cards above are the trees. This part is how they fit together.'), 'promoted onboarding lead missing');
 assert.ok(comp.includes('A grove groups related structures.'), 'positive grove definition missing');
+assert.ok(comp.includes('LP and BPT tokens are transferable claims on underlying reserves.'), 'positive LP/BPT definition missing');
 assert.ok(comp.includes('Foreign assets enter as soil.'), 'positive soil headline missing');
 assert.ok(comp.includes('Every venue has its own math.'), 'positive physics headline missing');
 assert.ok(comp.includes('nutUSD — credit machinery.'), 'nutUSD headline missing');
 assert.ok(comp.includes('The Orchard is the graph of graphs.'), 'positive reveal headline missing');
 assert.ok(comp.includes('Some systems feed the Orchard without joining it.'), 'positive boundaries headline missing');
 // anti-slop residuals must stay dead
-for (const bad of ['is not a grove', 'not another ontology', 'graph theory first', 'Pollination is not decoration', 'does not make an asset a Based NUT descendant', 'Plain English:', 'pretending every', 'framework separates', 'framework now treats']) {
+for (const bad of ['is not a grove', 'not another ontology', 'graph theory first', 'Pollination is not decoration', 'does not make an asset a Based NUT descendant', 'Plain English:', 'pretending every', 'framework separates', 'framework now treats', 'not merely receipts']) {
   assert.ok(!comp.includes(bad), `slop residual: ${bad}`);
 }
 // kept guards + anchors
