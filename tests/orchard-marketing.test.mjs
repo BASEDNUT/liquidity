@@ -74,6 +74,8 @@ assert.ok(comp.indexOf('Field note · 005 / market types') < comp.indexOf('Field
 // Group 6: no equations, no private notation, no forward-ref jargon
 for (const bad of ['𝒪', 'Ω', 'Tₐ(', 'Bᵢⱼ', 'Gᵢⱼ', 'W = {aᵢ', 'xᴬ = xᴮ',
   'machine-under', 'rewrite-chain', 'observatory', 'graphbox', 'state-machine-v9',
+  'machine-section', 'machine-inner', 'machine-law', 'state-tuple', 'tuple-grid',
+  'observable', 'formula', 'reveal-copy', 'class="canopy-forms"', 'class="canopy-reveal"',
   'arity', 'Arity', 'ROOTSTOCK</text>', 'rootstock state', 'wNUT rootstock',
   'parity arbitrage', 'communication</small>', 'not merely receipts',
   'multiplex liquidity hypergraph', '4-merous']) {
