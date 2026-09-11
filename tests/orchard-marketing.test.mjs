@@ -29,7 +29,7 @@ for (const h of [
   'Five layers, one Orchard.',
   'The market between markets has no pool.',
   'Foreign assets enter as soil.',
-  'Arity changes the object.',
+  'Shape changes the object.',
   'Every venue has its own math.',
   'Markets grow, dry out, cross-pollinate, and get pruned.',
   'The Whorl family: one shape, three uses.',
@@ -106,6 +106,28 @@ for (const bad of ['is not a grove', 'not another ontology', 'graph theory first
 assert.ok(comp.includes('nutUSD is not USD'), 'nutUSD stablecoin guard must stay');
 assert.ok(comp.includes('href="/atlas"'), 'atlas link missing');
 assert.ok(comp.includes('href="/atlas/data"'), 'atlas data link missing');
-assert.ok(comp.includes('color:#5f4a3e'), 'darker brown #5f4a3e missing');
+assert.ok(comp.includes('color:#453325'), 'explanatory text must be darkest brown #453325');
+assert.ok(!comp.includes('color:#5f4a3e'), 'old mid brown #5f4a3e must be darkened further');
+assert.ok(!comp.includes('color:#6a5245'), 'old mid brown #6a5245 must be darkened further');
+
+
+// Group 10: S84 pedagogy rewrite — plain before term, no forward refs
+assert.ok(comp.includes('When one asset prices differently on two venues, traders buy where it is cheaper and sell where it is dearer until the gap closes. That price transmission is pollination.'), 'literal pollination definition missing');
+assert.ok(comp.includes('NUT exists in two interchangeable forms'), 'two-forms lead missing');
+assert.ok(comp.includes('There is exactly 1 NUT. At any moment, slices of it sit in wallets'), 'allocation plain explanation missing');
+assert.ok(comp.includes('Field note · 002 / NUT allocation'), 'factorization must be renamed to NUT allocation');
+assert.ok(comp.includes('Field note · 005 / pool types'), 'cultivation physics must be renamed to pool types');
+assert.ok(comp.includes('Field note · 015 / boundaries'), 'boundaries must be renumbered 015');
+assert.ok(!comp.includes('Field note · 016'), '016 numbering must be gone');
+assert.ok(comp.includes('/token/nut"'), 'NUT token link missing');
+assert.ok(comp.includes('/token/wnut"'), 'wNUT token link missing');
+assert.ok(comp.includes('/token/snut"'), 'SNUT token link missing');
+assert.ok(comp.includes('/token/pnut"'), 'pNUT token link missing');
+assert.ok(comp.includes('/pool/nut-weth-uniswap-v3"'), 'pool link missing');
+assert.ok(comp.includes('technical/glossary'), 'glossary link missing');
+assert.ok(!comp.includes('The one NUT is conserved.'), 'old factorization slogan must be gone');
+assert.ok(!comp.includes('multiplex liquidity hypergraph'), 'hypergraph jargon must be gone');
+assert.ok(comp.includes('A market is more than its token balances.'), 'machine plain lead missing');
+assert.ok(!comp.includes('rewrite-chain'), 'unexplained rewrite-chain must be gone');
 
 console.log('orchard-marketing: all groups passed');
