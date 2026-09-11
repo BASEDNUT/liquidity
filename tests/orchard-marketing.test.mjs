@@ -24,21 +24,21 @@ for (const cls of ['advanced-intro','metadex-section','scale-section','factor-se
   assert.ok(comp.includes(`"${cls}"`), `missing section: ${cls}`);
 }
 
-// Group 3: verbatim copy anchors (Boss copy, not paraphrased)
+// Group 3: copy anchors (S84 de-slop — positive definitions; v15 content preserved)
 for (const h of [
-  'A pool is not a grove.',
+  'Five layers, one Orchard.',
   'The market between markets has no pool.',
-  'Foreign matter is not a branch.',
+  'Foreign assets enter as soil.',
   'Arity changes the object.',
-  'Same Orchard. Different laws of motion.',
+  'Every venue has its own math.',
   'Markets grow, dry out, cross-pollinate, and get pruned.',
-  'One form. Three very different contents.',
-  'Credit is another state system.',
+  'The Whorl family: one shape, three uses.',
+  'nutUSD — credit machinery.',
   'Sometimes the pool grows a token. Then the token gets a pool.',
   'A trade does not pass through the Orchard. It rewrites the Orchard it passes through.',
   'Topology is the view from above.',
-  'The Orchard is not one graph.',
-  'Not every graph belongs in the Orchard.',
+  'The Orchard is the graph of graphs.',
+  'Some systems feed the Orchard without joining it.',
   'Under the bark',
   'Got a token?',
   'ROOT IT INTO THE ORCHARD',
@@ -87,18 +87,24 @@ assert.ok(!comp.includes('>footer'), 'no footer element');
 const pkg = read('package.json');
 assert.ok(pkg.includes('orchard-marketing.test.mjs'), 'test must be chained into npm test');
 
-// Group 9: S84 clarity pass — plain-English notes, atlas links, darker browns
-const notes = (comp.match(/class="plain-note"/g) || []).length;
-assert.ok(notes >= 17, `need >=17 plain-English notes, found ${notes}`);
-assert.ok(comp.includes('New here? The cards above are the trees'), 'five-layers welcome note missing');
+// Group 9: S84 de-slop pass — positive definitions, no meta-language, no plain-note device
+assert.ok(!comp.includes('plain-note'), 'plain-note device must be gone');
+assert.ok(comp.includes('Five layers, one Orchard.'), 'positive intro headline missing');
+assert.ok(comp.includes('The cards above are the trees. This part is how they fit together.'), 'promoted onboarding lead missing');
+assert.ok(comp.includes('A grove groups related structures.'), 'positive grove definition missing');
+assert.ok(comp.includes('Foreign assets enter as soil.'), 'positive soil headline missing');
+assert.ok(comp.includes('Every venue has its own math.'), 'positive physics headline missing');
+assert.ok(comp.includes('nutUSD — credit machinery.'), 'nutUSD headline missing');
+assert.ok(comp.includes('The Orchard is the graph of graphs.'), 'positive reveal headline missing');
+assert.ok(comp.includes('Some systems feed the Orchard without joining it.'), 'positive boundaries headline missing');
+// anti-slop residuals must stay dead
+for (const bad of ['is not a grove', 'not another ontology', 'graph theory first', 'Pollination is not decoration', 'does not make an asset a Based NUT descendant', 'Plain English:', 'pretending every', 'framework separates', 'framework now treats']) {
+  assert.ok(!comp.includes(bad), `slop residual: ${bad}`);
+}
+// kept guards + anchors
+assert.ok(comp.includes('nutUSD is not USD'), 'nutUSD stablecoin guard must stay');
 assert.ok(comp.includes('href="/atlas"'), 'atlas link missing');
 assert.ok(comp.includes('href="/atlas/data"'), 'atlas data link missing');
-assert.ok(comp.includes('href="/sunflower-grove"'), 'sunflower grove link missing');
-assert.ok(comp.includes('href="/token/nut"'), 'NUT token page link missing');
-assert.ok(comp.includes('href="/token/pnut"'), 'pNUT token page link missing');
-assert.ok(!comp.includes('color:#7a6559'), 'old light brown #7a6559 still present');
-assert.ok(!comp.includes('color:#756156'), 'old light brown #756156 still present');
 assert.ok(comp.includes('color:#5f4a3e'), 'darker brown #5f4a3e missing');
-assert.ok(comp.includes('.plain-note{'), 'plain-note CSS missing');
 
 console.log('orchard-marketing: all groups passed');
