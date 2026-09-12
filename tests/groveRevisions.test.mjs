@@ -36,14 +36,14 @@ let passed = 0;
 const ok = (cond, msg) => { assert.ok(cond, msg); passed += 1; };
 
 // 1. Roots label — NUT is roots; trunk/rootstock kept as graphic position
-ok(filterTokensSrc.includes('"Roots"'), 'FilterTokens missing Roots');
+ok(filterTokensSrc.includes('"Root"'), 'FilterTokens missing Root');
 ok(!filterTokensSrc.includes('"Trunk"'), 'FilterTokens still has Trunk');
-ok(indexSrc.includes('category: "Roots"'), 'index.js trunk category not Roots');
+ok(indexSrc.includes('category: "Root"'), 'index.js trunk category not Root');
 ok(!indexSrc.includes('category: "Trunk"'), 'index.js still has Trunk category');
 ok(tokenIdSrc.includes("case 'Roots':"), '[id].js hero theme missing Roots case');
 ok(!tokenIdSrc.includes("case 'Trunk':"), '[id].js still has Trunk hero case');
 ok(!/category: 'Trunk'/.test(tokenIdSrc), '[id].js still has Trunk category');
-ok(nutSrc.includes('label="Roots"'), 'nut.js chip not Roots');
+ok(nutSrc.includes('label="Root"'), 'nut.js chip not Root');
 ok(treeSrc.includes('Roots = NUT anchor'), 'tree.js legend not Roots');
 ok(!treeSrc.includes('Trunk / roots = NUT anchor'), 'tree.js old legend remains');
 

@@ -199,10 +199,10 @@ export async function getStaticProps() {
     const t = fetchTokens();
 
     const flatTokens = [
-      { ...t.trunk, id: (t.trunk?.name || "trunk").toLowerCase(), category: "Roots" },
-      ...(t.branches || []).map((item, i) => ({ ...item, id: (item.name || `branch-${i}`).toLowerCase(), category: "Branch" })),
+      { ...t.trunk, id: (t.trunk?.name || "trunk").toLowerCase(), category: "Root" },
+      ...(t.branches || []).map((item, i) => ({ ...item, id: (item.name || `branch-${i}`).toLowerCase(), category: "Ecosystem" })),
       ...(t.nestedTokens || []).map((item, i) => ({ ...item, id: (item.name || `nested-${i}`).toLowerCase(), category: "Nested" })),
-      ...(t.soil || []).map((item, i) => ({ ...item, id: (item.name || `soil-${i}`).toLowerCase(), category: "Soil" })),
+      ...(t.soil || []).map((item, i) => ({ ...item, id: (item.name || `soil-${i}`).toLowerCase(), category: "External" })),
     ];
 
     const serializedPools = JSON.parse(JSON.stringify(p));

@@ -305,7 +305,7 @@ export default function NutPage() {
               Supply = <strong style={{ color: C.gold }}>1</strong> whole token split into <strong style={{ color: C.gold }}>1 quintillion atomic units</strong> (10^18 attoNUTs) — a conserved ledger with no mint, no burn, and no admin on the root contract. Every swap relocates a fraction of the same supply; whole-token price equals FDV because total supply is one. Specified child assets use NUT as collateral, reward asset, constituent, or reference input.
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-              <Chip sx={{ bgcolor: 'rgba(212,166,118,0.15)', color: C.gold, fontWeight: 600 }} label="Roots" size="small" />
+              <Chip sx={{ bgcolor: 'rgba(212,166,118,0.15)', color: C.gold, fontWeight: 600 }} label="Root" size="small" />
               <Chip sx={{ bgcolor: 'rgba(139,90,43,0.12)', color: C.nutLight }} label="ERC-20" size="small" />
               <Chip sx={{ bgcolor: 'rgba(139,90,43,0.12)', color: C.nutLight }} label="Base" size="small" />
               <Chip sx={{ bgcolor: 'rgba(139,90,43,0.12)', color: C.nutLight }} label="Core" size="small" />

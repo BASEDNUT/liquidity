@@ -209,7 +209,9 @@ const TokenCard = ({ token }) => {
                   const tags = (token.tags || []).join(' ').toLowerCase();
                   if (name === 'pnut' || tags.includes('index') || tags.includes('balancer')) return <strong>Index Token (Balancer)</strong>;
                   if (tags.includes('bonding curve') || tags.includes('mintclub') || name === 'nutino' || name === 'salt') return <strong>Bonding Curve Token (MintClub)</strong>;
-                  return <strong>Not available</strong>;
+                  if (tags.includes("nft")) return <strong>NFT Collection (Mint Club)</strong>;
+                  if (token.category === "External") return <strong>External asset — see live board below</strong>;
+                  return <strong>— see live board below</strong>;
                 }
                 return parts;
               })()}
