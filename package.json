@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node tests/carbonMetrics.test.mjs && node tests/carbonClarity.test.mjs && node tests/orchard-pages.test.mjs && node tests/wnut-page.test.mjs && node tests/groveCards.test.mjs && node tests/groveRevisions.test.mjs && node tests/gtsilGrove.test.mjs && node tests/orchard-menu-elegant.test.mjs && node tests/security-page.test.mjs && node tests/orchard-marketing.test.mjs && node tests/pair-page.test.mjs && node tests/orchard-board-banner.test.mjs && node tests/orchard-field-guide-cards.test.mjs && node tests/orchard-board-datalayer.test.mjs",
+    "test": "node tests/carbonMetrics.test.mjs && node tests/carbonClarity.test.mjs && node tests/orchard-pages.test.mjs && node tests/wnut-page.test.mjs && node tests/groveCards.test.mjs && node tests/groveRevisions.test.mjs && node tests/gtsilGrove.test.mjs && node tests/orchard-menu-elegant.test.mjs && node tests/security-page.test.mjs && node tests/orchard-marketing.test.mjs && node tests/pair-page.test.mjs && node tests/orchard-board-banner.test.mjs && node tests/orchard-field-guide-cards.test.mjs && node tests/orchard-board-datalayer.test.mjs && node tests/health-upstash-auth.test.mjs",
     "cron:orchard-refresh": "node scripts/cron/refresh-orchard-tvl.js"
   },
   "keywords": [],

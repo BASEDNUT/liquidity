@@ -14,8 +14,16 @@ export default async function handler(req, res) {
     let redisReady = false;
   if (features.warmachine && process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
       try {
-        // lightweight HEAD request to Upstash REST API
-        const ping = await fetch(process.env.UPSTASH_REDIS_REST_URL, { method: 'HEAD' });
+        // authenticated lightweight GET to Upstash REST API
+        // (unauthenticated HEAD gets 401 -> false negative, S126)
+        const ping = await fetch(process.env.UPSTASH_REDIS_REST_URL + '/set/health:ping', {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN,
+            'Content-Type': 'text/plain',
+          },
+          body: '"ok"',
+        });
         redisReady = ping.ok;
       } catch {
         redisReady = false;
