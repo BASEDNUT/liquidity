@@ -9,10 +9,17 @@ import { getJSON, setJSON } from '../../src/utils/cache.js';
 
 const CACHE_KEY = 'orchard:board:v1';
 const CACHE_TTL_SECONDS = 60;
-const IRIS_BASE = process.env.IRIS_BASE_URL || 'http://localhost:9000';
+const PUSHED_KEY = 'orchard:metrics:v1';
+// Container pusher cadence is 900s; TTL is 3600s. Anything older than
+// 2x cadence is treated as not fresh (fall back to IRIS / site aggregation).
+const PUSHED_FRESH_MS = 2 * 900 * 1000;
+// IRIS is container-internal: only reachable when explicitly configured
+// (local dev against the container). No localhost default on Vercel.
+const IRIS_BASE = process.env.IRIS_BASE_URL || null;
 const IRIS_KEY = process.env.IRIS_API_KEY || 'nut-analysis-key';
 
 async function fetchNsiFromIris() {
+  if (!IRIS_BASE) return { nsi: null, error: 'iris_not_configured' };
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 8000);
   try {
@@ -43,21 +50,46 @@ export default async function handler(req, res) {
   }
 
   try {
-    const [tvlData, nsiData] = await Promise.all([
+    // Read container-pushed metrics (orchard:metrics:v1) alongside site-side
+    // aggregation. Site keeps volume/assets/24h-delta (public APIs, live);
+    // container is canonical for NSI + TVL + poolCount when its push is fresh.
+    const [pushed, tvlData, nsiData] = await Promise.all([
+      getJSON(PUSHED_KEY).catch(() => null),
       aggregateOrchardTVL(),
       fetchNsiFromIris(),
     ]);
 
-    const nsi = nsiData.nsi;
+    const pushedFresh = Boolean(
+      pushed && pushed.pushedAt && Date.now() - Date.parse(pushed.pushedAt) < PUSHED_FRESH_MS
+    );
+
+    // NSI priority: container push -> IRIS (local dev) -> null
+    let nsi;
+    let nsiSource;
+    let nsiError = nsiData.error;
+    if (pushedFresh && pushed.nsi) {
+      nsi = pushed.nsi;
+      nsiSource = 'pushed';
+      nsiError = null;
+    } else if (nsiData.nsi) {
+      nsi = nsiData.nsi;
+      nsiSource = 'iris';
+    } else {
+      nsi = null;
+      nsiSource = null;
+    }
+
     const record = {
-      tvl: tvlData.tvl,
+      tvl: pushedFresh && Number.isFinite(Number(pushed.tvl)) ? Number(pushed.tvl) : tvlData.tvl,
       assets: tvlData.assets,
-      pools: tvlData.pools,
+      pools: pushedFresh && Number.isFinite(Number(pushed.poolCount)) ? Number(pushed.poolCount) : tvlData.pools,
       volume24hTotal: tvlData.volume24hTotal,
       priceChange24hAvg: tvlData.priceChange24hAvg,
       nsi,
+      nsiSource,
       boardState: nsiScoreToStateKey(nsi ? nsi.score : null),
-      nsiError: nsiData.error,
+      nsiError,
+      pushedAt: pushedFresh ? pushed.pushedAt : null,
       checkedAt: Date.now(),
     };
 
