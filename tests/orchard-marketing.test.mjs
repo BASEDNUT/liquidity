@@ -15,9 +15,13 @@ const comp = read('components/OrchardMarketing.js');
 const idx = read('pages/index.js');
 assert.ok(idx.includes('import OrchardMarketing from "../components/OrchardMarketing"'), 'index import missing');
 assert.ok(idx.includes('<OrchardMarketing'), 'index render missing');
-assert.ok(idx.includes('/img/hero-logo.png'), 'hero must stay untouched');
+// S126 (Boss 2026-10-19): v35 board replaces everything above the cards. Hero logo image is gone.
+assert.ok(!idx.includes('/img/hero-logo.png'), 'hero-logo must be gone - replaced by v35 board');
+assert.ok(!idx.includes('OrchardTVLNotice'), 'old OrchardTVLNotice must be gone - replaced by v35 board');
 assert.ok(idx.includes('PoolCard') && idx.includes('TokenCard'), 'cards must stay');
-assert.ok(!idx.includes('<OrchardBoard'), 'standalone board must stay inside marketing layer');
+// S126 (Boss 2026-10-19): v35 OrchardBoardBanner is explicitly ordered on the homepage below the hero.
+// Law narrowed: legacy standalone boards stay banned; the Boss-ordered v35 banner is allowed.
+assert.ok(!idx.match(/<OrchardBoard(?!Banner)/), 'legacy standalone board must stay inside marketing layer');
 
 // Group 2: bottom-up section order — position-asserted
 const POS = ['advanced-intro', 'scale-section', 'structure-section', 'soil-section',

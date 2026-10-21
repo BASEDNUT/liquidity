@@ -1,0 +1,6 @@
+.figure{height:169px;min-width:0;margin:10px 0 11px;position:relative;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-end;background:radial-gradient(ellipse at center,#ecdfc73d,transparent 74%);overflow:hidden}
+.figure:before{content:'';position:absolute;left:7px;top:6px;right:7px;height:1px;background:linear-gradient(90deg,transparent,#d7bfa0,transparent)}
+.plate{display:block;width:100%;height:143px;overflow:visible;flex:none}
+.figure figcaption{text-align:center;letter-spacing:1.55px;font:700 9px/1.4 Arial,sans-serif;color:#a07548;padding:0 0 5px;margin:0}
+.index figcaption{color:#67784a}.collectible figcaption{color:#a4714d}
+@media(max-width:520px){.figure{height:160px}.plate{height:134px}}

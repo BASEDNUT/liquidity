@@ -7,14 +7,15 @@ import FallingNutsOverlay from "../components/FallingNutsOverlay";
 import FilterTabs from "../components/FilterTabs";
 import FilterTokens from "../components/FilterTokens";
 import SearchBar from "../components/SearchBar";
-import PoolCard from "../components/PoolCard";
 import TokenCard from "../components/TokenCard";
 import OrchardMarketing from "../components/OrchardMarketing";
 import DataToggle from "../components/DataToggle";
 import { fetchPools } from "../utils/fetchPools";
 import { fetchTokens } from "../utils/fetchTokens";
-import Image from "next/image";
-import OrchardTVLNotice from "../components/OrchardTVLNotice";
+import OrchardBoardBanner from "../components/OrchardBoardBanner";
+import FGPoolCard from "../components/pools/PoolCard";
+import fgStyles from "../components/pools/Repair02.module.css";
+import { normalizePool } from "../lib/pools/catalog";
 
 export default function Home({ initialPools, initialTokens }) {
   const [view, setView] = useState("tokens");
@@ -25,6 +26,15 @@ export default function Home({ initialPools, initialTokens }) {
   const [marketData, setMarketData] = useState(null);
 
   const pools = initialPools || [];
+  // Field Guide view-model: normalized catalog shape (hrefs/kind/assets) merged with
+  // raw record fields (site id for marketData lookup, category for filters, icon).
+  const fgPools = useMemo(() => (initialPools || []).map((p) => ({
+    ...normalizePool(p),
+    id: p.id,
+    category: p.category,
+    icon: p.icon,
+    role: p.role,
+  })), [initialPools]);
   const tokens = liveTokens || initialTokens || [];
 
   // Client-side hydration: fetch live market data after initial render
@@ -68,7 +78,7 @@ export default function Home({ initialPools, initialTokens }) {
   }, []);
 
   const filteredPools = useMemo(() => {
-    let result = pools;
+    let result = fgPools;
     if (poolFilter !== "All") {
       result = result.filter((pool) => Array.isArray(pool.category) ? pool.category.includes(poolFilter) : pool.category === poolFilter);
     }
@@ -83,7 +93,7 @@ export default function Home({ initialPools, initialTokens }) {
       });
     }
     return result;
-  }, [pools, poolFilter, searchQuery]);
+  }, [fgPools, poolFilter, searchQuery]);
 
   const filteredTokens = useMemo(() => {
     let result = tokens;
@@ -121,12 +131,9 @@ export default function Home({ initialPools, initialTokens }) {
         );
       })()}
       <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4, px: { xs: 2, sm: 4 }, maxWidth: 'lg' }}>
-        <Box sx={{ width: '100%', textAlign: 'center', mb: 0 }}>
-          <Image src="/img/hero-logo.png" alt="Based Nut's - The Orchard" width={800} height={600} priority style={{ width: '100%', height: 'auto' }} />
+        <Box sx={{ width: '100%', mt: 2, mb: 1, px: { xs: 1, sm: 0 } }}>
+          <OrchardBoardBanner />
         </Box>
-        {process.env.NEXT_PUBLIC_FEATURE_ORCHARD_SIGN_ENABLED !== 'false' && (
-          <OrchardTVLNotice />
-        )}
         {(() => {
           const headingMap = { pools: 'Explore Nut Trees', tokens: 'Explore Nuts' };
           const dynamicHeading = headingMap[view] || 'Explore Nutty Assets';
@@ -161,16 +168,11 @@ export default function Home({ initialPools, initialTokens }) {
         </Box>
 
         {view === 'pools' ? (
-          <>
-            <Grid container spacing={3} sx={{ mt: 2 }}>
-              {filteredPools.map((pool) => (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pool.id}>
-                  <PoolCard {...pool} />
-                </Grid>
-              ))}
-            </Grid>
-
-          </>
+          <div className={`${fgStyles.fgGrid} ${fgStyles.theme}`} style={{ width: '100%', marginTop: 16 }}>
+            {filteredPools.map((pool) => (
+              <FGPoolCard key={pool.id} pool={pool} index={filteredPools.indexOf(pool)} marketData={marketData ? marketData.pools[pool.id] : undefined} />
+            ))}
+          </div>
         ) : (
           <>
             <Grid container spacing={3} sx={{ mt: 2 }}>

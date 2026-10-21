@@ -62,7 +62,7 @@ export default async function handler(req, res) {
  * Aggregates TVL from GeckoTerminal / DexScreener / BaseRPC pool data.
  * Returns the same response shape as the old n8n webhook:
  *   { tvl, assetCount, poolCount, volume24h, avgPriceChange, lastUpdated }
- * Plus compatibility aliases for OrchardTVLNotice component:
+ * Plus compatibility aliases (consumed by /api/orchard-board):
  *   { assets, pools, volume24hTotal, priceChange24hAvg, checkedAt }
  */
 export async function aggregateOrchardTVL() {
@@ -136,7 +136,7 @@ export async function aggregateOrchardTVL() {
     volume24h,
     avgPriceChange,
     lastUpdated,
-    // Compatibility aliases for OrchardTVLNotice component
+    // Compatibility aliases (consumed by /api/orchard-board)
     assets: assetSet.size,
     pools: poolCount,
     volume24hTotal: volume24h,
