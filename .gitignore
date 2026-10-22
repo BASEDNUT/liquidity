@@ -34,3 +34,5 @@ snut_*.png
 *_verification*.json
 rpc_test*.json
 real_onchain_data*.json
+.vercel
+

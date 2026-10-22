@@ -41,7 +41,7 @@ test('homepage pools view renders Field Guide cards with live TVL wiring', () =>
   assert.ok(page.includes('marketData ? marketData.pools[pool.id]'), 'live marketData must flow to cards');
   assert.ok(page.includes('normalizePool'), 'pools must be catalog-normalized');
   assert.ok(!page.includes('import PoolCard from "../components/PoolCard"'), 'old PoolCard import must be gone from homepage');
-  assert.ok(page.includes('import TokenCard'), 'tokens view unchanged (TokenCard stays)');
+  assert.ok(page.includes('import FGTokenCard'), 'tokens view now renders Field Guide specimen cards (S126e Boss order: new cards for tokens)');
 });
 
 test('pool card uses live TVL preference over static', () => {

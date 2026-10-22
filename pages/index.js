@@ -7,7 +7,7 @@ import FallingNutsOverlay from "../components/FallingNutsOverlay";
 import FilterTabs from "../components/FilterTabs";
 import FilterTokens from "../components/FilterTokens";
 import SearchBar from "../components/SearchBar";
-import TokenCard from "../components/TokenCard";
+import FGTokenCard from "../components/pools/TokenSpecimenCard";
 import OrchardMarketing from "../components/OrchardMarketing";
 import DataToggle from "../components/DataToggle";
 import { fetchPools } from "../utils/fetchPools";
@@ -174,16 +174,11 @@ export default function Home({ initialPools, initialTokens }) {
             ))}
           </div>
         ) : (
-          <>
-            <Grid container spacing={3} sx={{ mt: 2 }}>
-              {filteredTokens.map((token) => (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={token.id}>
-                  <TokenCard token={token} />
-                </Grid>
-              ))}
-            </Grid>
-
-          </>
+          <div className={`${fgStyles.fgGrid} ${fgStyles.theme}`} style={{ width: '100%', marginTop: 16 }}>
+            {filteredTokens.map((token, i) => (
+              <FGTokenCard key={token.id} token={token} index={i} />
+            ))}
+          </div>
         )}
 
       </Container>

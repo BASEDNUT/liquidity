@@ -14,7 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 
-// Token live merge - mirrors TokenCard.js source display order:
+// Token live merge - mirrors TokenSpecimenCard.jsx source display order:
 // GeckoTerminal -> DexScreener -> CoinGecko -> Balancer
 function mergeTokenLive(token) {
   const md = token.marketData;
