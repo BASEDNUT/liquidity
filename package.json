@@ -1,13 +1,12 @@
 {
-  "name": "nodejs",
+  "name": "based-nut-liquidity",
   "version": "1.0.0",
-  "description": "A minimal liquidity pool explorer",
-  "main": "index.js",
+  "description": "BASED NUT Orchard \u2014 liquidity portal and data surface for the NUT ecosystem on Base",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node tests/carbonMetrics.test.mjs && node tests/carbonClarity.test.mjs && node tests/orchard-pages.test.mjs && node tests/wnut-page.test.mjs && node tests/groveCards.test.mjs && node tests/groveRevisions.test.mjs && node tests/gtsilGrove.test.mjs && node tests/orchard-menu-elegant.test.mjs && node tests/security-page.test.mjs && node tests/orchard-marketing.test.mjs && node tests/pair-page.test.mjs && node tests/orchard-board-banner.test.mjs && node tests/orchard-field-guide-cards.test.mjs && node tests/orchard-board-datalayer.test.mjs && node tests/health-upstash-auth.test.mjs && node tests/orchard-token-specimen-cards.test.mjs",
+    "test": "node tests/carbonMetrics.test.mjs && node tests/carbonClarity.test.mjs && node tests/orchard-pages.test.mjs && node tests/wnut-page.test.mjs && node tests/groveCards.test.mjs && node tests/groveRevisions.test.mjs && node tests/gtsilGrove.test.mjs && node tests/orchard-menu-elegant.test.mjs && node tests/security-page.test.mjs && node tests/orchard-marketing.test.mjs && node tests/pair-page.test.mjs && node tests/orchard-board-banner.test.mjs && node tests/orchard-field-guide-cards.test.mjs && node tests/orchard-board-datalayer.test.mjs && node tests/health-upstash-auth.test.mjs && node tests/orchard-token-specimen-cards.test.mjs && node tests/homeUnifiedTable.test.mjs && node tests/orchard-atlas.test.mjs && node tests/orchard-faq-graphs.test.mjs && node tests/orchard-pages-2.test.mjs && node tests/orchard-pages-3.test.mjs && node tests/orchard-rwa-4.test.mjs",
     "cron:orchard-refresh": "node scripts/cron/refresh-orchard-tvl.js"
   },
   "keywords": [],
@@ -20,17 +19,11 @@
     "@mui/material": "^7.3.7",
     "@types/node": "^25.2.0",
     "@upstash/redis": "^1.36.2",
-    "express": "^5.2.1",
     "next": "^16.1.6",
-    "openai": "^6.17.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-markdown": "^10.1.0",
     "rehype-raw": "^7.0.0"
   },
-  "devDependencies": {
-    "autoprefixer": "^10.4.24",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.18"
-  }
+  "private": true
 }
